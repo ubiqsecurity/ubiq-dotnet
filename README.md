@@ -48,6 +48,7 @@ From the Build menu, execute *Rebuild Solution* to compile all projects.
     - .NET desktop development
     - .NET Core cross-platform development
 -   If building the ubiq-dotnet library from source, the ubiq-dotnet solution assumes the .NET Framework 4.6.1 for Windows, .NET Core 2.0 or later, and .NET Standard 2.0 or later.
+-  C# Language 7.2 or greater
 
 ## Usage
 
@@ -67,7 +68,7 @@ See the reference source includes two command-line test apps in the ```ubiq-dotn
 Both test apps reference the *same* portable UbiqSecurity DLL library, build against .NET Standard 2.0.
 
 
-### Referencing the Ubiq library
+### Referencing the Ubiq Security library
 Make sure your project has a reference to the UbiqSecurity DLL library, either by adding the NuGet package
 (if using prebuilt library) or by adding a project reference (if built from source).
 Then, add the following to the top of your C# source file:
@@ -134,9 +135,9 @@ byte[] plainBytes = await UbiqDecrypt.DecryptAsync(credentials, encryptedBytes);
 - Call the encryption instance ```Update()``` method repeatedly until all the data is processed.
 - Call the encryption instance ```End()``` method.
 
- Here's the working code from the test application in the reference source:
+Below is the working code from the test application in the reference source:
 
- ```cs
+```cs
 async Task PiecewiseEncryptionAsync(string inFile, string outFile, IUbiqCredentials ubiqCredentials)
 {
     using (var plainStream = new FileStream(inFile, FileMode.Open))
@@ -176,9 +177,9 @@ async Task PiecewiseEncryptionAsync(string inFile, string outFile, IUbiqCredenti
 - Call the decryption instance ```UpdateAsync()``` method repeatedly until all data is processed.
 - Call the decryption instance ```End()``` method
 
-Here's the working code from the test application in the reference source:
+Below is the working code from the test application in the reference source:
 
- ```cs
+```cs
 async Task PiecewiseDecryptionAsync(string inFile, string outFile, IUbiqCredentials ubiqCredentials)
 {
     using (var cipherStream = new FileStream(inFile, FileMode.Open))
