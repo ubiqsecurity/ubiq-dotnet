@@ -12,7 +12,7 @@ See the [.NET API docs](https://dev.ubiqsecurity.com/docs/api).
 ## Build From Source
 
 Download the reference source from the Gitlab repository, open the ```ubiq-dotnet.sln``` in Visual Studio,
-select ```CoreConsole``` project as the Startup Project, select the ```Release``` Solution Configuration, ```Any CPU``` Solution Configuration, and then do a full Rebuild.
+select ```WinConsole``` project as the Startup Project, select the ```Release``` Solution Configuration, ```Any CPU``` Solution Configuration, and then do a full Rebuild.
 
 ## Credentials file
 
@@ -24,17 +24,14 @@ ACCESS_KEY_ID = ...
 SECRET_SIGNING_KEY = ...
 SECRET_CRYPTO_ACCESS_KEY = ...
 ```
-
-
-
 ## View Program Options
 
-Open a Windows command shell and change to the ```CoreConsole``` executable folder:
+Open a Windows command shell and change to the ```WinConsole``` executable folder:
 
-```sh
-cd CoreConsole
-dotnet bin\Release\netcoreapp2.0\CoreConsole.dll --help
-```
+<pre>
+cd WinConsole
+bin\Release\WinConsole.exe --help
+</pre>
 
 <pre>
   -e, --encrypt      (Default: false) Encrypt the contents of the input file and write the results to output file
@@ -49,27 +46,29 @@ dotnet bin\Release\netcoreapp2.0\CoreConsole.dll --help
   --version          Display version information.
 </pre>
 
-#### Demonstrate using the simple (-s / --simple) API interface to encrypt this README.md file and write the encrypted data to README.md.cipher
 
-```sh
-dotnet bin\Release\netcoreapp2.0\CoreConsole.dll -i README.md -o README.enc -e -s -c credentials
-```
+#### Demonstrate using the simple (-s / --simple) API interface to encrypt this README.md file and write the encrypted data to README.enc
 
-#### Demonstrate using the simple (-s / --simple) API interface to decrypt the README.md.cipher file and write the decrypted output to README-rehydrated.md
+<pre>
+bin\Release\WinConsole.exe -i README.md -o README.enc -e -s -c credentials
+</pre>
 
-```sh
-dotnet bin\Release\netcoreapp2.0\CoreConsole.dll -i README.enc -o README.out -d -s -c credentials
-```
+#### Demonstrate using the simple (-s / --simple) API interface to decrypt the README.enc file and write the decrypted output to README.out
+
+<pre>
+bin\Release\WinConsole.exe -i README.enc -o README.out -d -s -c credentials
+</pre>
 
 #### Demonstrate using the piecewise (-ps / --piecewise) API interface to encrypt this README.md file and write the encrypted data to README.md.cipher
 
-```sh
-dotnet bin\Release\netcoreapp2.0\CoreConsole.dll -i README.md -o README.enc -e -p -c credentials
-```
+<pre>
+bin\Release\WinConsole.exe -i README.md -o README.enc -e -p -c credentials
+</pre>
 
-#### Demonstrate using the piecewise (-p / --piecewise) API interface to decrypt the README.md.cipher file and write the decrypted output to README-rehydrated.md
+#### Demonstrate using the piecewise (-p / --piecewise) API interface to decrypt the README.enc file and write the decrypted output to README.out
 
-```sh
-dotnet bin\Release\netcoreapp2.0\CoreConsole.dll -i README.enc -o README.out -d -p -c credentials
-```
+<pre>
+bin\Release\WinConsole.exe -i README.enc -o README.out -d -p -c credentials 
+</pre>
+
 
