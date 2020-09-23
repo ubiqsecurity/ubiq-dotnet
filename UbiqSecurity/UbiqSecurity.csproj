@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>7.2</LangVersion>
     <PackageId>Ubiq-Security</PackageId>
     <Company>Ubiq Security, Inc.</Company>
     <Product>Ubiq-Security</Product>
@@ -13,7 +13,7 @@
     <RepositoryType>git</RepositoryType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Version>0.1.0</Version>
-    <PackageLicenseUrl>https://ubiqsecurity.com/legal</PackageLicenseUrl>
+    <PackageLicense>https://ubiqsecurity.com/legal</PackageLicense>
   </PropertyGroup>
 
   <ItemGroup>
