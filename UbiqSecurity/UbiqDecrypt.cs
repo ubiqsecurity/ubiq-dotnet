@@ -137,7 +137,7 @@ namespace UbiqSecurity
 
                         // create decryptor from header-specified algorithm + server-supplied decryption key
                         _aesGcmBlockCipher = new AesGcmBlockCipher(forEncryption: false,
-                            algorithmInfo,
+                            algorithmInfo: algorithmInfo,
                             key: _decryptionKey.UnwrappedDataKey,
                             initVector: _cipherHeader.InitVectorBytes,
                             additionalBytes: ((_cipherHeader.Flags & CipherHeader.FLAGS_AAD_ENABLED) != 0)

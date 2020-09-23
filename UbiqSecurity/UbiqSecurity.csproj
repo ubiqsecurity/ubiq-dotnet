@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>7.2</LangVersion>
     <PackageId>Ubiq-Security</PackageId>
     <Company>Ubiq Security, Inc.</Company>
     <Product>Ubiq-Security</Product>

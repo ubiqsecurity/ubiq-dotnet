@@ -42,7 +42,6 @@ ubiq-dotnet.sln
     - .NET desktop development
     - .NET Core cross-platform development
 -   If building the ubiq-dotnet library from source, the ubiq-dotnet solution assumes the .NET Framework 4.6.1 for Windows, .NET Core 2.0 or later, and .NET Standard 2.0 or later.
--  C# Language 7.2 or greater
 
 Within the Solution Explorer pane, right-click the WinConsole project, then select *Set as Startup Project*.
 
@@ -52,7 +51,6 @@ From the Build menu, execute *Rebuild Solution* to compile all projects.
 -   Visual Studio 2017 or newer with one of the following development environments
     - .NET Framework (4.6.1 or newer) desktop development
     - .NET Core (2.0 or newer) cross-platform development
--  C# Language 7.2 or greater
 
 ## Usage
 
