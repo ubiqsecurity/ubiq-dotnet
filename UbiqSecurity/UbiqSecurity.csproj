@@ -8,12 +8,15 @@
     <Product>Ubiq-Security</Product>
     <Description>DotNet Client library for accessing the Ubiq Platform</Description>
     <PackageProjectUrl>https://gitlab.com/ubiqsecurity/ubiq-dotnet</PackageProjectUrl>
-    <RepositoryUrl>https://gitlab.com/ubiqsecurity/ubiq-dotnet</RepositoryUrl>
+    <RepositoryUrl>https://gitlab.com/ubiqsecurity/ubiq-dotnet.git</RepositoryUrl>
     <PackageTags>ubiq cryptography</PackageTags>
     <RepositoryType>git</RepositoryType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.0</Version>
+    <Version>0.1.2</Version>
     <PackageLicense>https://ubiqsecurity.com/legal</PackageLicense>
+    <PackageReleaseNotes>Initial Version</PackageReleaseNotes>
+    <Copyright>Copyright 2020 Ubiq Security, Inc., Proprietary and All Rights Reserved.</Copyright>
+    <PackageLicenseUrl>https://ubiqsecurity.com/legal</PackageLicenseUrl>
   </PropertyGroup>
 
   <ItemGroup>
