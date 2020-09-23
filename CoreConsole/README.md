@@ -1,5 +1,4 @@
-# Ubiq Security Sample Application using .NET Library
-
+# Ubiq Security .NET Core Cross-Platform Sample Application
 
 This sample application will demonstrate how to encrypt and decrypt data using 
 the different APIs.
@@ -24,8 +23,6 @@ ACCESS_KEY_ID = ...
 SECRET_SIGNING_KEY = ...
 SECRET_CRYPTO_ACCESS_KEY = ...
 ```
-
-
 
 ## View Program Options
 

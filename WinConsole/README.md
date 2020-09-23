@@ -1,5 +1,4 @@
-# Ubiq Security Sample Application using .NET Library
-
+# Ubiq Security .NET Windows Desktop Sample Application
 
 This sample application will demonstrate how to encrypt and decrypt data using 
 the different APIs.

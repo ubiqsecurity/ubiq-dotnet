@@ -36,18 +36,22 @@ From within the cloned local git repository folder, use Visual Studio to open th
 ubiq-dotnet.sln
 ```
 
-Within the Solution Explorer pane, right-click the WinConsole project, then select *Set as Startup Project*.
-
-From the Build menu, execute *Rebuild Solution* to compile all projects.
-
-
-## Requirements
-
--   Visual Studio 2017
+#### Compiling using Visual Studio Environment
+-   Visual Studio 2017 or newer
 -   In the Visual Studio Installer, make sure the following items are checked in the *Workloads* category:
     - .NET desktop development
     - .NET Core cross-platform development
 -   If building the ubiq-dotnet library from source, the ubiq-dotnet solution assumes the .NET Framework 4.6.1 for Windows, .NET Core 2.0 or later, and .NET Standard 2.0 or later.
+-  C# Language 7.2 or greater
+
+Within the Solution Explorer pane, right-click the WinConsole project, then select *Set as Startup Project*.
+
+From the Build menu, execute *Rebuild Solution* to compile all projects.
+
+#### Requirements to Use Ubiq-Security library
+-   Visual Studio 2017 or newer with one of the following development environments
+    - .NET Framework (4.6.1 or newer) desktop development
+    - .NET Core (2.0 or newer) cross-platform development
 -  C# Language 7.2 or greater
 
 ## Usage
@@ -60,10 +64,12 @@ user account directory [c:/users/_yourlogin_/.ubiq/credentials].
 
 ### Sample applications
 
-See the reference source includes two command-line test apps in the ```ubiq-dotnet.sln```
+See the reference source and Readme in *WinConsole* and *CoreConsole*  in the ```ubiq-dotnet.sln```
 
--   *WinConsole* - for Windows .NET Framework 4.6.1 or later.
+-   *WinConsole* - for Windows .NET Framework 4.6.1 or later
+    - [README.md][WinConsoleReadme]
 -   *CoreConsole* - for portable .NET Core runtime.
+    - [README.md][CoreConsoleReadme]
 
 Both test apps reference the *same* portable UbiqSecurity DLL library, build against .NET Standard 2.0.
 
@@ -217,3 +223,6 @@ async Task PiecewiseDecryptionAsync(string inFile, string outFile, IUbiqCredenti
 [nuget-cli]: https://docs.microsoft.com/en-us/nuget/tools/nuget-exe-cli-reference
 [dotnet-core-cli-tools]: https://docs.microsoft.com/en-us/dotnet/core/tools/
 [package-manager-console]: https://docs.microsoft.com/en-us/nuget/tools/package-manager-console
+[WinConsoleReadme]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/WinConsole/README.md
+[CoreConsoleReadme]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/CoreConsole/README.md
+
