@@ -58,7 +58,7 @@ dotnet bin\Release\netcoreapp2.0\CoreConsole.dll -i README.md -o README.enc -e -
 dotnet bin\Release\netcoreapp2.0\CoreConsole.dll -i README.enc -o README.out -d -s -c credentials
 ```
 
-#### Demonstrate using the piecewise (-ps / --piecewise) API interface to encrypt this README.md file and write the encrypted data to README.enc
+#### Demonstrate using the piecewise (-p / --piecewise) API interface to encrypt this README.md file and write the encrypted data to README.enc
 
 ```sh
 dotnet bin\Release\netcoreapp2.0\CoreConsole.dll -i README.md -o README.enc -e -p -c credentials
