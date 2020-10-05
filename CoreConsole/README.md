@@ -46,25 +46,25 @@ dotnet bin\Release\netcoreapp2.0\CoreConsole.dll --help
   --version          Display version information.
 </pre>
 
-#### Demonstrate using the simple (-s / --simple) API interface to encrypt this README.md file and write the encrypted data to README.md.cipher
+#### Demonstrate using the simple (-s / --simple) API interface to encrypt this README.md file and write the encrypted data to README.enc
 
 ```sh
 dotnet bin\Release\netcoreapp2.0\CoreConsole.dll -i README.md -o README.enc -e -s -c credentials
 ```
 
-#### Demonstrate using the simple (-s / --simple) API interface to decrypt the README.md.cipher file and write the decrypted output to README-rehydrated.md
+#### Demonstrate using the simple (-s / --simple) API interface to decrypt the README.enc file and write the decrypted output to README.out
 
 ```sh
 dotnet bin\Release\netcoreapp2.0\CoreConsole.dll -i README.enc -o README.out -d -s -c credentials
 ```
 
-#### Demonstrate using the piecewise (-ps / --piecewise) API interface to encrypt this README.md file and write the encrypted data to README.md.cipher
+#### Demonstrate using the piecewise (-ps / --piecewise) API interface to encrypt this README.md file and write the encrypted data to README.enc
 
 ```sh
 dotnet bin\Release\netcoreapp2.0\CoreConsole.dll -i README.md -o README.enc -e -p -c credentials
 ```
 
-#### Demonstrate using the piecewise (-p / --piecewise) API interface to decrypt the README.md.cipher file and write the decrypted output to README-rehydrated.md
+#### Demonstrate using the piecewise (-p / --piecewise) API interface to decrypt the README.enc file and write the decrypted output to README.out
 
 ```sh
 dotnet bin\Release\netcoreapp2.0\CoreConsole.dll -i README.enc -o README.out -d -p -c credentials
