@@ -12,10 +12,10 @@
     <RepositoryType>git</RepositoryType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Version>0.1.2</Version>
-    <PackageLicense>https://ubiqsecurity.com/legal</PackageLicense>
+    <PackageLicense>https://choosealicense.com/licenses/mit/</PackageLicense>
     <PackageReleaseNotes>Initial Version</PackageReleaseNotes>
-    <Copyright>Copyright 2020 Ubiq Security, Inc., Proprietary and All Rights Reserved.</Copyright>
-    <PackageLicenseUrl>https://ubiqsecurity.com/legal</PackageLicenseUrl>
+    <Copyright>Copyright 2020 Ubiq Security, Inc.</Copyright>
+    <PackageLicenseUrl>https://choosealicense.com/licenses/mit/</PackageLicenseUrl>
   </PropertyGroup>
 
   <ItemGroup>
