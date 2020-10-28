@@ -112,6 +112,7 @@ Unsuccessful requests raise exceptions. The exception object will contain the er
 
 Pass credentials and plaintext bytes into the encryption function.  The encrypted data
 bytes will be returned.
+**Note:** This is a non-blocking function, so be sure to use the appropriate process controls to make sure the results are available when desired.  See the the following [Microsoft documentation][dotnet-async] for additional information.
 
 ```cs
 using UbiqSecurity;
@@ -124,6 +125,7 @@ byte[] encryptedBytes = await UbiqEncrypt.EncryptAsync(credentials, plainBytes);
 
 Pass credentials and encrypted data into the decryption function.  The plaintext data
 bytes will be returned.
+**Note:** This is a non-blocking function, so be sure to use the appropriate process controls to make sure the results are available when desired.  See the the following [Microsoft documentation][dotnet-async] for additional information.
 
 ```cs
 using UbiqSecurity;
@@ -223,4 +225,5 @@ async Task PiecewiseDecryptionAsync(string inFile, string outFile, IUbiqCredenti
 [package-manager-console]: https://docs.microsoft.com/en-us/nuget/tools/package-manager-console
 [WinConsoleReadme]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/WinConsole/README.md
 [CoreConsoleReadme]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/CoreConsole/README.md
+[dotnet-async]:https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/
 
