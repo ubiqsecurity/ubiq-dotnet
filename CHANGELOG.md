@@ -1,6 +1,6 @@
 # Changelog
 
-## TBD - TBD
+## 0.1.3 - 2020-10-28
 * Change to MIT license
 * Fix typos in file names and options for the sample programs
 
