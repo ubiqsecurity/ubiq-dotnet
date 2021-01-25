@@ -73,7 +73,7 @@ namespace UbiqConsole
                     Console.WriteLine("NOTE: This is only for demonstration purposes and is designed to work on memory");
                     Console.WriteLine("      constrained devices.  Therefore, this sample application will switch to");
                     Console.WriteLine("      the piecewise APIs for files larger than {0} bytes in order to reduce", maxSimpleSize);
-                    Console.WriteLine("      excesive resource usages on resource constrained IoT devices");
+                    Console.WriteLine("      excessive resource usages on resource constrained IoT devices");
                     options.Simple = false;
                     options.Piecewise = true;
                 }
