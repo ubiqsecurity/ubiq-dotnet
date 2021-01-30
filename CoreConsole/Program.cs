@@ -49,21 +49,29 @@ namespace UbiqConsole
             }
 
             IUbiqCredentials ubiqCredentials;
-            if (options.Credentials == null)
+            try
             {
-                // no file specified, so fall back to ENV vars and default host, if any
-                ubiqCredentials = UbiqFactory.CreateCredentials(
-                    accessKeyId: null,
-                    secretSigningKey: null,
-                    secretCryptoAccessKey: null,
-                    host: null);
+                if (options.Credentials == null)
+                {
+                    // no file specified, so fall back to ENV vars and default host, if any
+                    ubiqCredentials = UbiqFactory.CreateCredentials(
+                        accessKeyId: null,
+                        secretSigningKey: null,
+                        secretCryptoAccessKey: null,
+                        host: null);
+                }
+                else
+                {
+                    // read credentials from caller-specified section of specified config file
+                    ubiqCredentials = UbiqFactory.ReadCredentialsFromFile(options.Credentials, options.Profile);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                // read credentials from caller-specified section of specified config file
-                ubiqCredentials = UbiqFactory.ReadCredentialsFromFile(options.Credentials, options.Profile);
+                Console.WriteLine($"Exception caught while psetting credentials:  {ex.Message}");
+                Console.WriteLine($"Check pathname of credentials file '{options.Credentials}' and chosen profile '{options.Profile}'");
+                return;
             }
-
             // check input file size - we already know it exists
             {
                 long maxSimpleSize = 50 * 0x100000;     // 50MB

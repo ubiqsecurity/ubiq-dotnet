@@ -51,7 +51,7 @@ namespace UbiqSecurity.Internals
             IDictionary<string, string> currentSection = null;
 
             // match '[section]' lines
-            var headerRegex = new Regex(@"\[\s*(\w+)\s*\]");
+            var headerRegex = new Regex(@"\[\s*([-\w]+)\s*\]");
 
             // match 'name = value' lines
             var keyValueRegex = new Regex(@"([^\s=]+)\s*=\s*([^\s=]+)");
