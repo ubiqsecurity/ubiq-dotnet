@@ -32,6 +32,7 @@ namespace UbiqSecurity.Internals
             SecretCryptoAccessKey = secretCryptoAccessKey;
 
             Host = host;
+            validate_credentials();
         }
 
         internal UbiqCredentials(string pathname, string profile, string host)
@@ -61,8 +62,18 @@ namespace UbiqSecurity.Internals
             SecretSigningKey = configParser.GetValue(profile, SECRET_SIGNING_KEY) ?? configParser.GetValue(DEFAULT_SECTION, SECRET_SIGNING_KEY);
             SecretCryptoAccessKey = configParser.GetValue(profile, SECRET_CRYPTO_ACCESS_KEY) ?? configParser.GetValue(DEFAULT_SECTION, SECRET_CRYPTO_ACCESS_KEY);
             Host = configParser.GetValue(profile, SERVER_KEY) ?? configParser.GetValue(DEFAULT_SECTION, SERVER_KEY) ?? host;
+            validate_credentials();
         }
         #endregion
+
+        internal void validate_credentials()
+        {
+            if (string.IsNullOrEmpty(AccessKeyId) || string.IsNullOrEmpty(SecretSigningKey) ||
+                string.IsNullOrEmpty(SecretCryptoAccessKey) || string.IsNullOrEmpty(Host))
+            {
+                throw new InvalidOperationException($"Credentials data in incomplete");
+            }
+        }
 
         #region IUbiqCredentials
         public string AccessKeyId { get; }

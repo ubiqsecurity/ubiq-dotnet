@@ -51,17 +51,36 @@ namespace UbiqConsole
             IUbiqCredentials ubiqCredentials;
             if (options.Credentials == null)
             {
-                // no file specified, so fall back to ENV vars and default host, if any
-                ubiqCredentials = UbiqFactory.CreateCredentials(
-                    accessKeyId: null,
-                    secretSigningKey: null,
-                    secretCryptoAccessKey: null,
-                    host: null);
+                try
+                {
+                    // no file specified, so fall back to ENV vars and default host, if any
+                    ubiqCredentials = UbiqFactory.CreateCredentials(
+                        accessKeyId: null,
+                        secretSigningKey: null,
+                        secretCryptoAccessKey: null,
+                        host: null);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Exception caught while setting credentials:  {ex.Message}");
+                    Console.WriteLine($"Required environment variables not set'");
+                    return;
+                }
             }
             else
             {
-                // read credentials from caller-specified section of specified config file
-                ubiqCredentials = UbiqFactory.ReadCredentialsFromFile(options.Credentials, options.Profile);
+                try
+                {
+
+                    // read credentials from caller-specified section of specified config file
+                    ubiqCredentials = UbiqFactory.ReadCredentialsFromFile(options.Credentials, options.Profile);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Exception caught while reading credentials:  {ex.Message}");
+                    Console.WriteLine($"Check pathname of credentials file '{options.Credentials}' and chosen profile '{options.Profile}'");
+                    return;
+                }
             }
 
             // check input file size - we already know it exists
