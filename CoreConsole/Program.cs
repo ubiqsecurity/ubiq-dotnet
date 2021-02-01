@@ -49,9 +49,9 @@ namespace UbiqConsole
             }
 
             IUbiqCredentials ubiqCredentials;
-            try
+            if (options.Credentials == null)
             {
-                if (options.Credentials == null)
+                try
                 {
                     // no file specified, so fall back to ENV vars and default host, if any
                     ubiqCredentials = UbiqFactory.CreateCredentials(
@@ -60,18 +60,29 @@ namespace UbiqConsole
                         secretCryptoAccessKey: null,
                         host: null);
                 }
-                else
+                catch (Exception ex)
                 {
+                    Console.WriteLine($"Exception caught while setting credentials:  {ex.Message}");
+                    Console.WriteLine($"Required environment variables not set'");
+                    return;
+                }
+            }
+            else
+            {
+                try
+                {
+
                     // read credentials from caller-specified section of specified config file
                     ubiqCredentials = UbiqFactory.ReadCredentialsFromFile(options.Credentials, options.Profile);
                 }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Exception caught while reading credentials:  {ex.Message}");
+                    Console.WriteLine($"Check pathname of credentials file '{options.Credentials}' and chosen profile '{options.Profile}'");
+                    return;
+                }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception caught while psetting credentials:  {ex.Message}");
-                Console.WriteLine($"Check pathname of credentials file '{options.Credentials}' and chosen profile '{options.Profile}'");
-                return;
-            }
+
             // check input file size - we already know it exists
             {
                 long maxSimpleSize = 50 * 0x100000;     // 50MB
