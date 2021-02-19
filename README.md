@@ -106,7 +106,19 @@ var credentials = UbiqFactory.CreateCredentials(accessKeyId: "...", secretSignin
 
 ### Runtime exceptions
 
-Unsuccessful requests raise exceptions. The exception object will contain the error details. 
+Unsuccessful requests raise exceptions. The exception object will contain the error details.
+
+### Runtime "hangs"
+
+Some users have experienced "hangs" during encryption and decryption operations. So far, this
+has been solved by adding `.ConfigureAwait(false)` to those calls as in:
+
+```cs
+await UbiqEncrypt.EncryptAsync(credentials, plainBytes).ConfigureAwait(false);
+```
+
+More information can be found about C# `SynchronizationContext` can be found
+[here][sync-context-info].
 
 ### Encrypt a simple block of data
 
@@ -226,4 +238,4 @@ async Task PiecewiseDecryptionAsync(string inFile, string outFile, IUbiqCredenti
 [WinConsoleReadme]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/WinConsole/README.md
 [CoreConsoleReadme]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/CoreConsole/README.md
 [dotnet-async]:https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/
-
+[sync-context-info]:https://docs.microsoft.com/en-us/archive/msdn-magazine/2011/february/msdn-magazine-parallel-computing-it-s-all-about-the-synchronizationcontext

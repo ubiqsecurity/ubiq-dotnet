@@ -69,7 +69,7 @@ namespace UbiqSecurity.Internals
                 var signedHttpRequest = BuildSignedHttpRequest(HttpMethod.Post, url, jsonRequest,
                     _ubiqCredentials.AccessKeyId,
                     _ubiqCredentials.SecretSigningKey);
-                var jsonResponse = await HttpSendAsync(signedHttpRequest, HttpStatusCode.Created);
+                var jsonResponse = await HttpSendAsync(signedHttpRequest, HttpStatusCode.Created).ConfigureAwait(false);
 
                 // deserialize JSON response to POCO
                 var encryptionKeyResponse = JsonConvert.DeserializeObject<EncryptionKeyResponse>(jsonResponse);
@@ -98,7 +98,7 @@ namespace UbiqSecurity.Internals
                 var signedHttpRequest = BuildSignedHttpRequest(new HttpMethod("PATCH"), url, jsonRequest,
                     _ubiqCredentials.AccessKeyId,
                     _ubiqCredentials.SecretSigningKey);
-                var jsonResponse = await HttpSendAsync(signedHttpRequest, HttpStatusCode.NoContent);
+                var jsonResponse = await HttpSendAsync(signedHttpRequest, HttpStatusCode.NoContent).ConfigureAwait(false);
 
                 // expect empty response
             }
@@ -121,7 +121,7 @@ namespace UbiqSecurity.Internals
                 var signedHttpRequest = BuildSignedHttpRequest(HttpMethod.Post, url, jsonRequest,
                     _ubiqCredentials.AccessKeyId,
                     _ubiqCredentials.SecretSigningKey);
-                var jsonResponse = await HttpSendAsync(signedHttpRequest, HttpStatusCode.OK);
+                var jsonResponse = await HttpSendAsync(signedHttpRequest, HttpStatusCode.OK).ConfigureAwait(false);
 
                 // deserialize JSON response to POCO
                 var decryptionKeyResponse = JsonConvert.DeserializeObject<DecryptionKeyResponse>(jsonResponse);
@@ -149,7 +149,7 @@ namespace UbiqSecurity.Internals
                 var signedHttpRequest = BuildSignedHttpRequest(new HttpMethod("PATCH"), url, jsonRequest,
                     _ubiqCredentials.AccessKeyId,
                     _ubiqCredentials.SecretSigningKey);
-                var jsonResponse = await HttpSendAsync(signedHttpRequest, HttpStatusCode.NoContent);
+                var jsonResponse = await HttpSendAsync(signedHttpRequest, HttpStatusCode.NoContent).ConfigureAwait(false);
 
                 // expect empty response
             }
@@ -228,9 +228,9 @@ namespace UbiqSecurity.Internals
             try
             {
                 // JIT-create and cache reusable HttpClient instance
-                using (var httpResponse = await _lazyHttpClient.Value.SendAsync(httpRequestMessage))
+                using (var httpResponse = await _lazyHttpClient.Value.SendAsync(httpRequestMessage).ConfigureAwait(false))
                 {
-                    var responseString = await httpResponse.Content.ReadAsStringAsync();
+                    var responseString = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                     if (httpResponse.StatusCode != successCode)
                     {

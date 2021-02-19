@@ -116,7 +116,7 @@ namespace UbiqSecurity
                         if (!_cipherHeader.EncryptedDataKeyBytes.SequenceEqual(
                             _decryptionKey.LastCipherHeaderEncryptedDataKeyBytes))
                         {
-                            await ResetAsync();
+                            await ResetAsync().ConfigureAwait(false);
                             Debug.Assert(_decryptionKey == null);
                         }
                     }
@@ -125,7 +125,7 @@ namespace UbiqSecurity
                     if (_decryptionKey == null)
                     {
                         // JIT: request encryption key from server
-                        _decryptionKey = await _ubiqWebServices.GetDecryptionKeyAsync(_cipherHeader.EncryptedDataKeyBytes);
+                        _decryptionKey = await _ubiqWebServices.GetDecryptionKeyAsync(_cipherHeader.EncryptedDataKeyBytes).ConfigureAwait(false);
                     }
 
                     if (_decryptionKey != null)
@@ -199,7 +199,7 @@ namespace UbiqSecurity
                 using (var ubiqDecrypt = new UbiqDecrypt(ubiqCredentials))
                 {
                     WriteBytesToStream(memoryStream, ubiqDecrypt.Begin());
-                    WriteBytesToStream(memoryStream, await ubiqDecrypt.UpdateAsync(data, 0, data.Length));
+                    WriteBytesToStream(memoryStream, await ubiqDecrypt.UpdateAsync(data, 0, data.Length).ConfigureAwait(false));
                     WriteBytesToStream(memoryStream, ubiqDecrypt.End());
                 }
 
@@ -225,7 +225,7 @@ namespace UbiqSecurity
                     // report key usage to server
                     Debug.WriteLine($"{GetType().Name}.{nameof(ResetAsync)}: reporting key count: {_decryptionKey.KeyUseCount}");
                     await _ubiqWebServices.UpdateDecryptionKeyUsageAsync(_decryptionKey.KeyUseCount,
-                        _decryptionKey.KeyFingerprint, _decryptionKey.EncryptionSession);
+                        _decryptionKey.KeyFingerprint, _decryptionKey.EncryptionSession).ConfigureAwait(false);
                 }
 
                 _decryptionKey = null;

@@ -1,5 +1,8 @@
 # Changelog
 
+## TBD - TBD
+* Fix client hangs in HTTP requests
+
 ## 0.1.4 - 2021-02-01
 * Improve error messages with bad or missing credentials data
 
