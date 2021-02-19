@@ -66,7 +66,7 @@ namespace UbiqSecurity
             if (_encryptionKey == null)
             {
                 // JIT: request encryption key from server
-                _encryptionKey = await _ubiqWebServices.GetEncryptionKeyAsync(_usesRequested);
+                _encryptionKey = await _ubiqWebServices.GetEncryptionKeyAsync(_usesRequested).ConfigureAwait(false);
             }
 
             // check key 'usage count' against server-specified limit
@@ -147,7 +147,7 @@ namespace UbiqSecurity
             {
                 using (var ubiqEncrypt = new UbiqEncrypt(ubiqCredentials, 1))
                 {
-                    WriteBytesToStream(memoryStream, await ubiqEncrypt.BeginAsync());
+                    WriteBytesToStream(memoryStream, await ubiqEncrypt.BeginAsync().ConfigureAwait(false));
                     WriteBytesToStream(memoryStream, ubiqEncrypt.Update(data, 0, data.Length));
                     WriteBytesToStream(memoryStream, ubiqEncrypt.End());
                 }
