@@ -11,7 +11,7 @@
     <PackageTags>ubiq cryptography</PackageTags>
     <RepositoryType>git</RepositoryType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.4</Version>
+    <Version>0.1.5</Version>
     <PackageLicense>https://choosealicense.com/licenses/mit/</PackageLicense>
     <PackageReleaseNotes>Initial Version</PackageReleaseNotes>
     <Copyright>Copyright 2020 Ubiq Security, Inc.</Copyright>
