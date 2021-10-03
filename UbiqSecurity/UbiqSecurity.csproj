@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -11,16 +11,18 @@
     <PackageTags>ubiq cryptography</PackageTags>
     <RepositoryType>git</RepositoryType>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.1.5</Version>
+    <Version>0.1.6</Version>
     <PackageLicense>https://choosealicense.com/licenses/mit/</PackageLicense>
     <PackageReleaseNotes>Initial Version</PackageReleaseNotes>
-    <Copyright>Copyright 2020 Ubiq Security, Inc.</Copyright>
+    <Copyright>Copyright 2020- Ubiq Security, Inc.</Copyright>
     <PackageLicenseUrl>https://choosealicense.com/licenses/mit/</PackageLicenseUrl>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Portable.BouncyCastle" Version="1.8.6.7" />
+    <PackageReference Include="System.Runtime.Caching" Version="5.0.0" />
+    <PackageReference Include="Ubiq-Security-Fpe" Version="0.0.1" />
   </ItemGroup>
 
 </Project>

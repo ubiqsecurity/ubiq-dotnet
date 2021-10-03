@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.6 - 2021-09-29
+* Added FPE/eFPE capability
+
 ## 0.1.5 - 2021-02-19
 * Fix client hangs in HTTP requests
 

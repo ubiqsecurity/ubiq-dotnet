@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
@@ -8,153 +7,164 @@ using UbiqSecurity.Model;
 
 namespace UbiqSecurity
 {
-    public class UbiqEncrypt : IDisposable
-    {
-        #region Private Data
-        private readonly IUbiqCredentials _ubiqCredentials;
-        private readonly int _usesRequested;
+	public class UbiqEncrypt : IDisposable
+	{
+		#region Private Data
 
-        private UbiqWebServices _ubiqWebServices;       // null when disposed
-        private int _useCount;
-        private EncryptionKeyResponse _encryptionKey;
-        private AesGcmBlockCipher _aesGcmBlockCipher;
-        #endregion
+		private readonly IUbiqCredentials _ubiqCredentials;
+		private readonly int _usesRequested;
 
-        #region Constructors
-        public UbiqEncrypt(IUbiqCredentials ubiqCredentials, int usesRequested)
-        {
-            _ubiqCredentials = ubiqCredentials;
-            _usesRequested = usesRequested;
-            _ubiqWebServices = new UbiqWebServices(_ubiqCredentials);
-        }
-        #endregion
+		private UbiqWebServices _ubiqWebServices;       // null when disposed
+		private int _useCount;
+		private EncryptionKeyResponse _encryptionKey;
+		private AesGcmBlockCipher _aesGcmBlockCipher;
 
-        #region IDisposable
-        public void Dispose()
-        {
-            if (_ubiqWebServices != null)
-            {
-                if (_encryptionKey != null)
-                {
-                    // if key was used less times than requested, notify the server.
-                    if (_useCount < _usesRequested)
-                    {
-                        Debug.WriteLine($"{GetType().Name}.{nameof(Dispose)}: reporting key usage: {_useCount} of {_usesRequested}");
-                        _ubiqWebServices.UpdateEncryptionKeyUsageAsync(_useCount, _usesRequested,
-                            _encryptionKey.KeyFingerprint, _encryptionKey.EncryptionSession).Wait();
-                    }
-                }
+		#endregion
 
-                _ubiqWebServices.Dispose();
-                _ubiqWebServices = null;
-            }
-        }
-        #endregion
+		#region Constructors
 
-        #region Methods
-        public async Task<byte[]> BeginAsync()
-        {
-            if (_ubiqWebServices == null)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
-            else if (_aesGcmBlockCipher != null)
-            {
-                throw new InvalidOperationException("encryption in progress");
-            }
+		public UbiqEncrypt(IUbiqCredentials ubiqCredentials, int usesRequested)
+		{
+			_ubiqCredentials = ubiqCredentials;
+			_usesRequested = usesRequested;
+			_ubiqWebServices = new UbiqWebServices(_ubiqCredentials);
+		}
 
-            if (_encryptionKey == null)
-            {
-                // JIT: request encryption key from server
-                _encryptionKey = await _ubiqWebServices.GetEncryptionKeyAsync(_usesRequested).ConfigureAwait(false);
-            }
+		#endregion
 
-            // check key 'usage count' against server-specified limit
-            if (_useCount > _encryptionKey.MaxUses)
-            {
-                throw new InvalidOperationException("maximum key uses exceeded");
-            }
+		#region IDisposable
 
-            _useCount++;
+		public virtual void Dispose()
+		{
+			if (_ubiqWebServices != null)
+			{
+				if (_encryptionKey != null)
+				{
+					// if key was used less times than requested, notify the server.
+					if (_useCount < _usesRequested)
+					{
+						_ubiqWebServices.UpdateEncryptionKeyUsageAsync(_useCount, _usesRequested,
+						_encryptionKey.KeyFingerprint, _encryptionKey.EncryptionSession).Wait();
+					}
+				}
 
-            var algorithmInfo = new AlgorithmInfo(_encryptionKey.SecurityModel.Algorithm);
+				_ubiqWebServices.Dispose();
+				_ubiqWebServices = null;
+			}
+		}
 
-            // generate random IV for encryption
-            byte[] initVector = new byte[algorithmInfo.InitVectorLength];
-            var random = RandomNumberGenerator.Create();
-            random.GetBytes(initVector);
+		#endregion
 
-            var cipherHeader = new CipherHeader
-            {
-                Version = 0,
-                Flags = CipherHeader.FLAGS_AAD_ENABLED,
-                AlgorithmId = algorithmInfo.Id,
-                InitVectorLength = (byte)initVector.Length,
-                EncryptedDataKeyLength = (short)_encryptionKey.EncryptedDataKeyBytes.Length,
-                InitVectorBytes = initVector,
-                EncryptedDataKeyBytes = _encryptionKey.EncryptedDataKeyBytes
-            };
+		#region Public Methods
 
-            // note: include cipher header bytes in AES result!
-            var cipherHeaderBytes = cipherHeader.Serialize();
+		public async Task<byte[]> BeginAsync()
+		{
+			if (_ubiqWebServices == null)
+			{
+				throw new ObjectDisposedException(GetType().Name);
+			}
+			else if (_aesGcmBlockCipher != null)
+			{
+				throw new InvalidOperationException("encryption in progress");
+			}
 
-            _aesGcmBlockCipher = new AesGcmBlockCipher(
-                forEncryption: true,
-                algorithmInfo: algorithmInfo, 
-                key: _encryptionKey.UnwrappedDataKey,
-                initVector: initVector,
-                additionalBytes: cipherHeaderBytes);
+			if (_encryptionKey == null)
+			{
+				// JIT: request encryption key from server
+				_encryptionKey = await _ubiqWebServices.GetEncryptionKeyAsync(_usesRequested).ConfigureAwait(false);
+			}
 
-            return cipherHeaderBytes;
-        }
+			// check key 'usage count' against server-specified limit
+			if (_useCount > _encryptionKey.MaxUses)
+			{
+				throw new InvalidOperationException("maximum key uses exceeded");
+			}
 
-        public byte[] Update(byte[] plainBytes, int offset, int count)
-        {
-            if (_ubiqWebServices == null)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
-            else if ((_encryptionKey == null) || (_aesGcmBlockCipher == null))
-            {
-                throw new InvalidOperationException("encryptor not initialized");
-            }
+			_useCount++;
 
-            var cipherBytes = _aesGcmBlockCipher.Update(plainBytes, offset, count);
-            return cipherBytes;
-        }
+			var algorithmInfo = new AlgorithmInfo(_encryptionKey.SecurityModel.Algorithm);
 
-        public byte[] End()
-        {
-            if (_ubiqWebServices == null)
-            {
-                throw new ObjectDisposedException(GetType().Name);
-            }
+			// generate random IV for encryption
+			byte[] initVector = new byte[algorithmInfo.InitVectorLength];
+			var random = RandomNumberGenerator.Create();
+			random.GetBytes(initVector);
 
-            var finalBytes = _aesGcmBlockCipher.Finalize();
-            _aesGcmBlockCipher = null;
-            return finalBytes;
-        }
+			var cipherHeader = new CipherHeader
+			{
+				Version = 0,
+				Flags = CipherHeader.FLAGS_AAD_ENABLED,
+				AlgorithmId = algorithmInfo.Id,
+				InitVectorLength = (byte)initVector.Length,
+				EncryptedDataKeyLength = (short)_encryptionKey.EncryptedDataKeyBytes.Length,
+				InitVectorBytes = initVector,
+				EncryptedDataKeyBytes = _encryptionKey.EncryptedDataKeyBytes
+			};
 
-        public static async Task<byte[]> EncryptAsync(IUbiqCredentials ubiqCredentials, byte[] data)
-        {
-            // handy inline function
-            void WriteBytesToStream(Stream stream, byte[] bytes)
-            {
-                stream.Write(bytes, 0, bytes.Length);
-            }
+			// note: include cipher header bytes in AES result!
+			var cipherHeaderBytes = cipherHeader.Serialize();
 
-            using (var memoryStream = new MemoryStream())
-            {
-                using (var ubiqEncrypt = new UbiqEncrypt(ubiqCredentials, 1))
-                {
-                    WriteBytesToStream(memoryStream, await ubiqEncrypt.BeginAsync().ConfigureAwait(false));
-                    WriteBytesToStream(memoryStream, ubiqEncrypt.Update(data, 0, data.Length));
-                    WriteBytesToStream(memoryStream, ubiqEncrypt.End());
-                }
+			_aesGcmBlockCipher = new AesGcmBlockCipher(
+				forEncryption: true,
+				algorithmInfo: algorithmInfo, 
+				key: _encryptionKey.UnwrappedDataKey,
+				initVector: initVector,
+				additionalBytes: cipherHeaderBytes);
 
-                return memoryStream.ToArray();
-            }
-        }
-        #endregion
-    }
+			return cipherHeaderBytes;
+		}
+
+		public byte[] Update(byte[] plainBytes, int offset, int count)
+		{
+			if (_ubiqWebServices == null)
+			{
+				throw new ObjectDisposedException(GetType().Name);
+			}
+			else if ((_encryptionKey == null) || (_aesGcmBlockCipher == null))
+			{
+				throw new InvalidOperationException("encryptor not initialized");
+			}
+
+			var cipherBytes = _aesGcmBlockCipher.Update(plainBytes, offset, count);
+			return cipherBytes;
+		}
+
+		public byte[] End()
+		{
+			if (_ubiqWebServices == null)
+			{
+				throw new ObjectDisposedException(GetType().Name);
+			}
+
+			var finalBytes = _aesGcmBlockCipher.Finalize();
+			_aesGcmBlockCipher = null;
+			return finalBytes;
+		}
+
+		#endregion
+
+		#region Static Methods
+
+		public static async Task<byte[]> EncryptAsync(IUbiqCredentials ubiqCredentials, byte[] data)
+		{
+			// handy inline function
+			void WriteBytesToStream(Stream stream, byte[] bytes)
+			{
+				stream.Write(bytes, 0, bytes.Length);
+			}
+
+			using (var memoryStream = new MemoryStream())
+			{
+				using (var ubiqEncrypt = new UbiqEncrypt(ubiqCredentials, 1))
+				{
+					WriteBytesToStream(memoryStream, await ubiqEncrypt.BeginAsync().ConfigureAwait(false));
+					WriteBytesToStream(memoryStream, ubiqEncrypt.Update(data, 0, data.Length));
+					WriteBytesToStream(memoryStream, ubiqEncrypt.End());
+				}
+
+				return memoryStream.ToArray();
+			}
+		}
+
+		#endregion
+	}
 }

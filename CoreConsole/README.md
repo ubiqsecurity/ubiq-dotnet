@@ -69,4 +69,3 @@ dotnet bin\Release\netcoreapp2.0\CoreConsole.dll -i README.md -o README.enc -e -
 ```sh
 dotnet bin\Release\netcoreapp2.0\CoreConsole.dll -i README.enc -o README.out -d -p -c credentials
 ```
-

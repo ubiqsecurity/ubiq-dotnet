@@ -1,7 +1,8 @@
-CoreConsole/bin/
-CoreConsole/obj/
-UbiqSecurity/bin/
-UbiqSecurity/obj/
-WinConsole/bin/
-WinConsole/obj/
+keys.txt
+test.txt
+packages
+*/bin/
+*/obj/
+*/*/bin/
+*/*/obj/
 .vs/

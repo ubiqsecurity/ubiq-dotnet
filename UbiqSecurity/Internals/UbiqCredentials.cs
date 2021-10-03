@@ -76,6 +76,7 @@ namespace UbiqSecurity.Internals
         }
 
         #region IUbiqCredentials
+
         public string AccessKeyId { get; }
 
         public string SecretSigningKey { get; }
@@ -83,6 +84,7 @@ namespace UbiqSecurity.Internals
         public string SecretCryptoAccessKey { get; }
 
         public string Host { get; }
+
         #endregion
     }
 }
