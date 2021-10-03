@@ -7,7 +7,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UbiqSecurity", "UbiqSecurit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinConsole", "WinConsole\WinConsole.csproj", "{B01EE41B-7598-43D5-A6A2-257DEC2E47F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreConsole", "CoreConsole\CoreConsole.csproj", "{A2032A91-6023-4B67-AA15-D3E943BA5201}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreConsole", "CoreConsole\CoreConsole.csproj", "{A2032A91-6023-4B67-AA15-D3E943BA5201}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{AC541295-C72B-403A-B30D-26547ED52593}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UbiqSecurityTests", "Tests\UbiqSecurityTests\UbiqSecurityTests.csproj", "{9D53C652-DF84-40C8-ADC7-B0D3B07BD7D7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreConsoleFpe", "CoreConsoleFpe\CoreConsoleFpe.csproj", "{B18F0FD1-5179-424F-89CF-10AF66D8D5EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,9 +33,20 @@ Global
 		{A2032A91-6023-4B67-AA15-D3E943BA5201}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2032A91-6023-4B67-AA15-D3E943BA5201}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2032A91-6023-4B67-AA15-D3E943BA5201}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D53C652-DF84-40C8-ADC7-B0D3B07BD7D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D53C652-DF84-40C8-ADC7-B0D3B07BD7D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D53C652-DF84-40C8-ADC7-B0D3B07BD7D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D53C652-DF84-40C8-ADC7-B0D3B07BD7D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B18F0FD1-5179-424F-89CF-10AF66D8D5EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B18F0FD1-5179-424F-89CF-10AF66D8D5EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B18F0FD1-5179-424F-89CF-10AF66D8D5EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B18F0FD1-5179-424F-89CF-10AF66D8D5EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9D53C652-DF84-40C8-ADC7-B0D3B07BD7D7} = {AC541295-C72B-403A-B30D-26547ED52593}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3717A7F-7186-4086-9780-9F719FC40D86}

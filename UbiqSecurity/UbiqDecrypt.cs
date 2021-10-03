@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,26 +10,29 @@ namespace UbiqSecurity
     public class UbiqDecrypt : IDisposable
     {
         #region Private Data
+
         private UbiqWebServices _ubiqWebServices;   // null on dispose
 
         private CipherHeader _cipherHeader;         // extracted from beginning of ciphertext
         private ByteBuffer _byteBuffer;
         private DecryptionKeyResponse _decryptionKey;
         private AesGcmBlockCipher _aesGcmBlockCipher;
+
         #endregion
 
         #region Constructor
+
         public UbiqDecrypt(IUbiqCredentials ubiqCredentials)
         {
             _ubiqWebServices = new UbiqWebServices(ubiqCredentials);
         }
+
         #endregion
 
         #region IDisposable
+
         public void Dispose()
         {
-            Debug.WriteLine($"{GetType().Name}.{nameof(Dispose)}");
-
             if (_ubiqWebServices != null)
             {
                 // reports decryption key usage to server, if applicable
@@ -40,9 +42,11 @@ namespace UbiqSecurity
                 _ubiqWebServices = null;
             }
         }
+
         #endregion
 
-        #region Methods
+        #region Public Methods
+
         public byte[] Begin()
         {
             if (_ubiqWebServices == null)
@@ -117,7 +121,6 @@ namespace UbiqSecurity
                             _decryptionKey.LastCipherHeaderEncryptedDataKeyBytes))
                         {
                             await ResetAsync().ConfigureAwait(false);
-                            Debug.Assert(_decryptionKey == null);
                         }
                     }
 
@@ -154,9 +157,6 @@ namespace UbiqSecurity
                 }
             }
 
-            // If we get this far, assume we have a valid header record.
-            Debug.Assert(_cipherHeader != null);
-
             if ((_decryptionKey != null) && (_aesGcmBlockCipher != null))
             {
                 // pass all available buffered bytes to the decryptor
@@ -186,7 +186,11 @@ namespace UbiqSecurity
             return finalPlainBytes;
         }
 
-        public static async Task<byte[]> DecryptAsync(IUbiqCredentials ubiqCredentials, byte[] data)
+		#endregion
+
+		#region Static Methods
+
+		public static async Task<byte[]> DecryptAsync(IUbiqCredentials ubiqCredentials, byte[] data)
         {
             // handy inline function
             void WriteBytesToStream(Stream stream, byte[] bytes)
@@ -206,9 +210,11 @@ namespace UbiqSecurity
                 return memoryStream.ToArray();
             }
         }
+        
         #endregion
 
         #region Private Methods
+
         // Reset the internal state of the decryption object.
         // This function can be called at any time to abort an existing
         // decryption operation.  It is also called by internal functions
@@ -216,14 +222,11 @@ namespace UbiqSecurity
         // used by the previous decryption.
         private async Task ResetAsync()
         {
-            Debug.Assert(_ubiqWebServices != null);
-
             if (_decryptionKey != null)
             {
                 if (_decryptionKey.KeyUseCount > 0)
                 {
                     // report key usage to server
-                    Debug.WriteLine($"{GetType().Name}.{nameof(ResetAsync)}: reporting key count: {_decryptionKey.KeyUseCount}");
                     await _ubiqWebServices.UpdateDecryptionKeyUsageAsync(_decryptionKey.KeyUseCount,
                         _decryptionKey.KeyFingerprint, _decryptionKey.EncryptionSession).ConfigureAwait(false);
                 }
@@ -233,6 +236,7 @@ namespace UbiqSecurity
 
             _aesGcmBlockCipher = null;
         }
+
         #endregion
     }
 }
