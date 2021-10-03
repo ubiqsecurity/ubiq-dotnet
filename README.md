@@ -68,6 +68,8 @@ See the reference source and Readme in *WinConsole* and *CoreConsole*  in the ``
     - [README.md][WinConsoleReadme]
 -   *CoreConsole* - for portable .NET Core runtime.
     - [README.md][CoreConsoleReadme]
+-   *CoreConsoleFpe* - for portable .NET Core runtime using FPE.
+    - [README.md][CoreConsoleFpeReadme]
 
 Both test apps reference the *same* portable UbiqSecurity DLL library, build against .NET Standard 2.0.
 
@@ -237,5 +239,6 @@ async Task PiecewiseDecryptionAsync(string inFile, string outFile, IUbiqCredenti
 [package-manager-console]: https://docs.microsoft.com/en-us/nuget/tools/package-manager-console
 [WinConsoleReadme]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/WinConsole/README.md
 [CoreConsoleReadme]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/CoreConsole/README.md
+[CoreConsoleFpeReadme]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/CoreConsoleFpe/README.md
 [dotnet-async]:https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/
 [sync-context-info]:https://docs.microsoft.com/en-us/archive/msdn-magazine/2011/february/msdn-magazine-parallel-computing-it-s-all-about-the-synchronizationcontext
