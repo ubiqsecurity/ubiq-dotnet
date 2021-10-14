@@ -261,8 +261,7 @@ FPE/eFPE capability.
 
 ### Encrypt a social security text field
 
-Lets assume you have a field containing a social security number "123-45-6789". You are able to encrypt the contents of that field
-by adding these lines to your program:
+Lets assume you have a field containing a social security number "123-45-6789". You are able to encrypt the contents of that field by adding these lines to your program and calling the function with the appropriate values.
 ```cs
 async Task EncryptionAsync(String FfsName, String plainText, IUbiqCredentials ubiqCredentials)
 {
@@ -272,21 +271,21 @@ async Task EncryptionAsync(String FfsName, String plainText, IUbiqCredentials ub
 	using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(ubiqCredentials))
 	{
 		var cipherText = await ubiqEncryptDecrypt.EncryptAsync(FfsName, plainText, tweakFF1);
-		Console.WriteLine($"ENCRYPTED cipher= {cipherText}\n");
+		Console.WriteLine($"ENCRYPTED cipherText= {cipherText}\n");
 	}
 
 	return;
 }
 ```
 
-### Decrypt the encrypted social security cipher
+### Decrypt the encrypted social security cipher text
 
-To decrypt the cipher (e.g. "W$+-qF-oMMV") of a social security number, perform the following:
+To decrypt the cipher text (e.g. "W$+-qF-oMMV") of a social security number, your function could look like the following and called with the appropriate values.
 
 ```cs
 async Task DecryptionAsync(String FfsName, String cipherText, IUbiqCredentials ubiqCredentials)
 {
-	// default tweak in case the FFS model allows for external tweak insertion          
+
 	byte[] tweakFF1 = {};
 
 	using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(ubiqCredentials))
