@@ -12,7 +12,7 @@ See the [.NET API docs](https://dev.ubiqsecurity.com/docs/api).
 
 ## Build From Source
 
-1) Download the reference source from the Gitlab repository
+1) Download the [reference source](https://gitlab.com/ubiqsecurity/ubiq-dotnet) from the Gitlab repository
 2) Open the ```ubiq-dotnet.sln``` in Visual Studio
 3) Select ```CoreConsoleFpe``` project as the Startup Project
 4) Select the ```Release``` Solution Configuration
