@@ -70,7 +70,7 @@ dotnet bin\Release\netcoreapp2.0\CoreConsoleFpe.dll  -e '123-45-6789' -c credent
 #### Demonstrate decrypting a social security number and returning the plain text
 
 ```sh
-dotnet bin\Release\netcoreapp2.0\CoreConsoleFpe.dll  '-d W#]-iV-`,\"j' -c credentials -n ALPHANUM_SSN -s
+dotnet bin\Release\netcoreapp2.0\CoreConsoleFpe.dll  -d 'W#]-iV-`,\"j' -c credentials -n ALPHANUM_SSN -s
 ```
 
 #### Other FFS models to explore
