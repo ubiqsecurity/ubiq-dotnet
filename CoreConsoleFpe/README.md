@@ -12,12 +12,20 @@ See the [.NET API docs](https://dev.ubiqsecurity.com/docs/api).
 
 ## Build From Source
 
-Download the reference source from the Gitlab repository, open the ```ubiq-dotnet.sln``` in Visual Studio,
-select ```CoreConsoleFpe``` project as the Startup Project, select the ```Release``` Solution Configuration, ```Any CPU``` Solution Configuration, and then do a full Rebuild.
+1) Download the [reference source](https://gitlab.com/ubiqsecurity/ubiq-dotnet) from the Gitlab repository
+2) Open the ```ubiq-dotnet.sln``` in Visual Studio
+3) Select ```CoreConsoleFpe``` project as the Startup Project
+4) Select the ```Release``` Solution Configuration
+5) Select ```Any CPU``` Solution Configuration
+6) Select Build->Rebuild Solution
+
+Note, if you get the error "The framework 'Microsoft.NETCore.App', version '2.0.0' was not found.", you'll need to install this framework by downloading:
+[NetCore Version 2.0.0](https://aka.ms/dotnet-core-applaunch?framework=Microsoft.NETCore.App&framework_version=2.0.0&arch=x64&rid=win10-x64) for Console Apps.
+ 
 
 ## Credentials file
 
-Edit the credentials file with your account credentials created using the Ubiq dashboard
+Edit the credentials file with your account credentials created using the Ubiq dashboard. By default, the application will look for the file called "credentials" within the CoreConsoleFpe directory.
 
 ```sh
 [default]
@@ -56,13 +64,13 @@ Usage: Ubiq Security Example [options]
 #### Demonstrate encrypting a social security number and returning a cipher text
 
 ```sh
-dotnet bin\Release\netcoreapp2.0\CoreConsoleFpe.dll  -e 123-45-6789 -c credentials -n ALPHANUM_SSN -s
+dotnet bin\Release\netcoreapp2.0\CoreConsoleFpe.dll  -e '123-45-6789' -c credentials -n ALPHANUM_SSN -s
 ```
 
 #### Demonstrate decrypting a social security number and returning the plain text
 
 ```sh
-dotnet bin\Release\netcoreapp2.0\CoreConsoleFpe.dll  -d W#]-iV-`,\"j -c credentials -n ALPHANUM_SSN -s
+dotnet bin\Release\netcoreapp2.0\CoreConsoleFpe.dll  -d 'W#]-iV-`,\"j' -c credentials -n ALPHANUM_SSN -s
 ```
 
 #### Other FFS models to explore
