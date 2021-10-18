@@ -54,9 +54,9 @@ From the Build menu, execute *Rebuild Solution* to compile all projects.
 
 ## Usage
 
-The library needs to be configured with your account credentials which is
-available in your [Ubiq Dashboard][dashboard] [credentials][credentials].
-The credentials can be set using environment variables, loaded from an explicitly
+The library needs to be configured with your [account credentials][manage-keys] which is
+available in your [Ubiq Dashboard][dashboard].
+The [credentials][use-credentials] can be set using environment variables, loaded from an explicitly
 specified file, or loaded from a file in your Windows
 user account directory [c:/users/_yourlogin_/.ubiq/credentials].
 
@@ -237,10 +237,11 @@ async Task PiecewiseDecryptionAsync(string inFile, string outFile, IUbiqCredenti
 This library incorporates format preserving encryption (FPE) and embedded format preserving encryption (eFPE). Please contact support@ubiqsecurity.com to add this capability to your account.
 
 ## Usage
-You will need to obtain account credentials in the same way as described above for conventional encryption/decryption. When
-you do this in your [Ubiq Dashboard][dashboard] [credentials][credentials], you'll need to enable the FPE option. If you do not
-see the FPE option, you may need to upgrade your plan as this is an optional capability available on upgraded accounts.
-The credentials can be set using environment variables, loaded from an explicitly
+FPE is an optional capability and may require an upgrade to your plan.  If you do not see the FPE option when [registering an application][register-app], contact support@ubiqsecurity.com to find out about adding FPE to your plan.  
+
+The library needs to be configured with your [account credentials][manage-keys] which is
+available in your [Ubiq Dashboard][dashboard].
+The [credentials][use-credentials] can be set using environment variables, loaded from an explicitly
 specified file, or loaded from a file in your Windows
 user account directory [c:/users/_yourlogin_/.ubiq/credentials].
 
@@ -305,7 +306,6 @@ Ubiq. You may also view the sample application [CoreConsoleFpe/Program.cs][fpesa
 
 
 [dashboard]:https://dashboard.ubiqsecurity.com/
-[credentials]:https://dev.ubiqsecurity.com/docs/how-to-create-api-keys
 [nuget-cli]: https://docs.microsoft.com/en-us/nuget/tools/nuget-exe-cli-reference
 [dotnet-core-cli-tools]: https://docs.microsoft.com/en-us/dotnet/core/tools/
 [package-manager-console]: https://docs.microsoft.com/en-us/nuget/tools/package-manager-console
@@ -315,3 +315,6 @@ Ubiq. You may also view the sample application [CoreConsoleFpe/Program.cs][fpesa
 [dotnet-async]:https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/
 [sync-context-info]:https://docs.microsoft.com/en-us/archive/msdn-magazine/2011/february/msdn-magazine-parallel-computing-it-s-all-about-the-synchronizationcontext
 [fpesample]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/CoreConsoleFpe/Program.cs
+[manage-keys]:https://dev.ubiqsecurity.com/docs/how-to-manage-api-keys
+[use-credentials]:https://dev.ubiqsecurity.com/docs/using-api-key-credentials
+[register-app]:https://dev.ubiqsecurity.com/docs/how-to-register-applications
