@@ -176,6 +176,13 @@ namespace UbiqSecurity
 
 			var encryptionKey = await GetFpeEncryptionKeyAsync();
 
+			// P20-1357 verify input length
+			if ((parsedInput.Trimmed.Length < ffs.MinInputLength) ||
+					(parsedInput.Trimmed.Length > ffs.MaxInputLength))
+			{
+				throw new ArgumentException("Input length does not match FFS parameters.");
+			}
+
 			var rt = ConvertToOutputRadix(inputCharacterSet, _base2Characters, parsedInput.Trimmed);
 
 			double padlen = Math.Ceiling(
