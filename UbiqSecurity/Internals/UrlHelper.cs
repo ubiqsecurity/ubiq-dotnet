@@ -14,9 +14,15 @@ namespace UbiqSecurity.Internals
 			return $"papi={WebUtility.UrlEncode(credentials.AccessKeyId)}&ffs_name={WebUtility.UrlEncode(ffsName)}";
 		}
 
-		internal static string GenerateFpeUrl(string ffsName, int? keyNumber, IUbiqCredentials credentials)
+		internal static string GenerateFpeUrlEncrypt(string ffsName, IUbiqCredentials credentials)
 		{
-			return $"papi={WebUtility.UrlEncode(credentials.AccessKeyId)}&ffs_name={WebUtility.UrlEncode(ffsName)}&keyNumber={(keyNumber.HasValue ? keyNumber.Value.ToString() : string.Empty)}";
+			return $"papi={WebUtility.UrlEncode(credentials.AccessKeyId)}&ffs_name={WebUtility.UrlEncode(ffsName)}";
 		}
+
+		internal static string GenerateFpeUrlDecrypt(string ffsName, int? keyNumber, IUbiqCredentials credentials)
+		{
+			return $"papi={WebUtility.UrlEncode(credentials.AccessKeyId)}&ffs_name={WebUtility.UrlEncode(ffsName)}&key_number={(keyNumber.HasValue ? keyNumber.Value.ToString() : string.Empty)}";
+		}
+
 	}
 }

@@ -341,11 +341,6 @@ namespace UbiqSecurity
 				throw new InvalidOperationException("invalid FFS Configuration");
 			}
 
-			if (await GetFpeEncryptionKeyAsync() == null)
-			{
-				throw new InvalidOperationException("invalid or missing key");
-			}
-
 			_isInited = true;
 		}
 

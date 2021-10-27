@@ -128,9 +128,17 @@ namespace UbiqSecurity.Internals
 
 		internal async Task<FpeEncryptionKeyResponse> GetFpeEncryptionKeyAsync(string ffsName, int? keyNumber)
 		{
-			var key = UrlHelper.GenerateFpeUrl(ffsName, keyNumber, _ubiqCredentials);
-			var url = $"{_baseUrl}/{_restApiRoot}/fpe/key?{key}";
 
+			var key = "";
+			if (keyNumber == null)
+			{
+				key = UrlHelper.GenerateFpeUrlEncrypt(ffsName, _ubiqCredentials);
+			}
+			else
+			{
+				key = UrlHelper.GenerateFpeUrlDecrypt(ffsName, keyNumber, _ubiqCredentials);
+			}
+			var url = $"{_baseUrl}/{_restApiRoot}/fpe/key?{key}";
 			try
 			{
 				var jsonResponse = await BuildAndHttpSendAsync(url, null, HttpMethod.Get, HttpStatusCode.OK)
