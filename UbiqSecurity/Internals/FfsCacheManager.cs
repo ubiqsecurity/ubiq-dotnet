@@ -52,7 +52,7 @@ namespace UbiqSecurity.Internals
 			InitCache();
 		}
 
-		public async Task<FfsConfigurationResponse> GetAsync(CacheKey key)
+		public async Task<FfsConfigurationResponse> GetAsync(CacheKey key, bool encrypt)
 		{
 			var url = UrlHelper.GenerateFfsUrl(key.FfsName, _credentials);
 			if(!_cache.Contains(url))

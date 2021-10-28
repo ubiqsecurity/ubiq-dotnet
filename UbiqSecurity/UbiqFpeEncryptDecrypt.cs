@@ -147,7 +147,7 @@ namespace UbiqSecurity
 			await InitAsync(ffsName);
 			var result = await CipherAsync(ffsName, plainText, tweak, true);
 			var ffs = await GetFfsConfigurationAsync();
-			var fpe = await GetFpeEncryptionKeyAsync();
+			var fpe = await GetFpeEncryptionKeyAsync(true);
 
 			var firstNonPassthrough = FindFirstIndexExclusive(result, ffs.Passthrough);
 
@@ -174,7 +174,7 @@ namespace UbiqSecurity
 
 			var parsedInput = ParseInput(inputText, ffs, encrypt);
 
-			var encryptionKey = await GetFpeEncryptionKeyAsync();
+			var encryptionKey = await GetFpeEncryptionKeyAsync(encrypt);
 
 			// P20-1357 verify input length
 			if ((parsedInput.Trimmed.Length < ffs.MinInputLength) ||
@@ -314,12 +314,12 @@ namespace UbiqSecurity
 
 		private async Task<FfsConfigurationResponse> GetFfsConfigurationAsync()
 		{
-			return await _ffsCache.GetAsync(new CacheKey { FfsName = FfsName });
+			return await _ffsCache.GetAsync(new CacheKey { FfsName = FfsName }, false);
 		}
 
-		private async Task<FpeEncryptionKeyResponse> GetFpeEncryptionKeyAsync()
+		private async Task<FpeEncryptionKeyResponse> GetFpeEncryptionKeyAsync(bool encrypt)
 		{
-			return await _fpeCache.GetAsync(new CacheKey { FfsName = FfsName, KeyNumber = _keyNumber });
+			return await _fpeCache.GetAsync(new CacheKey { FfsName = FfsName, KeyNumber = _keyNumber }, encrypt);
 		}
 
 		private async Task InitAsync(string ffsName)

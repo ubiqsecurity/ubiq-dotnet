@@ -52,7 +52,7 @@ namespace UbiqSecurity.Internals
 			InitCache();
 		}
 
-		public async Task<FpeEncryptionKeyResponse> GetAsync(CacheKey key)
+		public async Task<FpeEncryptionKeyResponse> GetAsync(CacheKey key, bool encrypt)
 		{
 			var url = "";
 			if (key.KeyNumber == null)
@@ -67,8 +67,17 @@ namespace UbiqSecurity.Internals
 			{
 				var fpeKey = await LoadAsync(key.FfsName, key.KeyNumber);
 				_cache.Add(url, fpeKey, _defaultPolicy);
+				var keyUrl = "";
 
-				var keyUrl = UrlHelper.GenerateFpeUrlDecrypt(key.FfsName, fpeKey.KeyNumber, _credentials);
+				if (encrypt == true)
+				{
+					keyUrl = UrlHelper.GenerateFpeUrlEncrypt(key.FfsName, _credentials);
+				}
+				else
+				{
+					keyUrl = UrlHelper.GenerateFpeUrlDecrypt(key.FfsName, key.KeyNumber, _credentials);
+				}
+
 
 				if(url != keyUrl)
 				{

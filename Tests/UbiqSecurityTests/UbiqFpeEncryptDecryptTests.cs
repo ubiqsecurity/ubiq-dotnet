@@ -444,6 +444,23 @@ namespace UbiqSecurityTests
 		}
 
 
+		[TestMethod]
+		public async Task EncryptFPE_Error_handling_invalid_ffs()
+		{
+			var credentials = UbiqFactory.ReadCredentialsFromFile("..\\..\\credentials", "default");
+
+			byte[] tweakFF1 = new byte[0];
+
+			var ffsName = "ERROR_MSG";
+			var original = " 01121231231231231& 1 &2311200 ";
+			using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials))
+			{
+				var ex = await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await ubiqEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1));
+				Assert.IsTrue(ex.Message.Contains("Value cannot be null."));
+			}
+		}
+
+
 
 	}
 }

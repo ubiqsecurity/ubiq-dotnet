@@ -21,8 +21,14 @@ namespace UbiqSecurity.Internals
 
 		internal static string GenerateFpeUrlDecrypt(string ffsName, int? keyNumber, IUbiqCredentials credentials)
 		{
-			return $"papi={WebUtility.UrlEncode(credentials.AccessKeyId)}&ffs_name={WebUtility.UrlEncode(ffsName)}&key_number={(keyNumber.HasValue ? keyNumber.Value.ToString() : string.Empty)}";
+			if (keyNumber == null)
+			{
+				throw new System.InvalidOperationException("invalid or missing key");
+			}
+			else
+			{
+				return $"papi={WebUtility.UrlEncode(credentials.AccessKeyId)}&ffs_name={WebUtility.UrlEncode(ffsName)}&key_number={(keyNumber.HasValue ? keyNumber.Value.ToString() : string.Empty)}";
+			}
 		}
-
 	}
 }

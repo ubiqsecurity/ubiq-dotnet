@@ -8,6 +8,6 @@ namespace UbiqSecurity.Internals
 	{
 		void Clear();
 
-		Task<T> GetAsync(CacheKey key);
+		Task<T> GetAsync(CacheKey key, bool encrypt);
 	}
 }
