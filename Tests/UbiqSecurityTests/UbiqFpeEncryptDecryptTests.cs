@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UbiqSecurity;
+using Org.BouncyCastle.OpenSsl;
+using System.Text;
 
 namespace UbiqSecurityTests
 {
@@ -202,11 +204,263 @@ namespace UbiqSecurityTests
 			using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials))
 			{
 				var cipher = await ubiqEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1);
-				Debug.WriteLine($"encrypted: {cipher}");
+				//Debug.WriteLine($"encrypted: {cipher}");
 				var decrypted = await ubiqEncryptDecrypt.DecryptAsync(ffsName, cipher, tweakFF1);
-				Debug.WriteLine($"decrypted: {decrypted}");
+				//Debug.WriteLine($"decrypted: {decrypted}");
 				Assert.AreEqual(original, decrypted);
 			}
 		}
+
+
+		[TestMethod]
+		public async Task EncryptFPE_InvalidFFS()
+		{
+			var credentials = UbiqFactory.ReadCredentialsFromFile("..\\..\\credentials", "default");
+
+			byte[] tweakFF1 = new byte[0];
+
+			var ffsName = "ERROR FFS";
+			var original = "ABCDEFGHI";
+			using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials))
+			{
+				var ex = await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await ubiqEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1));
+				Assert.IsTrue(ex.Message.Contains("Value cannot be null."));
+			}
+		}
+
+
+		[TestMethod]
+		public async Task EncryptFPE_InvalidCredentials()
+		{
+			var credentials = UbiqFactory.CreateCredentials("a", "b", "c", "d");
+
+			byte[] tweakFF1 = new byte[0];
+
+			var ffsName = "ALPHANUM_SSN";
+			var original = "ABCDEFGHI";
+			using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials))
+			{
+				var ex = await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await ubiqEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1));
+				Assert.IsTrue(ex.Message.Contains("Value cannot be null."));
+			}
+		}
+
+
+		[TestMethod]
+		public async Task EncryptFPE_Invalid_PT_CT()
+		{
+			var credentials = UbiqFactory.ReadCredentialsFromFile("..\\..\\credentials", "default");
+
+			byte[] tweakFF1 = new byte[0];
+
+			var ffsName = "SSN";
+			var original = " 123456789$";
+			using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials))
+			{
+				var ex = await Assert.ThrowsExceptionAsync<ArgumentOutOfRangeException>(async () => await ubiqEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1));
+				Assert.IsTrue(ex.Message.Contains("Specified argument was out of the range of valid values."));
+			}
+		}
+
+
+		[TestMethod]
+		public async Task EncryptFPE_Invalid_LEN_1()
+		{
+			var credentials = UbiqFactory.ReadCredentialsFromFile("..\\..\\credentials", "default");
+
+			byte[] tweakFF1 = new byte[0];
+
+			var ffsName = "SSN";
+			var original = " 1234";
+			using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials))
+			{
+				var ex = await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await ubiqEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1));
+				//Console.WriteLine("ex.Message is {0}", ex.Message);
+				Assert.IsTrue(ex.Message.Contains("Input length does not match FFS parameters."));
+			}
+		}
+
+
+		[TestMethod]
+		public async Task EncryptFPE_Invalid_LEN_2()
+		{
+			var credentials = UbiqFactory.ReadCredentialsFromFile("..\\..\\credentials", "default");
+
+			byte[] tweakFF1 = new byte[0];
+
+			var ffsName = "SSN";
+			var original = " 12345678901234567890";
+			using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials))
+			{
+				var ex = await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await ubiqEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1));
+				Assert.IsTrue(ex.Message.Contains("Input length does not match FFS parameters."));
+			}
+		}
+
+		[TestMethod]
+		public async Task EncryptFPE_Invalid_specific_creds_1()
+		{
+			var credentials = UbiqFactory.ReadCredentialsFromFile("..\\..\\credentials", "default");
+			credentials = UbiqFactory.CreateCredentials(credentials.AccessKeyId.Substring(0, 1),
+															credentials.SecretSigningKey,
+															credentials.SecretCryptoAccessKey,
+															credentials.Host);
+
+			byte[] tweakFF1 = new byte[0];
+
+			var ffsName = "ALPHANUM_SSN";
+			var original = " 123456789";
+			using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials))
+			{
+				var ex = await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await ubiqEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1));
+				Assert.IsTrue(ex.Message.Contains("Value cannot be null."));
+			}
+		}
+
+		[TestMethod]
+		public async Task EncryptFPE_Invalid_specific_creds_2()
+		{
+			var credentials = UbiqFactory.ReadCredentialsFromFile("..\\..\\credentials", "default");
+			credentials = UbiqFactory.CreateCredentials(credentials.AccessKeyId,
+															credentials.SecretSigningKey.Substring(0, 1),
+															credentials.SecretCryptoAccessKey,
+															credentials.Host);
+
+			byte[] tweakFF1 = new byte[0];
+
+			var ffsName = "ALPHANUM_SSN";
+			var original = " 123456789";
+			using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials))
+			{
+				var ex = await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await ubiqEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1));
+				Assert.IsTrue(ex.Message.Contains("Value cannot be null."));
+			}
+		}
+
+
+		[TestMethod]
+		public async Task EncryptFPE_Invalid_specific_creds_3()
+		{
+			var credentials = UbiqFactory.ReadCredentialsFromFile("..\\..\\credentials", "default");
+			credentials = UbiqFactory.CreateCredentials(credentials.AccessKeyId,
+															credentials.SecretSigningKey,
+															credentials.SecretCryptoAccessKey.Substring(0, 1),
+															credentials.Host);
+
+			byte[] tweakFF1 = new byte[0];
+
+			var ffsName = "ALPHANUM_SSN";
+			var original = " 123456789";
+			using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials))
+			{
+				var ex = await Assert.ThrowsExceptionAsync<PemException>(async () => await ubiqEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1));
+				Assert.IsTrue(ex.Message.Contains("problem creating ENCRYPTED private key"));
+			}
+		}
+
+
+		[TestMethod]
+		public async Task EncryptFPE_Invalid_specific_creds_4()
+		{
+			var credentials = UbiqFactory.ReadCredentialsFromFile("..\\..\\credentials", "default");
+			credentials = UbiqFactory.CreateCredentials(credentials.AccessKeyId,
+															credentials.SecretSigningKey,
+															credentials.SecretCryptoAccessKey,
+															"pi.ubiqsecurity.com");
+
+			byte[] tweakFF1 = new byte[0];
+
+			var ffsName = "ALPHANUM_SSN";
+			var original = " 123456789";
+			using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials))
+			{
+				var ex = await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await ubiqEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1));
+				Assert.IsTrue(ex.Message.Contains("Value cannot be null."));
+			}
+		}
+
+
+		[TestMethod]
+		public async Task EncryptFPE_Invalid_specific_creds_5()
+		{
+			var credentials = UbiqFactory.ReadCredentialsFromFile("..\\..\\credentials", "default");
+			credentials = UbiqFactory.CreateCredentials(credentials.AccessKeyId,
+															credentials.SecretSigningKey,
+															credentials.SecretCryptoAccessKey,
+															"ps://api.ubiqsecurity.com");
+
+			byte[] tweakFF1 = new byte[0];
+
+			var ffsName = "ALPHANUM_SSN";
+			var original = " 123456789";
+			using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials))
+			{
+				var ex = await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await ubiqEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1));
+				Assert.IsTrue(ex.Message.Contains("Value cannot be null."));
+			}
+		}
+
+
+		[TestMethod]
+		public async Task EncryptFPE_Invalid_specific_creds_6()
+		{
+			var credentials = UbiqFactory.ReadCredentialsFromFile("..\\..\\credentials", "default");
+			credentials = UbiqFactory.CreateCredentials(credentials.AccessKeyId,
+															credentials.SecretSigningKey,
+															credentials.SecretCryptoAccessKey,
+															"https://google.com");
+
+			byte[] tweakFF1 = new byte[0];
+
+			var ffsName = "ALPHANUM_SSN";
+			var original = " 123456789";
+			using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials))
+			{
+				var ex = await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await ubiqEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1));
+				Assert.IsTrue(ex.Message.Contains("Value cannot be null."));
+			}
+		}
+
+
+
+		[TestMethod]
+		public async Task EncryptFPE_Invalid_keynum()
+		{
+			var credentials = UbiqFactory.ReadCredentialsFromFile("..\\..\\credentials", "default");
+
+			byte[] tweakFF1 = new byte[0];
+
+			var ffsName = "SO_ALPHANUM_PIN";
+			//var original = " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+			var original = " 0123";
+			using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials))
+			{
+				var cipher = await ubiqEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1);
+				StringBuilder newcipher = new StringBuilder(cipher);
+				newcipher[0] = '}';
+				var ex = await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await ubiqEncryptDecrypt.DecryptAsync(ffsName, newcipher.ToString(), tweakFF1));
+				Assert.IsTrue(ex.Message.Contains(" "));
+			}
+		}
+
+
+		[TestMethod]
+		public async Task EncryptFPE_Error_handling_invalid_ffs()
+		{
+			var credentials = UbiqFactory.ReadCredentialsFromFile("..\\..\\credentials", "default");
+
+			byte[] tweakFF1 = new byte[0];
+
+			var ffsName = "ERROR_MSG";
+			var original = " 01121231231231231& 1 &2311200 ";
+			using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials))
+			{
+				var ex = await Assert.ThrowsExceptionAsync<ArgumentNullException>(async () => await ubiqEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1));
+				Assert.IsTrue(ex.Message.Contains("Value cannot be null."));
+			}
+		}
+
+
+
 	}
 }
