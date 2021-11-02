@@ -350,6 +350,7 @@ namespace UbiqSecurity.Internals
 			}
 			catch (Exception e)
 			{
+				Console.WriteLine("Exception: {0}", e);
 #if DEBUG
 				Debug.WriteLine($"HttpSendAsync Exception : HTTP Request -> {httpRequestMessage.Method}: {httpRequestMessage.RequestUri}");
 				Debug.WriteLine($"HttpSendAsync Exception -> message: {e.Message}");
