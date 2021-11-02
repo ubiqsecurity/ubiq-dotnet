@@ -114,7 +114,6 @@ namespace UbiqConsole
 			catch(Exception e)
 			{
 				Console.WriteLine($"Exception: {e.Message}");
-				Console.WriteLine(e.StackTrace);
 				Environment.Exit(1);
 			}
 		}
