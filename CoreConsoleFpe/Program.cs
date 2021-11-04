@@ -20,7 +20,6 @@ namespace UbiqConsole
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"{nameof(UbiqConsole)} exception: {ex}");
 				return 1;       // non-zero means failure
 			}
 			finally
@@ -114,7 +113,6 @@ namespace UbiqConsole
 			catch(Exception e)
 			{
 				Console.WriteLine($"Exception: {e.Message}");
-				Console.WriteLine(e.StackTrace);
 				Environment.Exit(1);
 			}
 		}
