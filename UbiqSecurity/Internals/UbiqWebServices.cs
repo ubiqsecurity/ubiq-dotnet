@@ -1,4 +1,4 @@
-﻿using UbiqSecurity.Model;
+using UbiqSecurity.Model;
 using Newtonsoft.Json;
 using System;
 #if DEBUG
@@ -348,6 +348,12 @@ namespace UbiqSecurity.Internals
 					return responseString;
 				}
 			}
+
+			catch (InvalidOperationException ioe)
+			{
+				throw ioe;
+			}
+
 			catch (Exception e)
 			{
 				Console.WriteLine("Exception: {0}", e);
