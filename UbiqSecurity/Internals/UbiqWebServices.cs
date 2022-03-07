@@ -342,7 +342,15 @@ namespace UbiqSecurity.Internals
 					var responseString = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 					if (httpResponse.StatusCode != successCode)
 					{
-						throw new InvalidOperationException(responseString);
+						var errorMessage = JsonConvert.SerializeObject(
+						  new
+						  {
+							  status = httpResponse.StatusCode,
+							  message = responseString ?? ""
+						  }
+						);
+
+						throw new InvalidOperationException(errorMessage);
 					}
 
 					return responseString;
