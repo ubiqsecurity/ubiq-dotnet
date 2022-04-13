@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.7 - 2022-04-13
+* Fixed some data parsing logic
+
 ## 0.1.6 - 2021-09-29
 * Added FPE/eFPE capability
 
