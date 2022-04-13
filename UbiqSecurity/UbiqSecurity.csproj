@@ -26,4 +26,8 @@
     <PackageReference Include="Ubiq-Security-Fpe" Version="0.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
 </Project>

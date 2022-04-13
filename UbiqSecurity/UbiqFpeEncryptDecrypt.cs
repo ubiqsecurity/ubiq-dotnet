@@ -114,7 +114,8 @@ namespace UbiqSecurity
 			await InitAsync(ffsName);
 			var ffs = await GetFfsConfigurationAsync();
 			var firstNonPassthrough = FindFirstIndexExclusive(plainText, ffs.Passthrough);
-			if(firstNonPassthrough < 0)
+
+			if (firstNonPassthrough < 0)
 			{
 				firstNonPassthrough = 0;
 			}
@@ -130,8 +131,10 @@ namespace UbiqSecurity
 
 			plainText = new string(strChars);
 			_keyNumber = keyNum;
+			
+			var fpe = await GetFpeEncryptionKeyAsync(false);
 
-			return await CipherAsync(ffsName, plainText, tweak, false);
+			return await CipherAsync(ffsName, plainText, tweak, false, ffs, fpe);
 		}
 
 		public async Task<byte[]> EncryptAsync(string ffsName, byte[] plainBytes, byte[] tweak)
@@ -145,12 +148,12 @@ namespace UbiqSecurity
 		public async Task<string> EncryptAsync(string ffsName, string plainText, byte[] tweak)
 		{
 			await InitAsync(ffsName);
-			var result = await CipherAsync(ffsName, plainText, tweak, true);
 			var ffs = await GetFfsConfigurationAsync();
 			var fpe = await GetFpeEncryptionKeyAsync(true);
 
-			var firstNonPassthrough = FindFirstIndexExclusive(result, ffs.Passthrough);
+			var result = await CipherAsync(ffsName, plainText, tweak, true, ffs, fpe);
 
+			var firstNonPassthrough = FindFirstIndexExclusive(result, ffs.Passthrough);
 			result = EncodeKeyNum(ffs, fpe.KeyNumber, result, firstNonPassthrough);
 
 			return result;
@@ -161,20 +164,17 @@ namespace UbiqSecurity
 		#region Private Methods
 
 		// convert to output radix
-		private async Task<string> CipherAsync(string ffsName, string inputText, byte[] tweak, bool encrypt)
+		private async Task<string> CipherAsync(string ffsName, string inputText, byte[] tweak, bool encrypt, FfsConfigurationResponse ffs, FpeEncryptionKeyResponse encryptionKey)
 		{
 			if (!_isInited)
 			{
 				throw new InvalidOperationException("object closed");
 			}
 
-			var ffs = await GetFfsConfigurationAsync();
 			var inputCharacterSet = encrypt ? ffs.InputCharacters : ffs.OutputCharacters;
 			var outputCharacterSet = encrypt ? ffs.OutputCharacters : ffs.InputCharacters;
 
 			var parsedInput = ParseInput(inputText, ffs, encrypt);
-
-			var encryptionKey = await GetFpeEncryptionKeyAsync(encrypt);
 
 			// P20-1357 verify input length
 			if ((parsedInput.Trimmed.Length < ffs.MinInputLength) ||
@@ -214,12 +214,12 @@ namespace UbiqSecurity
 			rt = ConvertToOutputRadix(_base2Characters, outputCharacterSet, outputData);
 			var result = MergeToFormattedOutput(rt, parsedInput, outputCharacterSet.Substring(0, 1));
 
-			// create the billing record
-			var uuid = Guid.NewGuid().ToString();
-			var timestamp = DateTime.UtcNow;
-			_fpeTransactions.CreateBillableItem(uuid, encrypt ? ActionConstants.Encrypt : ActionConstants.Decrypt, ffs.Name, timestamp, 1);
+            // create the billing record
+            var uuid = Guid.NewGuid().ToString();
+            var timestamp = DateTime.UtcNow;
+            _fpeTransactions.CreateBillableItem(uuid, encrypt ? ActionConstants.Encrypt : ActionConstants.Decrypt, ffs.Name, timestamp, 1);
 
-			return result;
+            return result;
 		}
 
 		private string ConvertToOutputRadix(string inputCharacterSet, string outputCharacterSet, string rawtext)
@@ -386,18 +386,6 @@ namespace UbiqSecurity
 			return (double)(Math.Log(x) / Math.Log(2));
 		}
 
-		private string RegexEscape(string patternCharacters)
-		{
-			var returnSet = patternCharacters;
-			var bracketIndex = returnSet.IndexOf("]");
-			if (bracketIndex > -1)
-			{
-				returnSet = $"{returnSet.Substring(bracketIndex, 1)}{returnSet.Remove(bracketIndex, 1)}";
-			}
-
-			return Regex.Escape(returnSet).Replace("-", "\\-");
-		}
-
 		/// <summary>
 		/// Pads a given string with 0 characters at least as long as specified length
 		/// </summary>
@@ -423,41 +411,45 @@ namespace UbiqSecurity
 
 		private FpeParseModel ParseInput(string input, FfsConfigurationResponse ffs, bool encrypt)
 		{
-			var inputRgxPattern = $"[{RegexEscape(ffs.InputCharacters)}]";
-			var firstCharacter = ffs.OutputCharacters.Substring(0, 1);
-			var invalidRgxPattern = $"[{RegexEscape(ffs.InputCharacters)}{RegexEscape(ffs.Passthrough)}]";
-			if (!encrypt)
-			{
-				inputRgxPattern = $"[{RegexEscape(ffs.OutputCharacters)}]";
-				firstCharacter = ffs.InputCharacters.Substring(0, 1);
-				invalidRgxPattern = $"[{RegexEscape(ffs.OutputCharacters)}{RegexEscape(ffs.Passthrough)}]";
-			}
-
-			var inputRgx = new Regex(inputRgxPattern);
-			var inputMatches = inputRgx.Matches(input);
-
-			var formattedPassthroughCharacters = Regex.Replace(input, inputRgxPattern, firstCharacter);
+            string firstCharacter;
+			string validChars;
 
 			if (encrypt)
 			{
-				var invalidRgx = new Regex(invalidRgxPattern);
-				MatchCollection invalidMatch = invalidRgx.Matches(input);
-				if (invalidMatch.Count != input.Length)
+				validChars = ffs.InputCharacters;
+				firstCharacter = ffs.OutputCharacters.Substring(0, 1);
+			}
+			else
+            {
+				validChars = ffs.OutputCharacters;
+				firstCharacter = ffs.InputCharacters.Substring(0, 1);
+			}
+
+
+			var trimmedSb = new StringBuilder();
+			var templateSb = new StringBuilder();
+			
+			foreach (var c in input.ToCharArray())
+			{
+				if (validChars.Contains(c.ToString()))
+				{
+					templateSb.Append(firstCharacter);
+					trimmedSb.Append(c);
+				}
+				else if (ffs.Passthrough.Contains(c.ToString()))
+				{
+					templateSb.Append(c);
+				}
+				else
 				{
 					throw new ArgumentOutOfRangeException("invalid character found in the input");
 				}
 			}
 
-			var inputSb = new StringBuilder();
-			foreach (Match group in inputMatches)
-			{
-				inputSb.Append(group.Value);
-			}
-
 			var result = new FpeParseModel
 			{
-				StringTemplate = formattedPassthroughCharacters,
-				Trimmed = inputSb.ToString(),
+				StringTemplate = templateSb.ToString(),
+				Trimmed = trimmedSb.ToString(),
 			};
 
 			return result;

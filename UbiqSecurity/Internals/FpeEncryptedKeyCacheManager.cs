@@ -17,8 +17,8 @@ namespace UbiqSecurity.Internals
 
 		private CacheItemPolicy _defaultPolicy = new CacheItemPolicy
 		{
-			AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(30)
-		};
+            AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(30)
+        };
 
 		#endregion
 
@@ -66,6 +66,7 @@ namespace UbiqSecurity.Internals
 			if (!_cache.Contains(url))
 			{
 				var fpeKey = await LoadAsync(key.FfsName, key.KeyNumber);
+
 				_cache.Add(url, fpeKey, _defaultPolicy);
 				var keyUrl = "";
 
@@ -86,10 +87,10 @@ namespace UbiqSecurity.Internals
 			}
 
 			var fpe = (FpeEncryptionKeyResponse)_cache.Get(url);
-			// decrypt the server-provided encryption key
-			fpe.PostProcess(_credentials.SecretCryptoAccessKey);
+            // decrypt the server-provided encryption key
+            fpe.PostProcess(_credentials.SecretCryptoAccessKey);
 
-			return fpe;
+            return fpe;
 		}
 
 		#endregion
@@ -105,8 +106,8 @@ namespace UbiqSecurity.Internals
 				{
 					var cacheSettings = new NameValueCollection(3);
 					cacheSettings.Add("CacheMemoryLimitMegabytes", Convert.ToString(1024));
-					cacheSettings.Add("PhysicalMemoryLimit", Convert.ToString(5));  //set % here
-					cacheSettings.Add("pollingInterval", Convert.ToString("00:00:10"));
+                    cacheSettings.Add("PhysicalMemoryLimit", Convert.ToString(5));  //set % here
+                    cacheSettings.Add("pollingInterval", Convert.ToString("00:00:10"));
 					_cache = new MemoryCache($"FPE:{Guid.NewGuid()}", cacheSettings);
 					_cacheLock = false;
 				}

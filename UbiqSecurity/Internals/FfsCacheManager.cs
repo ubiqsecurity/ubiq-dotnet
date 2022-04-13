@@ -17,8 +17,8 @@ namespace UbiqSecurity.Internals
 
 		private CacheItemPolicy _defaultPolicy = new CacheItemPolicy
 		{
-			AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(30)
-		};
+            AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(30)
+        };
 
 		#endregion
 
@@ -77,8 +77,8 @@ namespace UbiqSecurity.Internals
 				{
 					var cacheSettings = new NameValueCollection(3);
 					cacheSettings.Add("CacheMemoryLimitMegabytes", Convert.ToString(1024));
-					cacheSettings.Add("PhysicalMemoryLimit", Convert.ToString(5));  //set % here
-					cacheSettings.Add("pollingInterval", Convert.ToString("00:00:10"));
+                    cacheSettings.Add("PhysicalMemoryLimit", Convert.ToString(5));  //set % here
+                    cacheSettings.Add("pollingInterval", Convert.ToString("00:00:10"));
 					_cache = new MemoryCache($"FFS:{Guid.NewGuid()}", cacheSettings);
 					_cacheLock = false;
 				}
