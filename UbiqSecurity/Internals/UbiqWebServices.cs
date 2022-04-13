@@ -1,4 +1,4 @@
-﻿using UbiqSecurity.Model;
+using UbiqSecurity.Model;
 using Newtonsoft.Json;
 using System;
 #if DEBUG
@@ -342,12 +342,26 @@ namespace UbiqSecurity.Internals
 					var responseString = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
 					if (httpResponse.StatusCode != successCode)
 					{
-						throw new InvalidOperationException(responseString);
+						var errorMessage = JsonConvert.SerializeObject(
+						  new
+						  {
+							  status = httpResponse.StatusCode,
+							  message = responseString ?? ""
+						  }
+						);
+
+						throw new InvalidOperationException(errorMessage);
 					}
 
 					return responseString;
 				}
 			}
+
+			catch (InvalidOperationException ioe)
+			{
+				throw ioe;
+			}
+
 			catch (Exception e)
 			{
 				Console.WriteLine("Exception: {0}", e);

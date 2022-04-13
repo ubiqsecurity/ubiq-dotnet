@@ -120,6 +120,13 @@ namespace UbiqSecurity.Internals
 										_bills.Add(badItem);
 									}
 									break;
+								case 504:
+									_processingQueue.Clear();
+									break;
+								default:
+									// Go ahead and ignore messages if we get another error.  V3 will handle differently
+									_processingQueue.Clear();
+									break;
 							}
 						}
 					}
