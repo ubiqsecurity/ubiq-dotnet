@@ -46,7 +46,31 @@ namespace UbiqSecurityTests
 			}
 		}
 
-		[TestMethod]
+        [TestMethod]
+        public async Task EncryptFPE_SIMPLE_FFS_ALPHANUM_SSN_Success()
+        {
+            var credentials = UbiqFactory.ReadCredentialsFromFile("..\\..\\credentials", "default");
+
+            byte[] tweakFF1 = new byte[0];
+
+            var ffsName = "ALPHANUM_SSN";
+            var original = "123-45-6789";
+            string cipher = "";
+            string cipher_2 = "";
+            string pt_2 = "";
+            using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials))
+            {
+                cipher = await ubiqEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1);
+            }
+
+            cipher_2 = await UbiqFPEEncryptDecrypt.EncryptAsync(credentials, original, ffsName, tweakFF1);
+            pt_2 = await UbiqFPEEncryptDecrypt.DecryptAsync(credentials, cipher, ffsName, tweakFF1);
+
+            Assert.AreEqual(original, pt_2);
+            Assert.AreEqual(cipher, cipher_2);
+        }
+
+        [TestMethod]
 		public async Task EncryptFPE_FFS_ALPHANUM_SSN_InValidPassthroughCharacters_Fail()
 		{
 			var credentials = UbiqFactory.ReadCredentialsFromFile("..\\..\\credentials", "default");

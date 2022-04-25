@@ -5,6 +5,8 @@ Ubiq Security Platform API from applications written in the C# language for .NET
 It includes a pre-defined set of classes that will provide simple interfaces
 to encrypt and decrypt data.
 
+This library also incorporates Ubiq Format Preserving Encryption (eFPE).  eFPE allows encrypting so that the output cipher text is in the same format as the original plaintext. This includes preserving special characters and control over what characters are permitted in the cipher text. For example, consider encrypting a social security number '123-45-6789'. The cipher text will maintain the dashes and look something like: 'W$+-qF-oMMV'.
+
 ## Documentation
 
 See the [.NET API docs](https://dev.ubiqsecurity.com/docs/api).
@@ -68,7 +70,7 @@ See the reference source and Readme in *WinConsole* and *CoreConsole*  in the ``
     - [README.md][WinConsoleReadme]
 -   *CoreConsole* - for portable .NET Core runtime.
     - [README.md][CoreConsoleReadme]
--   *CoreConsoleFpe* - for portable .NET Core runtime using FPE.
+-   *CoreConsoleFpe* - for portable .NET Core runtime using eFPE.
     - [README.md][CoreConsoleFpeReadme]
 
 Both test apps reference the *same* portable UbiqSecurity DLL library, build against .NET Standard 2.0.
@@ -232,18 +234,23 @@ async Task PiecewiseDecryptionAsync(string inFile, string outFile, IUbiqCredenti
 }
 ```
 
-## FPE/eFPE (Optionally Available Feature)
 
-This library incorporates format preserving encryption (FPE) and embedded format preserving encryption (eFPE). Please contact support@ubiqsecurity.com to add this capability to your account.
+## Ubiq Format Preserving Encryption
+
+This library incorporates Ubiq Format Preserving Encryption (eFPE).
+
+## Requirements
+
+-   Please follow the same requirements as described above for the non-eFPE functionality.
+-   eFPE requires an additional library called [ubiq-fpe-dotnet] available for download in the Ubiq GitHub/GitLab repository.
+
 
 ## Usage
-FPE is an optional capability and may require an upgrade to your plan.  If you do not see the FPE option when [registering an application][register-app], contact support@ubiqsecurity.com to find out about adding FPE to your plan.  
 
-The library needs to be configured with your [account credentials][manage-keys] which is
-available in your [Ubiq Dashboard][dashboard].
-The [credentials][use-credentials] can be set using environment variables, loaded from an explicitly
-specified file, or loaded from a file in your Windows
-user account directory [c:/users/_yourlogin_/.ubiq/credentials].
+You will need to obtain account credentials in the same way as described above for conventional encryption/decryption. When
+you do this in your [Ubiq Dashboard][dashboard] [credentials][credentials], you'll need to enable the eFPE option.
+The credentials can be set using environment variables, loaded from an explicitly
+specified file, or read from the default location (c:/users/_yourlogin_/.ubiq/credentials).
 
 ### Referencing the Ubiq Security library
 Make sure your project has a reference to the UbiqSecurity DLL library, either by adding the NuGet package
@@ -256,13 +263,53 @@ using UbiqSecurity;
 
 ### Reading and setting credentials
 
-The FPE/eFPE functions work with the credentials file and/or environmental variables in the same way as described
+The eFPE functions work with the credentials file and/or environmental variables in the same way as described
 earlier in this document. You'll only need to make sure that the API keys you pull from the Ubiq dashboard are enabled for
-FPE/eFPE capability.
+eFPE capability.
 
-### Encrypt a social security text field
+### Encrypt a social security text field - simple interface
+Pass credentials, the name of a Field Format Specification, FFS, and data into the encryption function.
+The encrypted data will be returned.
 
-Lets assume you have a field containing a social security number "123-45-6789". You are able to encrypt the contents of that field by adding these lines to your program and calling the function with the appropriate values.
+
+```cs
+{
+  byte[] tweakFF1 = {};
+  var ffsName = "SSN";
+  var plainText = "123-45-6789";
+
+  var ubiqCredentials = UbiqFactory.ReadCredentialsFromFile("path/to/credentials/file", "default");
+
+  var cipherText = await UbiqFPEEncryptDecrypt.EncryptAsync(ubiqCredentials, plainText, ffsName, tweakFF1);
+}
+```
+
+### Decrypt a social security text field - simple interface
+
+Pass credentials, the name of a Field Format Specification, FFS, and data into the decryption function.
+The plain text data will be returned.
+
+```cs
+{
+  byte[] tweakFF1 = {};
+  var ffsName = "SSN";
+  var cipherText = "7\"c-`P-fGj?";
+
+  var ubiqCredentials = UbiqFactory.ReadCredentialsFromFile("path/to/credentials/file", "default");
+
+  var plainText = await UbiqFPEEncryptDecrypt.DecryptAsync(ubiqCredentials, cipherText, ffsName, tweakFF1);
+}
+```
+
+### Encrypt a social security text field - bulk interface
+
+Create an Encryption / Decryption object with the credentials and then allow repeatedly call encrypt
+data using a Field Format Specification, FFS, and the data.  The encrypted data will be returned after each call
+
+Note that you would only need to create the "ubiqEncryptDecrypt" object once for any number of
+EncryptAsync and DecryptAsync calls, for example when you are bulk processing many such
+encrypt / decrypt operations in a session.
+
 ```cs
 async Task EncryptionAsync(String FfsName, String plainText, IUbiqCredentials ubiqCredentials)
 {
@@ -279,9 +326,14 @@ async Task EncryptionAsync(String FfsName, String plainText, IUbiqCredentials ub
 }
 ```
 
-### Decrypt the encrypted social security cipher text
+### Decrypt a social security text field - bulk interface
 
-To decrypt the cipher text (e.g. "W$+-qF-oMMV") of a social security number, your function could look like the following and called with the appropriate values.
+Create an Encryption / Decryption object with the credentials and then repeatedly decrypt
+data using a Field Format Specification, FFS, and the data.  The decrypted data will be returned after each call.
+
+Note that you would only need to create the "ubiqEncryptDecrypt" object once for any number of
+EncryptAsync and DecryptAsync calls, for example when you are bulk processing many such
+encrypt / decrypt operations in a session.
 
 ```cs
 async Task DecryptionAsync(String FfsName, String cipherText, IUbiqCredentials ubiqCredentials)
@@ -299,10 +351,10 @@ async Task DecryptionAsync(String FfsName, String cipherText, IUbiqCredentials u
 }
 ```
 
-### Other FFS models to explore
 
 Additional information on how to use these FFS models in your own applications is available by contacting
-Ubiq. You may also view the sample application [CoreConsoleFpe/Program.cs][fpesample] source code.
+Ubiq. You may also view some use-cases implemented in the unit test [UbiqFpeEncryptDecryptTests.cs]
+and the sample application [CoreConsoleFpe/Program.cs][efpesample] source code.
 
 
 [dashboard]:https://dashboard.ubiqsecurity.com/
@@ -314,7 +366,10 @@ Ubiq. You may also view the sample application [CoreConsoleFpe/Program.cs][fpesa
 [CoreConsoleFpeReadme]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/CoreConsoleFpe/README.md
 [dotnet-async]:https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/
 [sync-context-info]:https://docs.microsoft.com/en-us/archive/msdn-magazine/2011/february/msdn-magazine-parallel-computing-it-s-all-about-the-synchronizationcontext
-[fpesample]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/CoreConsoleFpe/Program.cs
+[efpesample]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/CoreConsoleFpe/Program.cs
 [manage-keys]:https://dev.ubiqsecurity.com/docs/how-to-manage-api-keys
 [use-credentials]:https://dev.ubiqsecurity.com/docs/using-api-key-credentials
 [register-app]:https://dev.ubiqsecurity.com/docs/how-to-register-applications
+[ubiq-fpe-dotnet]:https://gitlab.com/ubiqsecurity/ubiq-fpe-dotnet
+[credentials]:https://dev.ubiqsecurity.com/docs/how-to-create-api-keys
+[UbiqFpeEncryptDecryptTests.cs]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/Tests/UbiqSecurityTests/UbiqFpeEncryptDecryptTests.cs
