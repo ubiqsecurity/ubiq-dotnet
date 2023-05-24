@@ -1,19 +1,31 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30413.136
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UbiqSecurity", "UbiqSecurity\UbiqSecurity.csproj", "{2CD0CCDE-A0F9-424F-AD37-97AE87B724F0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinConsole", "examples\WinConsole\WinConsole.csproj", "{B01EE41B-7598-43D5-A6A2-257DEC2E47F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinConsole", "WinConsole\WinConsole.csproj", "{B01EE41B-7598-43D5-A6A2-257DEC2E47F9}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreConsole", "CoreConsole\CoreConsole.csproj", "{A2032A91-6023-4B67-AA15-D3E943BA5201}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreConsole", "examples\CoreConsole\CoreConsole.csproj", "{A2032A91-6023-4B67-AA15-D3E943BA5201}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{AC541295-C72B-403A-B30D-26547ED52593}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UbiqSecurityTests", "Tests\UbiqSecurityTests\UbiqSecurityTests.csproj", "{9D53C652-DF84-40C8-ADC7-B0D3B07BD7D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreConsoleFpe", "examples\CoreConsoleFpe\CoreConsoleFpe.csproj", "{B18F0FD1-5179-424F-89CF-10AF66D8D5EF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreConsoleFpe", "CoreConsoleFpe\CoreConsoleFpe.csproj", "{B18F0FD1-5179-424F-89CF-10AF66D8D5EF}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DE99D4B8-E5BD-444E-BBE1-7A12F7A2B648}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		.gitlab-ci.yml = .gitlab-ci.yml
+		CHANGELOG.md = CHANGELOG.md
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{271C9984-4A57-4E68-AC6A-B4814BB26BA3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UbiqSecurity.Tests", "tests\UbiqSecurity.Tests\UbiqSecurity.Tests.csproj", "{0D007AEA-9A44-4F86-9AF8-1CCD9F660541}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UbiqSecurity", "src\UbiqSecurity\UbiqSecurity.csproj", "{1CAAEEBB-9BB4-4549-B05B-83E0D0F7E9FD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +33,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2CD0CCDE-A0F9-424F-AD37-97AE87B724F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2CD0CCDE-A0F9-424F-AD37-97AE87B724F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2CD0CCDE-A0F9-424F-AD37-97AE87B724F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2CD0CCDE-A0F9-424F-AD37-97AE87B724F0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B01EE41B-7598-43D5-A6A2-257DEC2E47F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B01EE41B-7598-43D5-A6A2-257DEC2E47F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B01EE41B-7598-43D5-A6A2-257DEC2E47F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -33,20 +41,27 @@ Global
 		{A2032A91-6023-4B67-AA15-D3E943BA5201}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2032A91-6023-4B67-AA15-D3E943BA5201}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2032A91-6023-4B67-AA15-D3E943BA5201}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9D53C652-DF84-40C8-ADC7-B0D3B07BD7D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9D53C652-DF84-40C8-ADC7-B0D3B07BD7D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9D53C652-DF84-40C8-ADC7-B0D3B07BD7D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9D53C652-DF84-40C8-ADC7-B0D3B07BD7D7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B18F0FD1-5179-424F-89CF-10AF66D8D5EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B18F0FD1-5179-424F-89CF-10AF66D8D5EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B18F0FD1-5179-424F-89CF-10AF66D8D5EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B18F0FD1-5179-424F-89CF-10AF66D8D5EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D007AEA-9A44-4F86-9AF8-1CCD9F660541}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D007AEA-9A44-4F86-9AF8-1CCD9F660541}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D007AEA-9A44-4F86-9AF8-1CCD9F660541}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D007AEA-9A44-4F86-9AF8-1CCD9F660541}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CAAEEBB-9BB4-4549-B05B-83E0D0F7E9FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CAAEEBB-9BB4-4549-B05B-83E0D0F7E9FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CAAEEBB-9BB4-4549-B05B-83E0D0F7E9FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CAAEEBB-9BB4-4549-B05B-83E0D0F7E9FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{9D53C652-DF84-40C8-ADC7-B0D3B07BD7D7} = {AC541295-C72B-403A-B30D-26547ED52593}
+		{B01EE41B-7598-43D5-A6A2-257DEC2E47F9} = {271C9984-4A57-4E68-AC6A-B4814BB26BA3}
+		{A2032A91-6023-4B67-AA15-D3E943BA5201} = {271C9984-4A57-4E68-AC6A-B4814BB26BA3}
+		{B18F0FD1-5179-424F-89CF-10AF66D8D5EF} = {271C9984-4A57-4E68-AC6A-B4814BB26BA3}
+		{0D007AEA-9A44-4F86-9AF8-1CCD9F660541} = {AC541295-C72B-403A-B30D-26547ED52593}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3717A7F-7186-4086-9780-9F719FC40D86}

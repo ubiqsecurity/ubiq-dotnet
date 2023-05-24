@@ -1,0 +1,39 @@
+variables:
+    SECRET_CRYPTO_ACCESS_KEY: ${SECRET_CRYPTO_ACCESS_KEY}
+    SECRET_SIGNING_KEY: ${SECRET_SIGNING_KEY}
+    UBIQ_ACCESS_KEY_ID: ${UBIQ_ACCESS_KEY_ID}
+
+stages:
+  - test
+
+tests:
+    image: mcr.microsoft.com/dotnet/sdk:6.0
+    stage: test
+    resource_group: build-single
+    script:
+        - 'mkdir -p $HOME/.ubiq && echo "[default]" > $HOME/.ubiq/credentials'
+        - 'echo -e "ACCESS_KEY_ID=$UBIQ_ACCESS_KEY_ID" >> $HOME/.ubiq/credentials'
+        - 'echo -e "SECRET_SIGNING_KEY=$SECRET_SIGNING_KEY" >> $HOME/.ubiq/credentials'
+        - 'echo -e "SECRET_CRYPTO_ACCESS_KEY=$SECRET_CRYPTO_ACCESS_KEY" >> $HOME/.ubiq/credentials'
+        - 'dotnet test ubiq-dotnet.sln --collect="XPlat Code Coverage" --logger:"junit;LogFilePath=testresult.xml"'
+    after_script:
+        -  'rm $HOME/.ubiq/credentials'
+    artifacts:
+        reports:
+            junit:
+                - "**/testresult.xml" 
+            coverage_report:
+                coverage_format: cobertura
+                path: "**/coverage.cobertura.xml"
+    rules:
+        - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+        - if: $CI_COMMIT_REF_NAME == "main"
+        - if: $CI_COMMIT_REF_NAME == "develop"
+    when:
+        always
+    allow_failure: false
+
+sast:
+    stage: test
+include:
+    - template: Jobs/SAST.latest.gitlab-ci.yml
