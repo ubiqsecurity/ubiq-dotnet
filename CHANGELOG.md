@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.0 - 2023-05-23
+* Add custom radix and alphabet support to FPE API
+* Improved caching strategy
+
 ## 0.1.7 - 2022-04-13
 * Fixed some data parsing logic
 
