@@ -76,9 +76,13 @@ namespace UbiqSecurity.Internals
 
 				return decryptionKeyResponse;
 			}
+#if !DEBUG
 #pragma warning disable CS0168 // Variable is declared but never used
+#endif
 			catch (Exception ex)
+#if !DEBUG
 #pragma warning restore CS0168 // Variable is declared but never used
+#endif
 			{
 #if DEBUG
 				Debug.WriteLine($"Trapped exception: {ex.Message}");
@@ -107,9 +111,13 @@ namespace UbiqSecurity.Internals
 
 				return encryptionKeyResponse;
 			}
+#if !DEBUG
 #pragma warning disable CS0168 // Variable is declared but never used
+#endif
 			catch (Exception ex)
+#if !DEBUG
 #pragma warning restore CS0168 // Variable is declared but never used
+#endif
 			{
 #if DEBUG
 				Debug.WriteLine($"Trapped exception: {ex.Message}");
@@ -133,9 +141,13 @@ namespace UbiqSecurity.Internals
 				var ffsRecord = JsonConvert.DeserializeObject<FfsRecord>(jsonResponse);
 				return ffsRecord;
 			}
+#if !DEBUG
 #pragma warning disable CS0168 // Variable is declared but never used
+#endif
 			catch (Exception ex)
+#if !DEBUG
 #pragma warning restore CS0168 // Variable is declared but never used
+#endif
 			{
 #if DEBUG
 				Debug.WriteLine($"Trapped exception: {ex.Message}");
@@ -160,9 +172,44 @@ namespace UbiqSecurity.Internals
 
 				return encryptionKeyResponse;
 			}
+#if !DEBUG
 #pragma warning disable CS0168 // Variable is declared but never used
+#endif
 			catch (Exception ex)
+#if !DEBUG
 #pragma warning restore CS0168 // Variable is declared but never used
+#endif
+			{
+#if DEBUG
+				Debug.WriteLine($"Trapped exception: {ex.Message}");
+#endif
+
+				return null;
+			}
+		}
+
+		public async Task<DatasetAndKeysResponse> GetDatasetAndKeysAsync(string datasetName)
+		{
+			var key = UrlHelper.GenerateFpeUrlEncrypt(datasetName, _ubiqCredentials);
+			var url = $"{_baseUrl}/{_restApiRoot}/fpe/def_keys?{key}";
+
+			try
+			{
+				var jsonResponse = await BuildAndHttpSendAsync(url, null, HttpMethod.Get, HttpStatusCode.OK)
+									.ConfigureAwait(false);
+
+				// deserialize JSON response to POCO
+				var encryptionKeyResponse = JsonConvert.DeserializeObject<DatasetAndKeysResponse>(jsonResponse);
+
+				return encryptionKeyResponse;
+			}
+#if !DEBUG
+#pragma warning disable CS0168 // Variable is declared but never used
+#endif
+			catch (Exception ex)
+#if !DEBUG
+#pragma warning restore CS0168 // Variable is declared but never used
+#endif
 			{
 #if DEBUG
 				Debug.WriteLine($"Trapped exception: {ex.Message}");
@@ -187,9 +234,13 @@ namespace UbiqSecurity.Internals
 
 				return encryptionKeyResponse;
 			}
+#if !DEBUG
 #pragma warning disable CS0168 // Variable is declared but never used
+#endif
 			catch (Exception ex)
+#if !DEBUG
 #pragma warning restore CS0168 // Variable is declared but never used
+#endif
 			{
 #if DEBUG
 				Debug.WriteLine($"Trapped exception: {ex.Message}");
@@ -331,9 +382,13 @@ namespace UbiqSecurity.Internals
 					return responseString;
 				}
 			}
+#if !DEBUG
 #pragma warning disable CS0168 // Variable is declared but never used
+#endif
 			catch (Exception ex)
+#if !DEBUG
 #pragma warning restore CS0168 // Variable is declared but never used
+#endif
 			{
 #if DEBUG
 				Debug.WriteLine($"HttpSendAsync trapped exception: {ex.Message}");

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "UbiqSecurity.LoadTests": {
+      "commandName": "Project",
+      "commandLineArgs": "-i c:\\webdev\\ubiq\\somefile-100.json -c C:\\Users\\Danny\\.ubiq\\credentials -P ubiq-dotnet"
+    }
+  }
+}

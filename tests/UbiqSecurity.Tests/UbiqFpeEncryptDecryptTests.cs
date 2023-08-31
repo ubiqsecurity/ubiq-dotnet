@@ -103,5 +103,32 @@
 			var ex = await Assert.ThrowsAsync<ArgumentException>(async () => await ubiqEncryptDecrypt.EncryptAsync(ffsName, original));
 			Assert.Contains("does not exist", ex.Message);
 		}
+
+		[Theory]
+		[InlineData("ALPHANUM_SSN", ";0123456-789ABCDEF|", ";!!!E7`+-ai1ykOp8r|")]
+		[InlineData("BIRTH_DATE", ";01\\02-1960|", ";!!\\!!-oKzi|")]
+		[InlineData("SSN", "-0-1-2-3-4-5-6-7-8-9-", "-0-0-0-0-1-I-L-8-j-D-")]
+		[InlineData("UTF8_STRING_COMPLEX", "ÑÒÓķĸĹϺϻϼϽϾÔÕϿは世界abcdefghijklmnopqrstuvwxyzこんにちÊʑʒʓËÌÍÎÏðñòóôĵĶʔʕ", "ÑÒÓにΪΪΪΪΪΪ3ÔÕoeϽΫAÛMĸOZphßÚdyÌô0ÝϼPtĸTtSKにVÊϾέÛはʑʒʓÏRϼĶufÝK3MXaʔʕ")]
+		[InlineData("UTF8_STRING_COMPLEX", "ķĸĹϺϻϼϽϾϿは世界abcdefghijklmnopqrstuvwxyzこんにちÊËÌÍÎÏðñòóôĵĶ", "にΪΪΪΪΪΪ3oeϽΫAÛMĸOZphßÚdyÌô0ÝϼPtĸTtSKにVÊϾέÛはÏRϼĶufÝK3MXa")]
+		public async Task EncryptForSearchAsync_ValidDataset_ReturnedArrayOfCiphersContainsExpectedCipher(string datasetName, string originalPlainText, string expectedCipherText)
+		{
+			var sut = GetSut();
+
+			var mostRecentCipher = await sut.EncryptAsync(datasetName, originalPlainText);
+			var plainText = await sut.DecryptAsync(datasetName, mostRecentCipher);
+			Assert.Equal(originalPlainText, plainText);
+
+			plainText = await sut.DecryptAsync(datasetName, expectedCipherText);
+			Assert.Equal(originalPlainText, plainText);
+
+			var allCiphers = await sut.EncryptForSearchAsync(datasetName, originalPlainText);
+			Assert.Contains(expectedCipherText, allCiphers);
+
+			foreach (var cipher in allCiphers)
+			{
+				plainText = await sut.DecryptAsync(datasetName, cipher);
+				Assert.Equal(originalPlainText, plainText);
+			}
+		}
 	}
 }

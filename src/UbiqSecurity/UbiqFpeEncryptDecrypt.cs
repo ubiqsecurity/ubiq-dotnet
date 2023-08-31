@@ -1,8 +1,14 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using UbiqSecurity.Billing;
 using UbiqSecurity.Cache;
+using UbiqSecurity.Fpe;
 using UbiqSecurity.Internals;
 using UbiqSecurity.Model;
 
@@ -124,6 +130,13 @@ namespace UbiqSecurity
 		{
 			var dataset = await _datasetCache.GetAsync(datasetName);
 
+			var ffx = await _ffxCache.GetAsync(dataset, null);
+
+			return await EncryptAsync(dataset, ffx, plainText, tweak);
+		}
+
+		private async Task<string> EncryptAsync(FfsRecord dataset, FfxContext ffx, string plainText, byte[] tweak)
+		{
 			var parsedInput = ParseInput(plainText, dataset, true);
 
 			// P20-1357 verify input length
@@ -131,8 +144,6 @@ namespace UbiqSecurity
 			{
 				throw new ArgumentException("Input length does not match FFS parameters.");
 			}
-
-			var ffx = await _ffxCache.GetAsync(dataset, null);
 
 			// encrypt using desired FPE algorithm
 			string cipherText = ffx.Cipher(dataset.EncryptionAlgorithm, parsedInput.Trimmed, tweak, true);
@@ -149,13 +160,40 @@ namespace UbiqSecurity
 			// create the billing record
 			await _billingEvents.AddBillingEventAsync(_ubiqCredentials.AccessKeyId, dataset.Name, string.Empty, BillingAction.Encrypt, DatasetType.Structured, ffx.KeyNumber, 1);
 
-            return formattedValue;
+			return formattedValue;
+		}
+
+		public async Task<IEnumerable<string>> EncryptForSearchAsync(string datasetName, string plainText)
+		{
+			return await EncryptForSearchAsync(datasetName, plainText, null);
+		}
+
+		public async Task<IEnumerable<string>> EncryptForSearchAsync(string datasetName, string plainText, byte[] tweak)
+		{
+			await LoadAllKeysAsync(datasetName);
+
+			var dataset = await _datasetCache.GetAsync(datasetName);
+			var currentFfx = await _ffxCache.GetAsync(dataset, null);
+			var results = new List<string>();
+
+			for (int keyNumber = 0; keyNumber <= currentFfx.KeyNumber; keyNumber++)
+			{
+				var ffx = await _ffxCache.GetAsync(dataset, keyNumber);
+				
+				var cipherText = await EncryptAsync(dataset, ffx, plainText, tweak);
+
+				results.Add(cipherText);
+			}
+
+			return results;
 		}
 
 		protected virtual void Dispose(bool disposing)
 		{
 			if (disposing)
 			{
+				_billingEvents?.Dispose();
+
 				if (_ffxCache != null)
 				{
 					_ffxCache.Dispose();
@@ -174,6 +212,72 @@ namespace UbiqSecurity
 					_ubiqWebService = null;
 				}
 			}
+		}
+
+		private async Task LoadAllKeysAsync(string datasetName)
+		{
+			var datasetsWithKeys = await _ubiqWebService.GetDatasetAndKeysAsync(datasetName);
+
+			// cache datasets and ffx contexts if they don't already exist
+			foreach (var key in datasetsWithKeys.Keys)
+			{
+				var datasetWithKeys = datasetsWithKeys[key];
+
+				_datasetCache.TryAdd(datasetWithKeys.Dataset);
+
+				foreach (var datasetKey in datasetWithKeys.Keys.Select((value, i) => new { Value = value, Index = i }))
+				{
+					var context = GetFfsContext(datasetWithKeys.Dataset, datasetWithKeys.EncryptedPrivateKey, datasetKey.Value, datasetKey.Index);
+
+					var keyId = new FfsKeyId { FfsRecord = datasetWithKeys.Dataset, KeyNumber = datasetKey.Index };
+					
+					_ffxCache.TryAdd(keyId, context);
+				}
+			}
+		}
+
+		private FfxContext GetFfsContext(FfsRecord ffs, string encryptedPrivateKey, string wrappedDataKey, int keyNumber)
+		{
+			FfxContext context = new FfxContext();
+
+			byte[] tweak = Array.Empty<byte>();
+			if (ffs.TweakSource == "constant")
+			{
+				tweak = Convert.FromBase64String(ffs.Tweak);
+			}
+
+			byte[] key = KeyUnwrapper.UnwrapKey(encryptedPrivateKey, wrappedDataKey, _ubiqCredentials.SecretCryptoAccessKey);
+			switch (ffs.EncryptionAlgorithm)
+			{
+				case "FF1":
+					context.SetFF1(
+						new FF1(
+							key,
+							tweak,
+							ffs.TweakMinLength,
+							ffs.TweakMaxLength,
+							ffs.InputCharacters.Length,
+							ffs.InputCharacters
+						),
+						keyNumber
+					);
+					break;
+				case "FF3_1":
+					context.SetFF3_1(
+						new FF3_1(
+							key,
+							tweak,
+							ffs.InputCharacters.Length,
+							ffs.InputCharacters
+						),
+						keyNumber
+					);
+					break;
+				default:
+					throw new NotSupportedException($"Unsupported FPE Algorithm: {ffs.EncryptionAlgorithm}");
+			}
+
+			return context;
 		}
 
 		private static string EncodeKeyNumber(FfsRecord dataset, int keyNumber, string str)
