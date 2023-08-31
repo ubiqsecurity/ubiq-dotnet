@@ -13,7 +13,7 @@ The cipher text will maintain the dashes and look something like: 'W$+-qF-oMMV'.
 
 ## Documentation
 
-See the [.NET API docs](https://dev.ubiqsecurity.com/docs/api).
+See the [.NET API docs][ubiq-dotnet-docs].
 
 ## Installation
 
@@ -35,28 +35,35 @@ Using the [Package Manager Console][package-manager-console]:
 Install-Package ubiq-security
 ```
 
-#### Building from source:
+### Requirements to Use Ubiq-Security library
+
+- .NET Framework (4.6.2 or newer) desktop development
+- .NET Core (6.0 or newer) cross-platform development
+
+## Building from source
+
 From within the cloned local git repository folder, use Visual Studio to open the solution file:
 
-```
+```text
 ubiq-dotnet.sln
 ```
 
-#### Compiling using Visual Studio Environment
--   Visual Studio 2017 or newer
--   In the Visual Studio Installer, make sure the following items are checked in the *Workloads* category:
-    - .NET desktop development
-    - .NET Core cross-platform development
--   If building the ubiq-dotnet library from source, the ubiq-dotnet solution assumes the .NET Framework 4.6.2 for Windows, .NET Core 6.0 or later, and .NET Standard 2.0 or later.
+### Compiling from command line
+
+```cmd
+    dotnet build -c Release
+```
+
+### Compiling using Visual Studio Environment
+
+- Visual Studio 2022 or newer
+- In the Visual Studio Installer, make sure the following items are checked in the *Workloads* category:
+  - .NET desktop development
+  - .NET Core cross-platform development
 
 Within the Solution Explorer pane, right-click the UbiqSecurity project, then select *Set as Startup Project*.
 
 From the Build menu, execute *Rebuild Solution* to compile all projects.
-
-#### Requirements to Use Ubiq-Security library
--   Visual Studio 2017 or newer with one of the following development environments
-    - .NET Framework (4.6.2 or newer) desktop development
-    - .NET Core (6.0 or newer) cross-platform development
 
 ## Usage
 
@@ -64,23 +71,14 @@ The library needs to be configured with your [account credentials][manage-keys] 
 available in your [Ubiq Dashboard][dashboard].
 The [credentials][use-credentials] can be set using environment variables, loaded from an explicitly
 specified file, or loaded from a file in your Windows
-user account directory [c:/users/_yourlogin_/.ubiq/credentials].
+user account directory [c:/users/*yourlogin*/.ubiq/credentials].
 
 ### Sample applications
 
-See the reference source and Readme in *WinConsole* and *CoreConsole*  in the ```ubiq-dotnet.sln```
-
--   *WinConsole* - for Windows .NET Framework 4.6.2 or later
-    - [README.md][WinConsoleReadme]
--   *CoreConsole* - for portable .NET Core runtime.
-    - [README.md][CoreConsoleReadme]
--   *CoreConsoleFpe* - for portable .NET Core runtime using eFPE.
-    - [README.md][CoreConsoleFpeReadme]
-
-Both test apps reference the *same* portable UbiqSecurity DLL library, build against .NET Standard 2.0.
-
+See the reference [sample applications][ubiq-dotnet-samples].
 
 ### Referencing the Ubiq Security library
+
 Make sure your project has a reference to the UbiqSecurity DLL library, either by adding the NuGet package
 (if using prebuilt library) or by adding a project reference (if built from source).
 Then, add the following to the top of your C# source file:
@@ -90,24 +88,29 @@ using UbiqSecurity;
 ```
 
 ### Read credentials from a specific file and use a specific profile
+
 ```cs
 var credentials = UbiqFactory.ReadCredentialsFromFile("some-credential-file", "some-profile");
 ```
 
-### Read credentials from c:/users/_yourlogin_/.ubiq/credentials and use the default profile
+### Read credentials from c:/users/*yourlogin*/.ubiq/credentials and use the default profile
+
 ```cs
 var credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, null);
 ```
 
 ### Use the following environment variables to set the credential values
+
 UBIQ_ACCESS_KEY_ID
 UBIQ_SECRET_SIGNING_KEY
 UBIQ_SECRET_CRYPTO_ACCESS_KEY
+
 ```cs
 var credentials = UbiqFactory.CreateCredentials()
 ```
 
 ### Explicitly set the credentials
+
 ```cs
 var credentials = UbiqFactory.CreateCredentials(accessKeyId: "...", secretSigningKey: "...", secretCryptoAccessKey: "...");
 ```
@@ -238,25 +241,24 @@ async Task PiecewiseDecryptionAsync(string inFile, string outFile, IUbiqCredenti
 }
 ```
 
-
 ## Ubiq Format Preserving Encryption
 
 This library incorporates Ubiq Format Preserving Encryption (eFPE).
 
 ## Requirements
 
--   Please follow the same requirements as described above for the non-eFPE functionality.
--   eFPE requires an additional library called [ubiq-fpe-dotnet] available for download in the Ubiq GitHub/GitLab repository.
-
+- Please follow the same requirements as described above for the non-eFPE functionality.
+- eFPE requires an additional library called [ubiq-fpe-dotnet] available for download in the Ubiq GitHub/GitLab repository.
 
 ## Usage
 
 You will need to obtain account credentials in the same way as described above for conventional encryption/decryption. When
 you do this in your [Ubiq Dashboard][dashboard] [credentials][credentials], you'll need to enable the eFPE option.
 The credentials can be set using environment variables, loaded from an explicitly
-specified file, or read from the default location (c:/users/_yourlogin_/.ubiq/credentials).
+specified file, or read from the default location (c:/users/*yourlogin*/.ubiq/credentials).
 
 ### Referencing the Ubiq Security library
+
 Make sure your project has a reference to the UbiqSecurity DLL library, either by adding the NuGet package
 (if using prebuilt library) or by adding a project reference (if built from source).
 Then, add the following to the top of your C# source file:
@@ -272,9 +274,9 @@ earlier in this document. You'll only need to make sure that the API keys you pu
 eFPE capability.
 
 ### Encrypt a social security text field - simple interface
+
 Pass credentials, the name of a Field Format Specification, FFS, and data into the encryption function.
 The encrypted data will be returned.
-
 
 ```cs
 {
@@ -317,16 +319,16 @@ encrypt / decrypt operations in a session.
 ```cs
 async Task EncryptionAsync(String FfsName, String plainText, IUbiqCredentials ubiqCredentials)
 {
-	// default tweak in case the FFS model allows for external tweak insertion          
-	byte[] tweakFF1 = {};
+    // default tweak in case the FFS model allows for external tweak insertion          
+    byte[] tweakFF1 = {};
 
-	using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(ubiqCredentials))
-	{
-		var cipherText = await ubiqEncryptDecrypt.EncryptAsync(FfsName, plainText, tweakFF1);
-		Console.WriteLine($"ENCRYPTED cipherText= {cipherText}\n");
-	}
+    using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(ubiqCredentials))
+    {
+        var cipherText = await ubiqEncryptDecrypt.EncryptAsync(FfsName, plainText, tweakFF1);
+        Console.WriteLine($"ENCRYPTED cipherText= {cipherText}\n");
+    }
 
-	return;
+    return;
 }
 ```
 
@@ -343,37 +345,50 @@ encrypt / decrypt operations in a session.
 async Task DecryptionAsync(String FfsName, String cipherText, IUbiqCredentials ubiqCredentials)
 {
 
-	byte[] tweakFF1 = {};
+    byte[] tweakFF1 = {};
 
-	using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(ubiqCredentials))
-	{
-		var plainText = await ubiqEncryptDecrypt.DecryptAsync(FfsName, cipherText, tweakFF1);
-		Console.WriteLine($"DECRYPTED plainText= {plainText}\n");
-	}
+    using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(ubiqCredentials))
+    {
+        var plainText = await ubiqEncryptDecrypt.DecryptAsync(FfsName, cipherText, tweakFF1);
+        Console.WriteLine($"DECRYPTED plainText= {plainText}\n");
+    }
 
-	return;
+    return;
 }
 ```
 
+### Searching for a value in a database that is encrypted
+
+For example say we want to search for an employee by SSN, but that field was encrypted in the database. The encryption key may have rotated since the employee SSN was originally encrypted, so we can use the EncryptForSearchAsync() method to get an array of all possible encrypted values.
+
+```cs
+using var ubiq = new UbiqFPEEncryptDecrypt(ubiqCredentials);
+
+var encryptedSsns = await ubiq.EncryptForSearchAsync("SSN_Dataset", unencryptedSsn)
+
+var user = _dbContext
+                .Employees
+                .Where(x => encryptedSsns.Contains(x.EncryptedSSN))
+                .FirstOrDefault();
+```
+
+### More Information
 
 Additional information on how to use these FFS models in your own applications is available by contacting
 Ubiq. You may also view some use-cases implemented in the unit test [UbiqFpeEncryptDecryptTests.cs]
-and the sample application [CoreConsoleFpe/Program.cs][efpesample] source code.
+and the sample application [source code][ubiq-dotnet-samples].
 
-
+[ubiq-dotnet-docs]:https://dev.ubiqsecurity.com/docs/dotnet-library
+[ubiq-dotnet-samples]:https://gitlab.com/ubiqsecurity/ubiq-dotnet-sample
 [dashboard]:https://dashboard.ubiqsecurity.com/
 [nuget-cli]: https://docs.microsoft.com/en-us/nuget/tools/nuget-exe-cli-reference
 [dotnet-core-cli-tools]: https://docs.microsoft.com/en-us/dotnet/core/tools/
 [package-manager-console]: https://docs.microsoft.com/en-us/nuget/tools/package-manager-console
-[WinConsoleReadme]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/WinConsole/README.md
-[CoreConsoleReadme]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/CoreConsole/README.md
-[CoreConsoleFpeReadme]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/CoreConsoleFpe/README.md
 [dotnet-async]:https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/
 [sync-context-info]:https://docs.microsoft.com/en-us/archive/msdn-magazine/2011/february/msdn-magazine-parallel-computing-it-s-all-about-the-synchronizationcontext
 [efpesample]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/CoreConsoleFpe/Program.cs
-[manage-keys]:https://dev.ubiqsecurity.com/docs/how-to-manage-api-keys
+[manage-keys]:https://dev.ubiqsecurity.com/docs/api-keys
 [use-credentials]:https://dev.ubiqsecurity.com/docs/using-api-key-credentials
-[register-app]:https://dev.ubiqsecurity.com/docs/how-to-register-applications
 [ubiq-fpe-dotnet]:https://gitlab.com/ubiqsecurity/ubiq-fpe-dotnet
-[credentials]:https://dev.ubiqsecurity.com/docs/how-to-create-api-keys
-[UbiqFpeEncryptDecryptTests.cs]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/Tests/UbiqSecurityTests/UbiqFpeEncryptDecryptTests.cs
+[credentials]:https://dev.ubiqsecurity.com/docs/api-key-credentials
+[UbiqFpeEncryptDecryptTests.cs]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/tests/UbiqSecurity.Tests/UbiqFpeEncryptDecryptTests.cs

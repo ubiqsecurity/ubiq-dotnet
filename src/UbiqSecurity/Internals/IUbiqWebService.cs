@@ -16,6 +16,8 @@ namespace UbiqSecurity.Internals
 
 		Task<FpeKeyResponse> GetFpeEncryptionKeyAsync(string ffsName);
 
+		Task<DatasetAndKeysResponse> GetDatasetAndKeysAsync(string datasetName);
+
 		Task<FpeBillingResponse> SendTrackingEventsAsync(TrackingEventsRequest trackingEventsRequest);
 	}
 }
