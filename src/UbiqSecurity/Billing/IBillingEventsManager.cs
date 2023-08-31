@@ -1,8 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace UbiqSecurity.Billing
 {
-	internal interface IBillingEventsManager
+	internal interface IBillingEventsManager : IDisposable
 	{
 		int EventCount { get; }
 

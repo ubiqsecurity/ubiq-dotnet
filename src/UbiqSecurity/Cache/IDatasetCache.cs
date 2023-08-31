@@ -9,5 +9,7 @@ namespace UbiqSecurity.Cache
 		void Clear();
 
 		Task<FfsRecord> GetAsync(string datasetName);
+
+		void TryAdd(FfsRecord dataset);
 	}
 }

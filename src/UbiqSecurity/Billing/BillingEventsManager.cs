@@ -52,6 +52,7 @@ namespace UbiqSecurity.Billing
 
 		private void AddBillingEvent(string apiKey, string datasetName, string datasetGroupName, BillingAction billingAction, DatasetType datasetType, int keyNumber, long count)
 		{
+
 			try
 			{
 				var billingEvent = new BillingEvent(apiKey, datasetName, datasetGroupName, billingAction, datasetType, keyNumber, count);
@@ -65,9 +66,13 @@ namespace UbiqSecurity.Billing
 					return existingBillingEvent;
 				});
 			}
+#if !DEBUG
 #pragma warning disable CS0168 // Variable is declared but never used
+#endif
 			catch (Exception ex)
+#if !DEBUG
 #pragma warning restore CS0168 // Variable is declared but never used
+#endif
 			{
 				if (!_configuration.EventReportingTrapExceptions)
 				{
@@ -79,6 +84,7 @@ namespace UbiqSecurity.Billing
 #endif
 			}
 
+
 		}
 
 		internal async Task FlushAsync()
@@ -89,7 +95,7 @@ namespace UbiqSecurity.Billing
 			}
 
 #if DEBUG
-			Debug.WriteLine($"Flushing {EventCount} events");
+			Debug.WriteLine($"Flushing {_billingEvents.Select(x => x.Value.Count).Sum()} events");
 #endif
 
 			TrackingEventsRequest trackingRequest = null;
@@ -107,9 +113,13 @@ namespace UbiqSecurity.Billing
 			{
 				await _ubiqWebService.SendTrackingEventsAsync(trackingRequest).ConfigureAwait(false);
 			}
+#if !DEBUG
 #pragma warning disable CS0168 // Variable is declared but never used
+#endif
 			catch (Exception ex)
+#if !DEBUG
 #pragma warning restore CS0168 // Variable is declared but never used
+#endif
 			{
 				if (!_configuration.EventReportingTrapExceptions)
 				{
@@ -119,6 +129,22 @@ namespace UbiqSecurity.Billing
 #if DEBUG
 				Debug.WriteLine($"FlushAsync trapped exception: {ex.Message}");
 #endif
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				FlushAsync().GetAwaiter().GetResult();
+
+				_ubiqWebService?.Dispose();
 			}
 		}
 	}
