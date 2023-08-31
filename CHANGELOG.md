@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.1 - TBD
+* Add EncryptForSearch
+
 ## 2.0.0 - 2023-05-23
 * Add custom radix and alphabet support to FPE API
 * Improved caching strategy

@@ -12,5 +12,7 @@ namespace UbiqSecurity.Cache
 		Task<FfxContext> GetAsync(FfsRecord ffs, int? keyNumber);
 
 		Task<FfxContext> GetAsync(FfsKeyId key);
+
+		void TryAdd(FfsKeyId key, FfxContext context);
 	}
 }

@@ -41,6 +41,8 @@ namespace UbiqSecurity
 		{
 			if (disposing)
 			{
+				_billingEvents?.Dispose();
+
 				if (_ubiqWebService != null)
 				{
 					_ubiqWebService.Dispose();

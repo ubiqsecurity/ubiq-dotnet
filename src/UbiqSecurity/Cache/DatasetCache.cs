@@ -63,6 +63,16 @@ namespace UbiqSecurity.Cache
 			return ffs;
 		}
 
+		public void TryAdd(FfsRecord dataset)
+		{
+			if (_cache.Contains(dataset.Name))
+			{
+				return;
+			}
+
+			_cache.Set(dataset.Name, dataset, DefaultPolicy);
+		}
+
 		private void InitCache()
 		{
 			if (!_cacheLock)

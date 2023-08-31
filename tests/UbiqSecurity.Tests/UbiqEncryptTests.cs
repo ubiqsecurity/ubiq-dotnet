@@ -1,0 +1,23 @@
+﻿namespace UbiqSecurity.Tests
+{
+	public class UbiqEncryptTests
+	{
+		[Fact]
+		public async Task EncryptAsync_ValidInput_ReturnsEncryptedBytes()
+		{
+			var credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, "ubiq-dotnet");
+
+			byte[] originalBytes = await File.ReadAllBytesAsync("UbiqSecurity.Tests.dll");
+
+			using var encryptor = new UbiqEncrypt(credentials, 1);
+			var cipherBytes = await encryptor.EncryptAsync(originalBytes);
+
+			Assert.NotEqual(originalBytes, cipherBytes);
+
+			using var decryptor = new UbiqDecrypt(credentials);
+			var plainBytes = await decryptor.DecryptAsync(cipherBytes);
+
+			Assert.Equal(originalBytes, plainBytes);
+		}
+	}
+}

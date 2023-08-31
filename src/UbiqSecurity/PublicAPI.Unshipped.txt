@@ -1,1 +1,2 @@
-﻿
+﻿UbiqSecurity.UbiqFPEEncryptDecrypt.EncryptForSearchAsync(string datasetName, string plainText) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>>
+UbiqSecurity.UbiqFPEEncryptDecrypt.EncryptForSearchAsync(string datasetName, string plainText, byte[] tweak) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>>

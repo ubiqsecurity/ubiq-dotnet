@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using UbiqSecurity.Internals;
 using UbiqSecurity.Fpe;
 using UbiqSecurity.Model;
+using System.Security.Cryptography;
 
 namespace UbiqSecurity.Cache
 {
@@ -71,6 +72,18 @@ namespace UbiqSecurity.Cache
 			}
 
 			return (FfxContext)_cache.Get(cacheKey);
+		}
+
+		public void TryAdd(FfsKeyId key, FfxContext context)
+		{
+			var cacheKey = $"{key.FfsRecord.Name}|{key.KeyNumber}";
+
+			if (_cache.Contains(cacheKey))
+			{
+				return;
+			}
+
+			_cache.Set(cacheKey, context, DefaultPolicy);
 		}
 
 		private void InitCache()
@@ -152,5 +165,7 @@ namespace UbiqSecurity.Cache
 
 			return context;
 		}
+
+		
 	}
 }

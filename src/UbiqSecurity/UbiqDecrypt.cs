@@ -36,7 +36,6 @@ namespace UbiqSecurity
 			_credentials = ubiqCredentials;
 			_ubiqWebService = webService;
 			_billingEvents = billingEvents;
-			// TODO: init background billing events processor
 		}
 
 		public virtual void Dispose()
@@ -49,11 +48,12 @@ namespace UbiqSecurity
 		{
 			if (disposing)
 			{
+				Reset();
+
+				_billingEvents?.Dispose();
+
 				if (_ubiqWebService != null)
 				{
-					// reports decryption key usage to server, if applicable
-					Reset();
-
 					_ubiqWebService.Dispose();
 					_ubiqWebService = null;
 				}
