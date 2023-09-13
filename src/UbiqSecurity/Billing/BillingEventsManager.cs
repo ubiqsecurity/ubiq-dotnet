@@ -52,7 +52,6 @@ namespace UbiqSecurity.Billing
 
 		private void AddBillingEvent(string apiKey, string datasetName, string datasetGroupName, BillingAction billingAction, DatasetType datasetType, int keyNumber, long count)
 		{
-
 			try
 			{
 				var billingEvent = new BillingEvent(apiKey, datasetName, datasetGroupName, billingAction, datasetType, keyNumber, count);

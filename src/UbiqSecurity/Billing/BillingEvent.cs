@@ -58,7 +58,7 @@ namespace UbiqSecurity.Billing
 		public long Count { get; set; }
 
 		[JsonProperty("last_call_timestamp")]
-		public DateTime? LastCalled { get; set; }
+		public DateTime? LastCalled { get; set; } = DateTime.UtcNow;
 
 		[JsonProperty("first_call_timestamp")]
 		public DateTime? FirstCalled { get; set; } = DateTime.UtcNow;
@@ -66,17 +66,6 @@ namespace UbiqSecurity.Billing
 		public override string ToString()
 		{
 			return $"api_key='{ApiKey}' datasets='{DatasetName}' billing_action='{BillingAction.ToString().ToLowerInvariant()}' dataset_groups='{DatasetGroupName}' key_number='{KeyNumber}' dataset_type='{DatasetType.ToString().ToLowerInvariant()}'";
-		}
-
-		public void UpdateCount(long increment)
-		{
-			Count += increment;
-			LastCalled = DateTime.UtcNow;
-
-			if (!FirstCalled.HasValue)
-			{
-				FirstCalled = DateTime.UtcNow;
-			}
 		}
 	}
 }
