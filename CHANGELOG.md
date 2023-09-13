@@ -1,6 +1,9 @@
 # Changelog
 
-## 2.0.1 - TBD
+## 2.0.2 - TBD
+* Fix event logging timestamp
+
+## 2.0.1 - 2023-09-01
 * Add EncryptForSearch
 
 ## 2.0.0 - 2023-05-23
