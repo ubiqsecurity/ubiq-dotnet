@@ -18,10 +18,9 @@
 		<PackageIcon>icon.png</PackageIcon>
 		<Copyright>Copyright 2020-2023 Ubiq Security, Inc.</Copyright>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<Version>2.0.1</Version>
+		<Version>2.0.2</Version>
 		<PackageReleaseNotes>
-			Add EncryptForSearchAsync()
-			Fix caching related bugs
+			Fix event logging timestamp
 		</PackageReleaseNotes>
 	</PropertyGroup>
 
