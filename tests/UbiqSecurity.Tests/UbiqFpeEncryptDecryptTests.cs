@@ -1,52 +1,45 @@
-﻿namespace UbiqSecurity.Tests
+﻿using UbiqSecurity.Tests.Fixtures;
+using UbiqSecurity.Tests.Helpers;
+
+namespace UbiqSecurity.Tests
 {
-	public class UbiqFpeEncryptDecryptTests
+	public class UbiqFpeEncryptDecryptTests : IClassFixture<UbiqFPEEncryptDecryptFixture>
 	{
-		private static UbiqFPEEncryptDecrypt GetSut()
+		private readonly UbiqFPEEncryptDecryptFixture _fixture;
+
+		public UbiqFpeEncryptDecryptTests(UbiqFPEEncryptDecryptFixture fixture)
 		{
-			return new UbiqFPEEncryptDecrypt(UbiqFactory.ReadCredentialsFromFile(string.Empty, "ubiq-dotnet"));
+			_fixture = fixture;
 		}
 
-		[Theory]
-		[InlineData("ALPHANUM_SSN", "123-45-6789", null)]
-		[InlineData("ALPHANUM_SSN", "01&23-456-78-90", null)]
-		[InlineData("ALPHANUM_SSN", "0123465789", null)]
-		[InlineData("BIRTH_DATE", "01\\01\\2020", null)]
-		[InlineData("BIRTH_DATE", "2006-05-01", null)]
-		[InlineData("UTF8_STRING_COMPLEX", "は世界jklmno", null)]
-		public async Task EncryptAsync_ValidInput_ReturnsExpectedCipherText(string datasetName, string originalPlainText, string expectedCipherText)
+		[Theory, JsonTestData]
+		public async Task EncryptAsync_ValidInput_ReturnsExpectedCipherText(string dataset, string plainText, string cipherText)
 		{
-			using var sut = GetSut();
+			var sut = _fixture.UbiqFPEEncryptDecrypt;
 
-			var cipherText = await sut.EncryptAsync(datasetName, originalPlainText);
+			var actualCipherText = await sut.EncryptAsync(dataset, plainText);
 
-			if (!string.IsNullOrEmpty(expectedCipherText))
-			{
-				Assert.Equal(expectedCipherText, cipherText);
-			}
+			Assert.Equal(actualCipherText, cipherText);
 
-			var roundTripPlainText = await sut.DecryptAsync(datasetName, cipherText);
+			var actualPlainText = await sut.DecryptAsync(dataset, cipherText);
 
-			Assert.Equal(originalPlainText, roundTripPlainText);
+			Assert.Equal(plainText, actualPlainText);
 		}
 
 		[Fact]
 		public async Task StaticEncryptAsync_ValidInput_ReturnsSameValueAsInstanceMethod()
 		{
-			var credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, "default");
+			var credentials = _fixture.UbiqCredentials;
+			var ubiqFPEEncryptDecrypt = _fixture.UbiqFPEEncryptDecrypt;
 
 			byte[] tweakFF1 = null;
 
 			var ffsName = "ALPHANUM_SSN";
 			var original = "123-45-6789";
-			string cipher = "";
-
-			using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials))
-			{
-				cipher = await ubiqEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1);
-			}
-
+			
+			string cipher = await ubiqFPEEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1);
 			var cipher_2 = await UbiqFPEEncryptDecrypt.EncryptAsync(credentials, original, ffsName, tweakFF1);
+
 			var pt_2 = await UbiqFPEEncryptDecrypt.DecryptAsync(credentials, cipher, ffsName, tweakFF1);
 
 			Assert.Equal(original, pt_2);
@@ -58,7 +51,7 @@
 		[InlineData("BIRTH_DATE", "01_01/2020")]
 		public async Task EncryptAsync_PlainTextContainsCharacterNotInAllowedInputOrPassthroughCharacters_ThrowsException(string datasetName, string plainText)
 		{
-			using var sut = GetSut();
+			var sut = _fixture.UbiqFPEEncryptDecrypt;
 
 			var ex = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await sut.EncryptAsync(datasetName, plainText));
 
@@ -71,7 +64,7 @@
 			var datasetName = "ALPHANUM_SSN";
 			var plainText = "1234"; // minimum is 6 characters
 
-			var sut = GetSut();
+			var sut = _fixture.UbiqFPEEncryptDecrypt;
 
 			var ex = await Assert.ThrowsAsync<ArgumentException>(async () => await sut.EncryptAsync(datasetName, plainText));
 
@@ -84,7 +77,7 @@
 			var datasetName = "ALPHANUM_SSN";
 			var plainText = new string('1', 256); // max length = 255
 
-			var sut = GetSut();
+			var sut = _fixture.UbiqFPEEncryptDecrypt;
 
 			var ex = await Assert.ThrowsAsync<ArgumentException>(async () => await sut.EncryptAsync(datasetName, plainText));
 
@@ -94,13 +87,13 @@
 		[Fact]
 		public async Task EncryptAsync_DatasetNameDoesNotExist_ThrowsException()
 		{
-			var credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, "default");
+			var sut = _fixture.UbiqFPEEncryptDecrypt;
 
-			var ffsName = "ERROR_MSG";
+			var ffsName = "ERROR_MSG"; // does not exist
 			var original = " 01121231231231231& 1 &2311200 ";
-			using var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials);
 
-			var ex = await Assert.ThrowsAsync<ArgumentException>(async () => await ubiqEncryptDecrypt.EncryptAsync(ffsName, original));
+			var ex = await Assert.ThrowsAsync<ArgumentException>(async () => await sut.EncryptAsync(ffsName, original));
+
 			Assert.Contains("does not exist", ex.Message);
 		}
 
@@ -112,7 +105,7 @@
 		[InlineData("UTF8_STRING_COMPLEX", "ķĸĹϺϻϼϽϾϿは世界abcdefghijklmnopqrstuvwxyzこんにちÊËÌÍÎÏðñòóôĵĶ", "にΪΪΪΪΪΪ3oeϽΫAÛMĸOZphßÚdyÌô0ÝϼPtĸTtSKにVÊϾέÛはÏRϼĶufÝK3MXa")]
 		public async Task EncryptForSearchAsync_ValidDataset_ReturnedArrayOfCiphersContainsExpectedCipher(string datasetName, string originalPlainText, string expectedCipherText)
 		{
-			var sut = GetSut();
+			var sut = _fixture.UbiqFPEEncryptDecrypt;
 
 			var mostRecentCipher = await sut.EncryptAsync(datasetName, originalPlainText);
 			var plainText = await sut.DecryptAsync(datasetName, mostRecentCipher);

@@ -15,7 +15,7 @@ tests:
         - 'echo -e "ACCESS_KEY_ID=$UBIQ_ACCESS_KEY_ID" >> $HOME/.ubiq/credentials'
         - 'echo -e "SECRET_SIGNING_KEY=$SECRET_SIGNING_KEY" >> $HOME/.ubiq/credentials'
         - 'echo -e "SECRET_CRYPTO_ACCESS_KEY=$SECRET_CRYPTO_ACCESS_KEY" >> $HOME/.ubiq/credentials'
-        - 'dotnet test ubiq-dotnet.sln --collect="XPlat Code Coverage" --logger:"junit;LogFilePath=testresult.xml"'
+        - 'dotnet test ubiq-dotnet.sln --collect="XPlat Code Coverage" --logger:"junit;LogFilePath=testresult.xml" -c Release'
     after_script:
         -  'rm $HOME/.ubiq/credentials'
     artifacts:
@@ -25,6 +25,26 @@ tests:
             coverage_report:
                 coverage_format: cobertura
                 path: "**/coverage.cobertura.xml"
+    rules:
+        - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+        - if: $CI_COMMIT_REF_NAME == "main"
+        - if: $CI_COMMIT_REF_NAME == "develop"
+    when:
+        always
+    allow_failure: false
+
+load_test:
+    image: mcr.microsoft.com/dotnet/sdk:6.0
+    stage: test
+    resource_group: build-single
+    script:
+        - 'mkdir -p $HOME/.ubiq && echo "[default]" > $HOME/.ubiq/credentials'
+        - 'echo -e "ACCESS_KEY_ID=$UBIQ_ACCESS_KEY_ID" >> $HOME/.ubiq/credentials'
+        - 'echo -e "SECRET_SIGNING_KEY=$SECRET_SIGNING_KEY" >> $HOME/.ubiq/credentials'
+        - 'echo -e "SECRET_CRYPTO_ACCESS_KEY=$SECRET_CRYPTO_ACCESS_KEY" >> $HOME/.ubiq/credentials'
+        - 'dotnet run --project ./tests/UbiqSecurity.LoadTests -c Release -- -i ./tests/UbiqSecurity.Tests/TestData/1m.json -c $HOME/.ubiq/credentials'
+    after_script:
+        -  'rm $HOME/.ubiq/credentials'
     rules:
         - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
         - if: $CI_COMMIT_REF_NAME == "main"
