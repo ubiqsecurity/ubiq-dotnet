@@ -248,7 +248,6 @@ This library incorporates Ubiq Format Preserving Encryption (eFPE).
 ## Requirements
 
 - Please follow the same requirements as described above for the non-eFPE functionality.
-- eFPE requires an additional library called [ubiq-fpe-dotnet] available for download in the Ubiq GitHub/GitLab repository.
 
 ## Usage
 
@@ -389,6 +388,5 @@ and the sample application [source code][ubiq-dotnet-samples].
 [efpesample]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/CoreConsoleFpe/Program.cs
 [manage-keys]:https://dev.ubiqsecurity.com/docs/api-keys
 [use-credentials]:https://dev.ubiqsecurity.com/docs/using-api-key-credentials
-[ubiq-fpe-dotnet]:https://gitlab.com/ubiqsecurity/ubiq-fpe-dotnet
 [credentials]:https://dev.ubiqsecurity.com/docs/api-key-credentials
 [UbiqFpeEncryptDecryptTests.cs]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/tests/UbiqSecurity.Tests/UbiqFpeEncryptDecryptTests.cs
