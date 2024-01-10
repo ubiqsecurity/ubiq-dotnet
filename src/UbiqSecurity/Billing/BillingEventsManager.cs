@@ -25,7 +25,7 @@ namespace UbiqSecurity.Billing
 			_ubiqWebService = ubiqWebService;
 		}
 
-		public int EventCount => _billingEvents.Count;
+		public long EventCount => _billingEvents.Count;
 
 		public async Task AddBillingEventAsync(string apiKey, string datasetName, string datasetGroupName, BillingAction billingAction, DatasetType datasetType, int keyNumber, long count)
 		{
