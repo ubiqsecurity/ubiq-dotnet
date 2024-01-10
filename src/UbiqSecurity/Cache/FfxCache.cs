@@ -148,17 +148,6 @@ namespace UbiqSecurity.Cache
 						keyResponse.KeyNumber
 					);
 					break;
-				case "FF3_1":
-					context.SetFF3_1(
-						new FF3_1(
-							key,
-							tweak,
-							keyId.FfsRecord.InputCharacters.Length,
-							keyId.FfsRecord.InputCharacters
-						),
-						keyResponse.KeyNumber
-					);
-					break;
 				default:
 					throw new NotSupportedException($"Unsupported FPE Algorithm: {keyId.FfsRecord.EncryptionAlgorithm}");
 			}

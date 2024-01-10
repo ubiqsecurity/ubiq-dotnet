@@ -1,6 +1,10 @@
 # Changelog
 
-## 2.0.2 - TBD
+## 2.0.3 - TBD
+* Remove dependency on external Ubiq-Security.FPE package
+* Migrate FPE from using Portable.BouncyCastle to System.Security.Cryptography
+
+## 2.0.2 - 2023-09-18
 * Fix event logging timestamp
 
 ## 2.0.1 - 2023-09-01

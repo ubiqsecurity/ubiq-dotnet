@@ -47,8 +47,7 @@ namespace UbiqSecurity.LoadTests
 				ubiqCredentials = UbiqFactory.CreateCredentials(
 					accessKeyId: null,
 					secretSigningKey: null,
-					secretCryptoAccessKey: null,
-					host: null);
+					secretCryptoAccessKey: null);
 			}
 			else
 			{
