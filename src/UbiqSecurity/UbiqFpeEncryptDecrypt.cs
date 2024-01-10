@@ -259,17 +259,6 @@ namespace UbiqSecurity
 						keyNumber
 					);
 					break;
-				case "FF3_1":
-					context.SetFF3_1(
-						new FF3_1(
-							key,
-							tweak,
-							ffs.InputCharacters.Length,
-							ffs.InputCharacters
-						),
-						keyNumber
-					);
-					break;
 				default:
 					throw new NotSupportedException($"Unsupported FPE Algorithm: {ffs.EncryptionAlgorithm}");
 			}

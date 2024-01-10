@@ -189,7 +189,7 @@ namespace UbiqSecurity
 				}
 			}
 
-			if ((_decryptionKey != null) && (_aesGcmBlockCipher != null))
+			if (_decryptionKey != null && _aesGcmBlockCipher != null)
 			{
 				// pass all available buffered bytes to the decryptor
 				if (_byteBuffer.Length > 0)
