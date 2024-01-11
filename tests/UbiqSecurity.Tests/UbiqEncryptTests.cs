@@ -10,6 +10,9 @@
 			byte[] originalBytes = await File.ReadAllBytesAsync("UbiqSecurity.Tests.dll");
 
 			using var encryptor = new UbiqEncrypt(credentials, 1);
+
+			encryptor.AddReportingUserDefinedMetadata("{ \"encryption_wrapper\" : true }");
+
 			var cipherBytes = await encryptor.EncryptAsync(originalBytes);
 
 			Assert.NotEqual(originalBytes, cipherBytes);

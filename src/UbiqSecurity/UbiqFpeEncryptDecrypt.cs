@@ -56,6 +56,11 @@ namespace UbiqSecurity
 			_datasetCache?.Clear();
 		}
 
+		public void AddReportingUserDefinedMetadata(string jsonString)
+		{
+			_billingEvents.AddUserDefinedMetadata(jsonString);
+		}
+
 		public async Task<byte[]> DecryptAsync(string datasetName, byte[] cipherBytes)
 		{
 			return await DecryptAsync(datasetName, cipherBytes, null);

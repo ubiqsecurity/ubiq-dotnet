@@ -14,6 +14,10 @@ namespace UbiqSecurity.Billing
 			return Task.CompletedTask;
 		}
 
+		public void AddUserDefinedMetadata(string jsonString)
+		{
+		}
+
 		public void Dispose()
 		{
 		}

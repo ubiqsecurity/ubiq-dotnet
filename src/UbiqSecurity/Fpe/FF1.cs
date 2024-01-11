@@ -13,23 +13,29 @@ namespace UbiqSecurity.Fpe
 	/// </summary>
 	internal class FF1 : FFX, IFFX
 	{
-		private readonly ICipher _cipher2;
+		private readonly ICipher _cipher;
 		private readonly byte[] _key;
 
 		public FF1(byte[] key, byte[] twk, long twkmin, long twkmax, int radix)
 			: base(key, twk, (long)1 << 32, twkmin, twkmax, radix, DefaultAlphabet)
 		{
 			_key = key;
-			_cipher2 = new SystemCipher();
+			_cipher = new SystemCipher();
 		}
 
 		public FF1(byte[] key, byte[] twk, long twkmin, long twkmax, int radix, string alphabet)
 			: base(key, twk, (long)1 << 32, twkmin, twkmax, radix, alphabet)
 		{
 			_key = key;
-			_cipher2 = new SystemCipher();
+			_cipher = new SystemCipher();
 		}
 
+		public FF1(byte[] key, byte[] twk, long twkmin, long twkmax, int radix, string alphabet, ICipher cipher)
+			: base(key, twk, (long)1 << 32, twkmin, twkmax, radix, alphabet)
+		{
+			_key = key;
+			_cipher = cipher;
+		}
 
 		/// <summary>
 		/// The comments below reference the steps of the algorithm described here:
@@ -165,7 +171,7 @@ namespace UbiqSecurity.Fpe
 
 				// Step 6ii
 				//Prf(R, 0, PQ, 0, PQ.Length);
-				_cipher2.Prf(_key, PQ, R);
+				_cipher.Prf(_key, PQ, R);
 
 				// Step 6iii
 				// if r is greater than 16, fill the subsequent blocks
@@ -182,7 +188,7 @@ namespace UbiqSecurity.Fpe
 
 					Xor(R, l, R, 0, R, l, 16);
 
-					_cipher2.Ciph(_key, R, l, R, l);
+					_cipher.Ciph(_key, R, l, R, l);
 				}
 
 				// Step 6vi

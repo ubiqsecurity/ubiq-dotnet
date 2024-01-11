@@ -38,6 +38,11 @@ namespace UbiqSecurity
 			_billingEvents = billingEvents;
 		}
 
+		public void AddReportingUserDefinedMetadata(string jsonString)
+		{
+			_billingEvents.AddUserDefinedMetadata(jsonString);
+		}
+
 		public virtual void Dispose()
 		{
 			Dispose(true);
