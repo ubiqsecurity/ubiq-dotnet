@@ -63,6 +63,9 @@ namespace UbiqSecurity.Billing
 		[JsonProperty("first_call_timestamp")]
 		public DateTime? FirstCalled { get; set; } = DateTime.UtcNow;
 
+		[JsonProperty("user_defined")]
+		public string UserDefinedMetadata { get; set; }
+
 		public override string ToString()
 		{
 			return $"api_key='{ApiKey}' datasets='{DatasetName}' billing_action='{BillingAction.ToString().ToLowerInvariant()}' dataset_groups='{DatasetGroupName}' key_number='{KeyNumber}' dataset_type='{DatasetType.ToString().ToLowerInvariant()}'";

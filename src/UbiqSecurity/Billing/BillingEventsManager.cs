@@ -5,6 +5,7 @@ using System.Diagnostics;
 #endif
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using UbiqSecurity.Internals;
 using UbiqSecurity.Model;
 
@@ -18,6 +19,7 @@ namespace UbiqSecurity.Billing
 		private readonly object _lock = new object();
 
 		private DateTime _lastFlushed = DateTime.Now;
+		private string _userDefinedMetadata;
 
 		internal BillingEventsManager(UbiqConfiguration configuration, IUbiqWebService ubiqWebService)
 		{
@@ -32,6 +34,26 @@ namespace UbiqSecurity.Billing
 			AddBillingEvent(apiKey, datasetName, datasetGroupName, billingAction, datasetType, keyNumber, count);
 
 			await ProcessBillingEventsAsync();
+		}
+
+		public void AddUserDefinedMetadata(string jsonString)
+		{
+			if (jsonString == null)
+			{
+				throw new ArgumentNullException(nameof(jsonString));
+			}
+
+			if (jsonString.Length >= 1024)
+			{
+				throw new ArgumentException("User defined metadata cannot be longer than 1024 characters", nameof(jsonString));
+			}
+
+			if (!jsonString.TryParseJson(out var element))
+			{
+				throw new ArgumentException("User defined metadata must be a valid Json object", nameof(jsonString));
+			}
+
+			_userDefinedMetadata = element.ToString();
 		}
 
 		public async Task ProcessBillingEventsAsync()
@@ -54,7 +76,11 @@ namespace UbiqSecurity.Billing
 		{
 			try
 			{
-				var billingEvent = new BillingEvent(apiKey, datasetName, datasetGroupName, billingAction, datasetType, keyNumber, count);
+				var billingEvent = new BillingEvent(apiKey, datasetName, datasetGroupName, billingAction, datasetType, keyNumber, count)
+				{
+					UserDefinedMetadata = _userDefinedMetadata
+				};
+
 				var key = billingEvent.ToString();
 
 				_billingEvents.AddOrUpdate(key, billingEvent, (value1, existingBillingEvent) =>
@@ -82,8 +108,6 @@ namespace UbiqSecurity.Billing
 				Debug.WriteLine($"Trapped exception: {ex.Message}");
 #endif
 			}
-
-
 		}
 
 		internal async Task FlushAsync()
