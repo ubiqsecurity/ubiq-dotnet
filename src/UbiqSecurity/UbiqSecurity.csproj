@@ -16,12 +16,14 @@
 		<RepositoryType>git</RepositoryType>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageIcon>icon.png</PackageIcon>
-		<Copyright>Copyright 2020-2023 Ubiq Security, Inc.</Copyright>
+		<Copyright>Copyright 2020-2024 Ubiq Security, Inc.</Copyright>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Version>2.1.0</Version>
 		<PackageReleaseNotes>
 			- Remove dependency on external Ubiq-Security.FPE package
 			- Migrate FPE from using Portable.BouncyCastle to System.Security.Cryptography
+			- Added support for user defined metadata in the billing records
+			- Added support for different granular levels of reporting usage based on time
 		</PackageReleaseNotes>
 		<NeutralLanguage>en-US</NeutralLanguage>
 	</PropertyGroup>

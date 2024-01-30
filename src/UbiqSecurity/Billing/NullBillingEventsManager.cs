@@ -21,5 +21,7 @@ namespace UbiqSecurity.Billing
 		public void Dispose()
 		{
 		}
+
+		public string GetSerializedEvents() => string.Empty;
 	}
 }

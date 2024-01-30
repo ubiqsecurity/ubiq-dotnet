@@ -1,3 +1,1 @@
-﻿UbiqSecurity.UbiqDecrypt.AddReportingUserDefinedMetadata(string jsonString) -> void
-UbiqSecurity.UbiqEncrypt.AddReportingUserDefinedMetadata(string jsonString) -> void
-UbiqSecurity.UbiqFPEEncryptDecrypt.AddReportingUserDefinedMetadata(string jsonString) -> void
+﻿

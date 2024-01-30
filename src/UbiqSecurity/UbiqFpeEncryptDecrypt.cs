@@ -190,6 +190,8 @@ namespace UbiqSecurity
 			return results;
 		}
 
+		public string GetCopyOfUsage() => _billingEvents.GetSerializedEvents();
+
 		protected virtual void Dispose(bool disposing)
 		{
 			if (disposing)
