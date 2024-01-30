@@ -7,6 +7,9 @@ namespace UbiqSecurity.Billing
 {
 	internal class BillingEvent
 	{
+		private DateTime? _firstCalled = DateTime.UtcNow;
+		private DateTime? _lastCalled = DateTime.UtcNow;
+
 		public BillingEvent()
 		{
 		}
@@ -58,13 +61,23 @@ namespace UbiqSecurity.Billing
 		public long Count { get; set; }
 
 		[JsonProperty("last_call_timestamp")]
-		public DateTime? LastCalled { get; set; } = DateTime.UtcNow;
+		public DateTime? LastCalled { 
+			get => _lastCalled.TruncatedTo(TimestampGranularity);
+			set => _lastCalled = value;
+		}
 
 		[JsonProperty("first_call_timestamp")]
-		public DateTime? FirstCalled { get; set; } = DateTime.UtcNow;
+		public DateTime? FirstCalled
+		{
+			get => _firstCalled.TruncatedTo(TimestampGranularity);
+			set => _firstCalled = value;
+		}
 
 		[JsonProperty("user_defined")]
 		public string UserDefinedMetadata { get; set; }
+
+		[JsonIgnore]
+		public ChronoUnit TimestampGranularity { get; set; } = ChronoUnit.Nanoseconds;
 
 		public override string ToString()
 		{

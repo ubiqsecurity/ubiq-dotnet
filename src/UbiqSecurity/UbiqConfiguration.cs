@@ -1,4 +1,6 @@
-﻿namespace UbiqSecurity
+﻿using System;
+
+namespace UbiqSecurity
 {
 	public class UbiqConfiguration
 	{
@@ -12,6 +14,31 @@
 			EventReportingMinimumCount = minimumCount;
 			EventReportingFlushInterval = flushInterval;
 			EventReportingTrapExceptions = trapExceptions;
+		}
+
+		public UbiqConfiguration(int wakeInterval, int minimumCount, int flushInterval, bool trapExceptions, string timestampGranularity)
+			:this(wakeInterval, minimumCount, flushInterval, trapExceptions)
+		{
+			// backwards compatibility w/ java library
+			switch (timestampGranularity?.ToUpperInvariant())
+			{
+				case "HALF_DAYS":
+					timestampGranularity = ChronoUnit.HalfDays.ToString();
+					break;
+				case "MILLIS":
+					timestampGranularity = ChronoUnit.Milliseconds.ToString();
+					break;
+				case "NANOS":
+					timestampGranularity = ChronoUnit.Nanoseconds.ToString();
+					break;
+			}
+
+			if (!Enum.TryParse(timestampGranularity, out ChronoUnit unit))
+			{
+				throw new ArgumentException("Argument is not a valid ChronoUnit value", nameof(timestampGranularity)); 
+			}
+
+			EventReportingTimestampGranularity = unit;
 		}
 
 		/// <summary>
@@ -36,5 +63,7 @@
 		public int EventReportingFlushInterval { get; private set; } = 10;
 
 		public bool EventReportingTrapExceptions { get; private set; }
+
+		public ChronoUnit EventReportingTimestampGranularity { get; set; } = ChronoUnit.Nanoseconds;
 	}
 }
