@@ -1,4 +1,8 @@
-﻿using UbiqSecurity.Tests.Fixtures;
+﻿using Newtonsoft.Json;
+using UbiqSecurity.Billing;
+using UbiqSecurity.Internals;
+using UbiqSecurity.Model;
+using UbiqSecurity.Tests.Fixtures;
 using UbiqSecurity.Tests.Helpers;
 
 namespace UbiqSecurity.Tests
@@ -122,6 +126,45 @@ namespace UbiqSecurity.Tests
 				plainText = await sut.DecryptAsync(datasetName, cipher);
 				Assert.Equal(originalPlainText, plainText);
 			}
+		}
+
+		[Fact]
+		public void GetCopyOfUsage_NoBillingEventInQueue_ReturnsEmptyUsageArray()
+		{
+			// purposefully not re-using the shared test fixture as we want to count billing usage w/o interference from other tests
+			var sut = new UbiqFPEEncryptDecrypt(UbiqFactory.ReadCredentialsFromFile(string.Empty));
+
+			var result = sut.GetCopyOfUsage();
+			var request = JsonConvert.DeserializeObject<TrackingEventsRequest>(result);
+
+			Assert.Empty(request.Usage);
+		}
+
+		[Fact]
+		public async Task GetCopyOfUsage_MultipleEncryptDecrypts_ReturnsPopulatedUsageArray()
+		{
+			// purposefully not re-using the shared test fixture as we want to count billing usage w/o interference from other tests
+			var sut = new UbiqFPEEncryptDecrypt(UbiqFactory.ReadCredentialsFromFile(string.Empty));
+
+			var cipherText = await sut.EncryptAsync("ALPHANUM_SSN", ";0123456-789ABCDEF|");
+			var plainText = await sut.DecryptAsync("ALPHANUM_SSN", cipherText);
+			Assert.Equal(";0123456-789ABCDEF|", plainText);
+
+			var result = sut.GetCopyOfUsage();
+			var request = JsonConvert.DeserializeObject<TrackingEventsRequest>(result);
+
+			Assert.Equal(2, request.Usage.Length);
+			Assert.Equal(1, request.Usage.First().Count);
+
+			cipherText = await sut.EncryptAsync("BIRTH_DATE", ";01\\02-1960|");
+			plainText = await sut.DecryptAsync("BIRTH_DATE", cipherText);
+			Assert.Equal(";01\\02-1960|", plainText);
+
+			result = sut.GetCopyOfUsage();
+			request = JsonConvert.DeserializeObject<TrackingEventsRequest>(result);
+
+			Assert.Equal(4, request.Usage.Length);
+			Assert.Equal(1, request.Usage.Last().Count);
 		}
 	}
 }

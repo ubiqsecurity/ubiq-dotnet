@@ -84,6 +84,8 @@ namespace UbiqSecurity
 			}
 		}
 
+		public string GetCopyOfUsage() => _billingEvents.GetSerializedEvents();
+
 		public byte[] Begin()
 		{
 			if (_ubiqWebService == null)

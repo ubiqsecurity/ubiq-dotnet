@@ -56,6 +56,13 @@ namespace UbiqSecurity.Billing
 			_userDefinedMetadata = element.ToString();
 		}
 
+		public string GetSerializedEvents()
+		{
+			var request = new TrackingEventsRequest(_billingEvents.Values.ToArray());
+
+			return JsonConvert.SerializeObject(request);
+		}
+
 		public async Task ProcessBillingEventsAsync()
 		{
 			if (EventCount < _configuration.EventReportingMinimumCount &&
@@ -78,7 +85,8 @@ namespace UbiqSecurity.Billing
 			{
 				var billingEvent = new BillingEvent(apiKey, datasetName, datasetGroupName, billingAction, datasetType, keyNumber, count)
 				{
-					UserDefinedMetadata = _userDefinedMetadata
+					UserDefinedMetadata = _userDefinedMetadata,
+					TimestampGranularity = _configuration.EventReportingTimestampGranularity,
 				};
 
 				var key = billingEvent.ToString();
