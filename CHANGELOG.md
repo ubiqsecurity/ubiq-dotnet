@@ -1,9 +1,10 @@
 # Changelog
 
-## 2.1.0 - TBD
+## 2.1.0 - 2024-01-23
 * Remove dependency on external Ubiq-Security.FPE package
 * Migrate FPE from using Portable.BouncyCastle to System.Security.Cryptography
-* Add .AddReportingUserDefinedMetadata()
+* Added support for user defined metadata in the billing records
+* Added support for different granular levels of reporting usage based on time
 
 ## 2.0.2 - 2023-09-18
 * Fix event logging timestamp
