@@ -1,7 +1,14 @@
-[*.cs]
-indent_style = tab
-indent_size = tab
-tab_size = 4
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
 
 [*.{cs,vb}]
 dotnet_diagnostic.IDE0270.severity = none
+
+[*.{yml,yaml}]
+indent_size = 2
