@@ -5,24 +5,38 @@
 # Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
-variables:
-  SECRET_CRYPTO_ACCESS_KEY: "${SECRET_CRYPTO_ACCESS_KEY}"
-  SECRET_SIGNING_KEY: "${SECRET_SIGNING_KEY}"
-  UBIQ_ACCESS_KEY_ID: "${UBIQ_ACCESS_KEY_ID}"
 
 stages:
   - test
 
-tests:
+variables:
+  SCAK: "${SECRET_CRYPTO_ACCESS_KEY}"
+  SSK: "${SECRET_SIGNING_KEY}"
+  UAK: "${UBIQ_ACCESS_KEY_ID}"
+  UBIQ_HOST: "api.ubiqsecurity.com"
+  TEST_ENV: "prod"
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "development" || ($CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "development")
+      variables:
+        TEST_ENV: "dev"
+        UBIQ_HOST: "api-dev.ubiqsecurity.com"
+        SCAK: "${DEV_SECRET_CRYPTO_ACCESS_KEY}"
+        SSK: "${DEV_SECRET_SIGNING_KEY}"
+        UAK: "${DEV_UBIQ_ACCESS_KEY_ID}"
+
+unit_tests:
   image: mcr.microsoft.com/dotnet/sdk:6.0
   stage: test
   resource_group: build-single
   script:
     - mkdir -p $HOME/.ubiq && echo "[default]" > $HOME/.ubiq/credentials
-    - echo -e "ACCESS_KEY_ID=$UBIQ_ACCESS_KEY_ID" >> $HOME/.ubiq/credentials
-    - echo -e "SECRET_SIGNING_KEY=$SECRET_SIGNING_KEY" >> $HOME/.ubiq/credentials
-    - echo -e "SECRET_CRYPTO_ACCESS_KEY=$SECRET_CRYPTO_ACCESS_KEY" >> $HOME/.ubiq/credentials
-    - dotnet test ubiq-dotnet.sln --collect="XPlat Code Coverage" --logger:"junit;LogFilePath=testresult.xml" -c Release
+    - echo -e "SERVER=$UBIQ_HOST" >> $HOME/.ubiq/credentials
+    - echo -e "ACCESS_KEY_ID=$UAK" >> $HOME/.ubiq/credentials
+    - echo -e "SECRET_SIGNING_KEY=$SSK" >> $HOME/.ubiq/credentials
+    - echo -e "SECRET_CRYPTO_ACCESS_KEY=$SCAK" >> $HOME/.ubiq/credentials
+    - dotnet test ubiq-dotnet.sln --collect="XPlat Code Coverage" --logger:"junit;LogFilePath=testresult.xml" -c Release -e JsonTestEnv="$TEST_ENV" -e JsonTestSize="100"
   after_script:
     - rm $HOME/.ubiq/credentials
   artifacts:
@@ -34,8 +48,8 @@ tests:
         path: "**/coverage.cobertura.xml"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_REF_NAME == "main"
-    - if: $CI_COMMIT_REF_NAME == "develop"
+    - if: $CI_COMMIT_REF_NAME == "development"
+    - if: $CI_COMMIT_REF_NAME == "master"
   when: always
   allow_failure: false
 
@@ -45,24 +59,30 @@ load_tests:
   resource_group: build-single
   script:
     - mkdir -p $HOME/.ubiq && echo "[default]" > $HOME/.ubiq/credentials
-    - echo -e "ACCESS_KEY_ID=$UBIQ_ACCESS_KEY_ID" >> $HOME/.ubiq/credentials
-    - echo -e "SECRET_SIGNING_KEY=$SECRET_SIGNING_KEY" >> $HOME/.ubiq/credentials
-    - echo -e "SECRET_CRYPTO_ACCESS_KEY=$SECRET_CRYPTO_ACCESS_KEY" >> $HOME/.ubiq/credentials
-    - dotnet run --project ./tests/UbiqSecurity.LoadTests -c Release -- -i ./tests/UbiqSecurity.Tests/TestData/1m.json -c $HOME/.ubiq/credentials
+    - echo -e "SERVER=$UBIQ_HOST" >> $HOME/.ubiq/credentials
+    - echo -e "ACCESS_KEY_ID=$UAK" >> $HOME/.ubiq/credentials
+    - echo -e "SECRET_SIGNING_KEY=$SSK" >> $HOME/.ubiq/credentials
+    - echo -e "SECRET_CRYPTO_ACCESS_KEY=$SCAK" >> $HOME/.ubiq/credentials
+    - dotnet run --project ./tests/UbiqSecurity.LoadTests -c Release -- -i ./tests/UbiqSecurity.Tests/TestData/$TEST_ENV-1m.json -c $HOME/.ubiq/credentials
   after_script:
     - rm $HOME/.ubiq/credentials
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_REF_NAME == "main"
-    - if: $CI_COMMIT_REF_NAME == "develop"
+    - if: $CI_COMMIT_REF_NAME == "master"
+    - if: $CI_COMMIT_REF_NAME == "development"
   when: always
   allow_failure: false
 
 sast:
   stage: test
+  artifacts:
+   name: sast
+   paths:
+     - gl-sast-report.json
+   reports:
+     sast: gl-sast-report.json
+   when: always
 
 include:
   - template: Jobs/SAST.latest.gitlab-ci.yml
   - template: Jobs/Secret-Detection.gitlab-ci.yml
-  - template: Jobs/Container-Scanning.gitlab-ci.yml
   - template: Security/Dependency-Scanning.gitlab-ci.yml
