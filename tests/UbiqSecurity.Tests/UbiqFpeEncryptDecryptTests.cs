@@ -1,13 +1,11 @@
-﻿using Newtonsoft.Json;
-using UbiqSecurity.Billing;
-using UbiqSecurity.Internals;
+using Newtonsoft.Json;
 using UbiqSecurity.Model;
 using UbiqSecurity.Tests.Fixtures;
 using UbiqSecurity.Tests.Helpers;
 
 namespace UbiqSecurity.Tests
 {
-	public class UbiqFpeEncryptDecryptTests : IClassFixture<UbiqFPEEncryptDecryptFixture>
+    public class UbiqFpeEncryptDecryptTests : IClassFixture<UbiqFPEEncryptDecryptFixture>
 	{
 		private readonly UbiqFPEEncryptDecryptFixture _fixture;
 
@@ -102,12 +100,12 @@ namespace UbiqSecurity.Tests
 		}
 
 		[Theory]
-		[InlineData("ALPHANUM_SSN", ";0123456-789ABCDEF|", ";!!!E7`+-ai1ykOp8r|")]
-		[InlineData("BIRTH_DATE", ";01\\02-1960|", ";!!\\!!-oKzi|")]
-		[InlineData("SSN", "-0-1-2-3-4-5-6-7-8-9-", "-0-0-0-0-1-I-L-8-j-D-")]
-		[InlineData("UTF8_STRING_COMPLEX", "ÑÒÓķĸĹϺϻϼϽϾÔÕϿは世界abcdefghijklmnopqrstuvwxyzこんにちÊʑʒʓËÌÍÎÏðñòóôĵĶʔʕ", "ÑÒÓにΪΪΪΪΪΪ3ÔÕoeϽΫAÛMĸOZphßÚdyÌô0ÝϼPtĸTtSKにVÊϾέÛはʑʒʓÏRϼĶufÝK3MXaʔʕ")]
-		[InlineData("UTF8_STRING_COMPLEX", "ķĸĹϺϻϼϽϾϿは世界abcdefghijklmnopqrstuvwxyzこんにちÊËÌÍÎÏðñòóôĵĶ", "にΪΪΪΪΪΪ3oeϽΫAÛMĸOZphßÚdyÌô0ÝϼPtĸTtSKにVÊϾέÛはÏRϼĶufÝK3MXa")]
-		public async Task EncryptForSearchAsync_ValidDataset_ReturnedArrayOfCiphersContainsExpectedCipher(string datasetName, string originalPlainText, string expectedCipherText)
+		[InlineData("ALPHANUM_SSN", ";0123456-789ABCDEF|")]
+		[InlineData("BIRTH_DATE", ";01\\02-1960|")]
+		[InlineData("SSN", "-0-1-2-3-4-5-6-7-8-9-")]
+		[InlineData("UTF8_STRING_COMPLEX", "ÑÒÓķĸĹϺϻϼϽϾÔÕϿは世界abcdefghijklmnopqrstuvwxyzこんにちÊʑʒʓËÌÍÎÏðñòóôĵĶʔʕ")]
+		[InlineData("UTF8_STRING_COMPLEX", "ķĸĹϺϻϼϽϾϿは世界abcdefghijklmnopqrstuvwxyzこんにちÊËÌÍÎÏðñòóôĵĶ")]
+		public async Task EncryptForSearchAsync_ValidDataset_ReturnedArrayOfCiphersContainsExpectedCipher(string datasetName, string originalPlainText)
 		{
 			var sut = _fixture.UbiqFPEEncryptDecrypt;
 
@@ -115,11 +113,8 @@ namespace UbiqSecurity.Tests
 			var plainText = await sut.DecryptAsync(datasetName, mostRecentCipher);
 			Assert.Equal(originalPlainText, plainText);
 
-			plainText = await sut.DecryptAsync(datasetName, expectedCipherText);
-			Assert.Equal(originalPlainText, plainText);
-
 			var allCiphers = await sut.EncryptForSearchAsync(datasetName, originalPlainText);
-			Assert.Contains(expectedCipherText, allCiphers);
+			Assert.Contains(mostRecentCipher, allCiphers);
 
 			foreach (var cipher in allCiphers)
 			{
@@ -166,5 +161,5 @@ namespace UbiqSecurity.Tests
 			Assert.Equal(4, request.Usage.Length);
 			Assert.Equal(1, request.Usage.Last().Count);
 		}
-	}
+    }
 }

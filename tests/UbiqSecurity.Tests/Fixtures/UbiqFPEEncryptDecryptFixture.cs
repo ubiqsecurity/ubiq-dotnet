@@ -1,10 +1,10 @@
-﻿namespace UbiqSecurity.Tests.Fixtures
+namespace UbiqSecurity.Tests.Fixtures
 {
 	public class UbiqFPEEncryptDecryptFixture : IDisposable
 	{
 		public UbiqFPEEncryptDecryptFixture()
 		{
-			UbiqCredentials = UbiqFactory.ReadCredentialsFromFile(string.Empty);
+			UbiqCredentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, Environment.GetEnvironmentVariable("JsonTestProfile") ?? "default");
 			UbiqFPEEncryptDecrypt = new UbiqFPEEncryptDecrypt(UbiqCredentials);
 		}
 

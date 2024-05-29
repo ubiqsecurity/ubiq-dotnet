@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Text.Json;
 using Xunit.Sdk;
 
@@ -17,7 +17,7 @@ namespace UbiqSecurity.Tests.Helpers
 			// default to 100.json but allow automated tests to override that w/ an environment variable
 			// if we default to something larger, the VS Test Explorer will take forever to enumerate all possible tests
 			// environment variable can be passed on commandline, for example: dotnet test -e JsonTestSize:"10k"
-			_filePath = $@"TestData/{Environment.GetEnvironmentVariable("JsonTestSize") ?? "100"}.json";
+			_filePath = $@"TestData/{Environment.GetEnvironmentVariable("JsonTestEnv") ?? "prod"}-{Environment.GetEnvironmentVariable("JsonTestSize") ?? "100"}.json";
 		}
 
 		public override IEnumerable<object[]> GetData(MethodInfo testMethod)
