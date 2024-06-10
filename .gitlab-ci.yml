@@ -63,7 +63,7 @@ load_tests:
     - echo -e "ACCESS_KEY_ID=$UAK" >> $HOME/.ubiq/credentials
     - echo -e "SECRET_SIGNING_KEY=$SSK" >> $HOME/.ubiq/credentials
     - echo -e "SECRET_CRYPTO_ACCESS_KEY=$SCAK" >> $HOME/.ubiq/credentials
-    - dotnet run --project ./tests/UbiqSecurity.LoadTests -c Release -- -i ./tests/UbiqSecurity.Tests/TestData/$TEST_ENV-1m.json -c $HOME/.ubiq/credentials
+    - dotnet run --project ./tests/UbiqSecurity.LoadTests -c Release -- -i ./tests/UbiqSecurity.Tests/TestData/$TEST_ENV/1m/ -c $HOME/.ubiq/credentials
   after_script:
     - rm $HOME/.ubiq/credentials
   rules:
