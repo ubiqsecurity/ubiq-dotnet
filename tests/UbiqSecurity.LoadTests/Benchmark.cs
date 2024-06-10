@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Newtonsoft.Json;
 
 namespace UbiqSecurity.LoadTests
@@ -16,40 +16,43 @@ namespace UbiqSecurity.LoadTests
 			_fpeEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials);
 		}
 
-		public async Task<Timings> RunAsync(string jsonDataPath)
+		public async Task<Timings> RunAsync(IEnumerable<string> jsonDataPaths)
 		{
 			Console.WriteLine("Starting");
 
 			_timings = new Timings();
 
 			try
-			{ 
-				using var fileStream = new FileStream(jsonDataPath, FileMode.Open);
-				using var streamReader = new StreamReader(fileStream);
-				using var jsonReader = new JsonTextReader(streamReader);
+			{
+                foreach (var jsonDataPath in jsonDataPaths)
+                {
+				    using var fileStream = new FileStream(jsonDataPath, FileMode.Open);
+				    using var streamReader = new StreamReader(fileStream);
+				    using var jsonReader = new JsonTextReader(streamReader);
 
-				var serializer = new JsonSerializer();
-				LoadTestData testData = null;
+				    var serializer = new JsonSerializer();
+				    LoadTestData testData = null;
 
-				while (jsonReader.Read())
-				{
-					if (jsonReader.TokenType == JsonToken.StartObject)
-					{
-						testData = serializer.Deserialize<LoadTestData>(jsonReader);
+				    while (jsonReader.Read())
+				    {
+					    if (jsonReader.TokenType == JsonToken.StartObject)
+					    {
+						    testData = serializer.Deserialize<LoadTestData>(jsonReader);
 
-						if (!_isWarm)
-						{
-							await WarmupIterationAsync(testData);
-						}
+						    if (!_isWarm)
+						    {
+							    await WarmupIterationAsync(testData);
+						    }
 
-						await OneIterationAsync(testData);
-					}
-				}
+						    await OneIterationAsync(testData);
+					    }
+				    }
 
-				jsonReader.Close();
-				streamReader.Close();
-				fileStream.Close();
-			}
+				    jsonReader.Close();
+				    streamReader.Close();
+				    fileStream.Close();
+                }
+            }
 			catch(Exception ex)
 			{
 				Console.WriteLine(ex.Message);
