@@ -7,20 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="TestData\100.json" />
-    <None Remove="TestData\10k.json" />
-    <None Remove="TestData\1m.json" />
+    <None Remove="TestData\**\*.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="TestData\100.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestData\10k.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestData\1m.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="TestData\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
@@ -42,5 +34,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\UbiqSecurity\UbiqSecurity.csproj" />
   </ItemGroup>
-
 </Project>

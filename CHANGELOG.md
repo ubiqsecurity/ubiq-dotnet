@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.2.0 - 2024-05-28
+*  Add Partial Encryption Prefix/Suffix support
+
 ## 2.1.0 - 2024-01-23
 * Remove dependency on external Ubiq-Security.FPE package
 * Migrate FPE from using Portable.BouncyCastle to System.Security.Cryptography

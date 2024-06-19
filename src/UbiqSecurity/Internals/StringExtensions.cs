@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Text;
 using UbiqSecurity.Fpe.Helpers;
 
 namespace UbiqSecurity.Internals
 {
-	internal static class StringExtensions
+    internal static class StringExtensions
 	{
 		internal static string ReplaceCharacter(this string str, char replacement, int position)
 		{
@@ -33,5 +33,15 @@ namespace UbiqSecurity.Internals
 
 			return output;
 		}
-	}
+
+        internal static string TrimEnd(this string input, int characters)
+        {
+            return input.Substring(0, input.Length - characters);
+        }
+
+        internal static string TrimStart(this string input, int characters)
+        {
+            return input.Substring(characters);
+        }
+    }
 }
