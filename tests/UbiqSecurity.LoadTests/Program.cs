@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using CommandLine;
 
 namespace UbiqSecurity.LoadTests
@@ -28,13 +28,20 @@ namespace UbiqSecurity.LoadTests
 
 		private static async Task RunCommand(CommandLineOptions options)
 		{
+            bool isDirectory = false;
+
 			// input file
 			if (string.IsNullOrEmpty(options.InputFileName))
 			{
 				throw new InvalidOperationException("input file name (-i) must be specified ");
 			}
 
-			if (!File.Exists(options.InputFileName))
+            if (Directory.Exists(options.InputFileName))
+            {
+                isDirectory = true;
+            }
+
+			if (!isDirectory && !File.Exists(options.InputFileName))
 			{
 				throw new InvalidOperationException($"input file {options.InputFileName} not found");
 			}
@@ -57,7 +64,8 @@ namespace UbiqSecurity.LoadTests
 			try
 			{
 				using var benchmark = new Benchmark(ubiqCredentials);
-				var timings = await benchmark.RunAsync(options.InputFileName);
+                var filePaths = isDirectory ? Directory.EnumerateFiles(options.InputFileName, "*.json") : new List<string> { options.InputFileName };
+                var timings = await benchmark.RunAsync(filePaths);
 
 				PrintTimings(timings);
 			}

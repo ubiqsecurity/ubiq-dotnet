@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +11,7 @@ using UbiqSecurity.Model;
 
 namespace UbiqSecurity
 {
-	public class UbiqFPEEncryptDecrypt : IDisposable
+    public class UbiqFPEEncryptDecrypt : IDisposable
 	{
 		private readonly IUbiqCredentials _ubiqCredentials;
 		private readonly IBillingEventsManager _billingEvents;
@@ -84,10 +84,10 @@ namespace UbiqSecurity
 		{
 			var dataset = await _datasetCache.GetAsync(datasetName);
 
-			var parsedInput = ParseInput(cipherText, dataset, false);
+			var parsedInput = FpeParser.Parse(cipherText, dataset, false);
 
-			// P20-1357 verify input length
-			if (parsedInput.Trimmed.Length < dataset.MinInputLength || parsedInput.Trimmed.Length > dataset.MaxInputLength)
+            // P20-1357 verify input length
+            if (parsedInput.Trimmed.Length < dataset.MinInputLength || parsedInput.Trimmed.Length > dataset.MaxInputLength)
 			{
 				throw new ArgumentException("Input length does not match FFS parameters.");
 			}
@@ -100,7 +100,7 @@ namespace UbiqSecurity
 
 			var plainText = ffx.Cipher(dataset.EncryptionAlgorithm, convertedRadixCipherText, tweak, false);
 
-			var formattedPlainText = MergeToFormattedOutput(parsedInput.StringTemplate, plainText, dataset.InputCharacters);
+			var formattedPlainText = MergeToFormattedOutput(parsedInput, plainText, dataset.InputCharacters);
 
 			// create the billing record
 			await _billingEvents.AddBillingEventAsync(_ubiqCredentials.AccessKeyId, dataset.Name, string.Empty, BillingAction.Decrypt, DatasetType.Structured, keyNumber, 1);
@@ -139,7 +139,7 @@ namespace UbiqSecurity
 
 		private async Task<string> EncryptAsync(FfsRecord dataset, FfxContext ffx, string plainText, byte[] tweak)
 		{
-			var parsedInput = ParseInput(plainText, dataset, true);
+			var parsedInput = FpeParser.Parse(plainText, dataset, true);
 
 			// P20-1357 verify input length
 			if (parsedInput.Trimmed.Length < dataset.MinInputLength || parsedInput.Trimmed.Length > dataset.MaxInputLength)
@@ -157,7 +157,7 @@ namespace UbiqSecurity
 			string encodedValue = EncodeKeyNumber(dataset, ffx.KeyNumber, radixConvertedCipherText);
 
 			// final formatting
-			string formattedValue = MergeToFormattedOutput(parsedInput.StringTemplate, encodedValue, dataset.OutputCharacters);
+			string formattedValue = MergeToFormattedOutput(parsedInput, encodedValue, dataset.OutputCharacters);
 
 			// create the billing record
 			await _billingEvents.AddBillingEventAsync(_ubiqCredentials.AccessKeyId, dataset.Name, string.Empty, BillingAction.Encrypt, DatasetType.Structured, ffx.KeyNumber, 1);
@@ -294,9 +294,9 @@ namespace UbiqSecurity
 		/// <param name="convertedToRadix">String to be placed in the formattedDestination</param>
 		/// <param name="characterSet">Set of characters to use in the final formattedDestination</param>
 		/// <returns></returns>
-		private static string MergeToFormattedOutput(string formattedDestination, string convertedToRadix, string characterSet)
+		private static string MergeToFormattedOutput(FpeParseModel input, string convertedToRadix, string characterSet)
 		{
-			string ret = formattedDestination;
+			string ret = input.StringTemplate;
 
 			var d = ret.Length - 1;
 			var s = convertedToRadix.Length - 1;
@@ -319,52 +319,7 @@ namespace UbiqSecurity
 				d--;
 			}
 
-			return ret;
-		}
-
-		private static FpeParseModel ParseInput(string input, FfsRecord dataset, bool encrypt)
-		{
-            string firstCharacter;
-			string validChars;
-
-			if (encrypt)
-			{
-				validChars = dataset.InputCharacters;
-				firstCharacter = dataset.OutputCharacters.Substring(0, 1);
-			}
-			else
-            {
-				validChars = dataset.OutputCharacters;
-				firstCharacter = dataset.InputCharacters.Substring(0, 1);
-			}
-
-			var trimmedSb = new StringBuilder();
-			var templateSb = new StringBuilder();
-			
-			foreach (var c in input.ToCharArray())
-			{
-				if (validChars.Contains(c.ToString()))
-				{
-					templateSb.Append(firstCharacter);
-					trimmedSb.Append(c);
-				}
-				else if (dataset.PassthroughCharacters.Contains(c.ToString()))
-				{
-					templateSb.Append(c);
-				}
-				else
-				{
-					throw new ArgumentOutOfRangeException(nameof(input), $"invalid character '{c}' found in the input");
-				}
-			}
-
-			var result = new FpeParseModel
-			{
-				StringTemplate = templateSb.ToString(),
-				Trimmed = trimmedSb.ToString(),
-			};
-
-			return result;
+			return $"{input.Prefix}{ret}{input.Suffix}";
 		}
 
 		public static async Task<string> DecryptAsync(IUbiqCredentials ubiqCredentials, string inputText, string datasetName)

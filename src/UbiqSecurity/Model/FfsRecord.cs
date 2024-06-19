@@ -1,8 +1,10 @@
-﻿using Newtonsoft.Json;
+using System.Collections;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace UbiqSecurity.Model
 {
-	internal class FfsRecord
+    internal class FfsRecord
 	{
 		[JsonProperty("encryption_algorithm")]
 		public string EncryptionAlgorithm { get; set; }
@@ -45,5 +47,8 @@ namespace UbiqSecurity.Model
 
 		[JsonProperty("tweak")]
 		public string Tweak { get; set; }
+
+        [JsonProperty("passthrough_rules")]
+        public IEnumerable<PassthroughRuleDto> PassthroughRules { get; set; }
 	}
 }

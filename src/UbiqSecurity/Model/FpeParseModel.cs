@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UbiqSecurity.Internals;
 
 namespace UbiqSecurity.Model
@@ -9,7 +9,15 @@ namespace UbiqSecurity.Model
 
 		public string StringTemplate { get; set; }
 
-		public int DecodeKeyNumber(FfsRecord dataset, int position)
+        public string Prefix { get; set; }
+
+        public string Suffix { get; set; }
+
+        public bool PassthroughProcessed { get; set; }
+
+        public char TemplateChar { get; set; }
+
+        public int DecodeKeyNumber(FfsRecord dataset, int position)
 		{
 			if (position < 0 || position >= Trimmed.Length)
 			{
