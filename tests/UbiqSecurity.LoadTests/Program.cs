@@ -61,18 +61,12 @@ namespace UbiqSecurity.LoadTests
 				ubiqCredentials = UbiqFactory.ReadCredentialsFromFile(options.Credentials, options.Profile);
 			}
 
-			try
-			{
-				using var benchmark = new Benchmark(ubiqCredentials);
-                var filePaths = isDirectory ? Directory.EnumerateFiles(options.InputFileName, "*.json") : new List<string> { options.InputFileName };
-                var timings = await benchmark.RunAsync(filePaths);
+			
+			using var benchmark = new Benchmark(ubiqCredentials);
+            var filePaths = isDirectory ? Directory.EnumerateFiles(options.InputFileName, "*.json") : new List<string> { options.InputFileName };
+            var timings = await benchmark.RunAsync(filePaths);
 
-				PrintTimings(timings);
-			}
-			catch(Exception ex)
-			{
-				Console.WriteLine(ex.Message);
-			}
+			PrintTimings(timings);
 		}
 
 		private static void PrintTimings(Timings timings)
@@ -86,7 +80,13 @@ namespace UbiqSecurity.LoadTests
 
 			Console.WriteLine($"\tDecryption count: {timings.DecryptionTimes.Count}");
 			Console.WriteLine($"\tDecryption average time: {timings.DecryptionTimes.Average()} (ms)");
-		}
+
+            Console.WriteLine($"\tError Count: {timings.ErrorCount}");
+            if (timings.ErrorCount > 0)
+            {
+                throw new Exception("Error Count > 0");
+            }
+        }
 
 		private static void HandleCommandLineErrors(IEnumerable<Error> errors)
 		{
