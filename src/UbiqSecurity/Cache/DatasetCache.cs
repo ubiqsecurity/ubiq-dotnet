@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Specialized;
 #if DEBUG
 using System.Diagnostics;
@@ -12,7 +12,7 @@ namespace UbiqSecurity.Cache
 {
 	internal class DatasetCache : IDatasetCache, IDisposable
 	{
-		private static readonly CacheItemPolicy DefaultPolicy = new CacheItemPolicy
+		private static CacheItemPolicy DefaultPolicy => new CacheItemPolicy
 		{
 			AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(30)
 		};
@@ -32,7 +32,7 @@ namespace UbiqSecurity.Cache
 
 		public void Dispose()
 		{
-			_cache.Dispose();
+            _cache.Dispose();
 		}
 
 		public void Clear()
@@ -43,22 +43,21 @@ namespace UbiqSecurity.Cache
 
 		public async Task<FfsRecord> GetAsync(string ffsName)
 		{
-			if (!_cache.Contains(ffsName))
+            var ffs = (FfsRecord)_cache.Get(ffsName);
+            if (ffs == null)
 			{
 #if DEBUG
-				Debug.WriteLine($"FFX cache miss {ffsName}");
+                Debug.WriteLine($"FFX cache miss {ffsName}");
 #endif
 
-				var fpeKey = await _ubiqWebService.GetFfsDefinitionAsync(ffsName);
-				if (fpeKey == null)
+				ffs = await _ubiqWebService.GetFfsDefinitionAsync(ffsName);
+				if (ffs == null)
 				{
 					throw new ArgumentException($"Dataset '{ffsName}' does not exist", nameof(ffsName));
 				}
 
-				_cache.Set(ffsName, fpeKey, DefaultPolicy);
+				_cache.Set(ffsName, ffs, DefaultPolicy);
 			}
-
-			var ffs = (FfsRecord)_cache.Get(ffsName);
 
 			return ffs;
 		}
@@ -75,7 +74,7 @@ namespace UbiqSecurity.Cache
 
 		private void InitCache()
 		{
-			if (!_cacheLock)
+            if (!_cacheLock)
 			{
 				_cacheLock = true;
 				lock (_cache)
