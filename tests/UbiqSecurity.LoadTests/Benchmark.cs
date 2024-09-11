@@ -55,7 +55,9 @@ namespace UbiqSecurity.LoadTests
             }
 			catch(Exception ex)
 			{
+                _timings.ErrorCount++;
 				Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
 			}
 
 			return _timings;
@@ -80,7 +82,8 @@ namespace UbiqSecurity.LoadTests
 
 			if (cipherText != testData.CipherText)
 			{
-				Console.WriteLine($"Error cipherText {testData.CipherText} expected");
+                _timings.ErrorCount++;
+                Console.WriteLine($"Error cipherText {testData.CipherText} expected");
 			}
 
 			_stopwatch.Reset();
@@ -93,7 +96,8 @@ namespace UbiqSecurity.LoadTests
 
 			if (plainText != testData.PlainText)
 			{
-				Console.WriteLine($"Error plainText {testData.CipherText} expected");
+                _timings.ErrorCount++;
+                Console.WriteLine($"Error plainText {testData.CipherText} expected");
 			}
 		}
 
@@ -105,6 +109,7 @@ namespace UbiqSecurity.LoadTests
 
 			if (cipherText != testData.CipherText)
 			{
+                _timings.ErrorCount++;
 				Console.WriteLine($"Error cipherText {testData.CipherText} expected");
 			}
 
@@ -112,7 +117,8 @@ namespace UbiqSecurity.LoadTests
 
 			if (plainText != testData.PlainText)
 			{
-				Console.WriteLine($"Error plainText {testData.CipherText} expected");
+                _timings.ErrorCount++;
+                Console.WriteLine($"Error plainText {testData.CipherText} expected");
 			}
 
 			_isWarm = true;

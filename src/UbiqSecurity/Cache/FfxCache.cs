@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Specialized;
 #if DEBUG
 using System.Diagnostics;
@@ -8,13 +8,12 @@ using System.Threading.Tasks;
 using UbiqSecurity.Internals;
 using UbiqSecurity.Fpe;
 using UbiqSecurity.Model;
-using System.Security.Cryptography;
 
 namespace UbiqSecurity.Cache
 {
-	internal class FfxCache : IFfxCache, IDisposable
+    internal class FfxCache : IFfxCache, IDisposable
 	{
-		private static readonly CacheItemPolicy DefaultPolicy = new CacheItemPolicy
+		private static CacheItemPolicy DefaultPolicy => new CacheItemPolicy
 		{
 			AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(30)
 		};
@@ -35,7 +34,8 @@ namespace UbiqSecurity.Cache
 
 		public void Dispose()
 		{
-			_cache.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
 		}
 
 		public void Clear()
@@ -53,25 +53,26 @@ namespace UbiqSecurity.Cache
 		{
 			var cacheKey = $"{key.FfsRecord.Name}|{key.KeyNumber ?? -1}";
 
-			if (!_cache.Contains(cacheKey))
+            var ffx = (FfxContext)_cache.Get(cacheKey);
+            if (ffx == null)
 			{
 #if DEBUG
-				Debug.WriteLine($"FFX cache miss {cacheKey}");
+                Debug.WriteLine($"FFX cache miss {cacheKey}");
 #endif
 
-				var ffxContext = await GetFfsKeyAsync(key);
+				ffx = await GetFfsKeyAsync(key);
 
-				_cache.Set(cacheKey, ffxContext, DefaultPolicy);
+				_cache.Set(cacheKey, ffx, DefaultPolicy);
 
 				// if we were doing an encypt and didn't know the keynumber ahead of time (just want to use the latest one)
 				// we'll cache it twice, once w/ keynumber -1 (for future encrypts) and onces as the real keynumber (for future decrypts)
 				if (!key.KeyNumber.HasValue)
 				{
-					_cache.Set($"{key.FfsRecord.Name}|{ffxContext.KeyNumber}", ffxContext, DefaultPolicy);
+					_cache.Set($"{key.FfsRecord.Name}|{ffx.KeyNumber}", ffx, DefaultPolicy);
 				}
 			}
 
-			return (FfxContext)_cache.Get(cacheKey);
+			return ffx;
 		}
 
 		public void TryAdd(FfsKeyId key, FfxContext context)
@@ -85,6 +86,14 @@ namespace UbiqSecurity.Cache
 
 			_cache.Set(cacheKey, context, DefaultPolicy);
 		}
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _cache?.Dispose();
+            }
+        }
 
 		private void InitCache()
 		{
@@ -154,7 +163,5 @@ namespace UbiqSecurity.Cache
 
 			return context;
 		}
-
-		
 	}
 }
