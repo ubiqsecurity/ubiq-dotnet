@@ -404,6 +404,6 @@ and the sample application [source code][ubiq-dotnet-samples].
 [sync-context-info]:https://docs.microsoft.com/en-us/archive/msdn-magazine/2011/february/msdn-magazine-parallel-computing-it-s-all-about-the-synchronizationcontext
 [efpesample]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/CoreConsoleFpe/Program.cs
 [manage-keys]:https://dev.ubiqsecurity.com/docs/api-keys
-[use-credentials]:https://dev.ubiqsecurity.com/docs/using-api-key-credentials
-[credentials]:https://dev.ubiqsecurity.com/docs/api-key-credentials
+[use-credentials]:https://dev.ubiqsecurity.com/docs/api-key-credentials
+[credentials]:https://dev.ubiqsecurity.com/docs/api-keys
 [UbiqFpeEncryptDecryptTests.cs]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/tests/UbiqSecurity.Tests/UbiqFpeEncryptDecryptTests.cs
