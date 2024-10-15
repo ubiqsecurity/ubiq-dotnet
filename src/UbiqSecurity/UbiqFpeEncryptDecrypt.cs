@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using UbiqSecurity.Billing;
 using UbiqSecurity.Cache;
 using UbiqSecurity.Fpe;
@@ -15,24 +17,42 @@ namespace UbiqSecurity
 	{
 		private readonly IUbiqCredentials _ubiqCredentials;
 		private readonly IBillingEventsManager _billingEvents;
+        private readonly ILogger _logger;
 
 		private IUbiqWebService _ubiqWebService; // null when disposed
 		private IFfxCache _ffxCache;
 		private IDatasetCache _datasetCache;
 
-		public UbiqFPEEncryptDecrypt(IUbiqCredentials ubiqCredentials)
-			: this(ubiqCredentials, new UbiqConfiguration())
+        private static readonly Action<ILogger, string, Exception> LogException =
+            LoggerMessage.Define<string>(
+                logLevel: LogLevel.Error,
+                eventId: 1,
+                formatString: "Error: {StackTrace}");
+
+        public UbiqFPEEncryptDecrypt(IUbiqCredentials ubiqCredentials)
+			: this(ubiqCredentials, new UbiqConfiguration(), null)
 		{
 		}
 
-		public UbiqFPEEncryptDecrypt(IUbiqCredentials ubiqCredentials, UbiqConfiguration ubiqConfiguration)
+        public UbiqFPEEncryptDecrypt(IUbiqCredentials ubiqCredentials, ILogger logger)
+            : this(ubiqCredentials, new UbiqConfiguration(), logger)
+        {
+        }
+
+        public UbiqFPEEncryptDecrypt(IUbiqCredentials ubiqCredentials, UbiqConfiguration ubiqConfiguration)
+            : this(ubiqCredentials, ubiqConfiguration, null)
+        {
+        }
+
+        public UbiqFPEEncryptDecrypt(IUbiqCredentials ubiqCredentials, UbiqConfiguration ubiqConfiguration, ILogger logger)
 		{
 			_ubiqCredentials = ubiqCredentials;
 			_ubiqWebService = new UbiqWebServices(ubiqCredentials);
 			_billingEvents = new BillingEventsManager(ubiqConfiguration, _ubiqWebService);
 			_datasetCache = new DatasetCache(_ubiqWebService);
 			_ffxCache = new FfxCache(_ubiqCredentials, _ubiqWebService);
-		}
+            _logger = logger ?? NullLoggerFactory.Instance.CreateLogger<UbiqFPEEncryptDecrypt>();
+        }
 
 		internal UbiqFPEEncryptDecrypt(IUbiqCredentials ubiqCredentials, IUbiqWebService ubiqWebService, IBillingEventsManager billingEvents)
 		{
@@ -82,31 +102,39 @@ namespace UbiqSecurity
 
 		public async Task<string> DecryptAsync(string datasetName, string cipherText, byte[] tweak)
 		{
-			var dataset = await _datasetCache.GetAsync(datasetName);
+            try
+            {
+                var dataset = await _datasetCache.GetAsync(datasetName);
 
-			var parsedInput = FpeParser.Parse(cipherText, dataset, false);
+			    var parsedInput = FpeParser.Parse(cipherText, dataset, false);
 
-            // P20-1357 verify input length
-            if (parsedInput.Trimmed.Length < dataset.MinInputLength || parsedInput.Trimmed.Length > dataset.MaxInputLength)
-			{
-				throw new ArgumentException("Input length does not match FFS parameters.");
-			}
+                // P20-1357 verify input length
+                if (parsedInput.Trimmed.Length < dataset.MinInputLength || parsedInput.Trimmed.Length > dataset.MaxInputLength)
+			    {
+				    throw new ArgumentException("Input length does not match FFS parameters.");
+			    }
 
-			var keyNumber = parsedInput.DecodeKeyNumber(dataset, 0);
+			    var keyNumber = parsedInput.DecodeKeyNumber(dataset, 0);
 
-			var ffx = await _ffxCache.GetAsync(dataset, keyNumber);
+			    var ffx = await _ffxCache.GetAsync(dataset, keyNumber);
 
-			var convertedRadixCipherText = parsedInput.Trimmed.ConvertRadix(dataset.OutputCharacters, dataset.InputCharacters);
+			    var convertedRadixCipherText = parsedInput.Trimmed.ConvertRadix(dataset.OutputCharacters, dataset.InputCharacters);
 
-			var plainText = ffx.Cipher(dataset.EncryptionAlgorithm, convertedRadixCipherText, tweak, false);
+			    var plainText = ffx.Cipher(dataset.EncryptionAlgorithm, convertedRadixCipherText, tweak, false);
 
-			var formattedPlainText = MergeToFormattedOutput(parsedInput, plainText, dataset.InputCharacters);
+			    var formattedPlainText = MergeToFormattedOutput(parsedInput, plainText, dataset.InputCharacters);
 
-			// create the billing record
-			await _billingEvents.AddBillingEventAsync(_ubiqCredentials.AccessKeyId, dataset.Name, string.Empty, BillingAction.Decrypt, DatasetType.Structured, keyNumber, 1);
+			    // create the billing record
+			    await _billingEvents.AddBillingEventAsync(_ubiqCredentials.AccessKeyId, dataset.Name, string.Empty, BillingAction.Decrypt, DatasetType.Structured, keyNumber, 1);
 
-			return formattedPlainText;
-		}
+			    return formattedPlainText;
+            }
+            catch (Exception ex)
+            {
+                LogException(_logger, ex.StackTrace, ex);
+                throw;
+            }
+        }
 
 		public async Task<byte[]> EncryptAsync(string datasetName, byte[] plainBytes)
 		{
@@ -130,12 +158,20 @@ namespace UbiqSecurity
 
 		public async Task<string> EncryptAsync(string datasetName, string plainText, byte[] tweak)
 		{
-			var dataset = await _datasetCache.GetAsync(datasetName);
+            try
+            {
+			    var dataset = await _datasetCache.GetAsync(datasetName);
 
-			var ffx = await _ffxCache.GetAsync(dataset, null);
+			    var ffx = await _ffxCache.GetAsync(dataset, null);
 
-			return await EncryptAsync(dataset, ffx, plainText, tweak);
-		}
+			    return await EncryptAsync(dataset, ffx, plainText, tweak);
+            }
+            catch (Exception ex)
+            {
+                LogException(_logger, ex.StackTrace, ex);
+                throw;
+            }
+        }
 
 		private async Task<string> EncryptAsync(FfsRecord dataset, FfxContext ffx, string plainText, byte[] tweak)
 		{
@@ -322,12 +358,14 @@ namespace UbiqSecurity
 			return $"{input.Prefix}{ret}{input.Suffix}";
 		}
 
+        [Obsolete("Static DecryptAsync method is deprecated, please use equivalent instance method")]
 		public static async Task<string> DecryptAsync(IUbiqCredentials ubiqCredentials, string inputText, string datasetName)
 		{
 			return await DecryptAsync(ubiqCredentials, inputText, datasetName, null);
 		}
 
-		public static async Task<string> DecryptAsync(IUbiqCredentials ubiqCredentials, string inputText, string datasetName, byte[] tweak)
+        [Obsolete("Static DecryptAsync method is deprecated, please use equivalent instance method")]
+        public static async Task<string> DecryptAsync(IUbiqCredentials ubiqCredentials, string inputText, string datasetName, byte[] tweak)
 		{
 			var response = string.Empty;
 			using (var ubiqEncrypt = new UbiqFPEEncryptDecrypt(ubiqCredentials))
@@ -338,12 +376,14 @@ namespace UbiqSecurity
 			return response;
 		}
 
-		public static async Task<string> EncryptAsync(IUbiqCredentials ubiqCredentials, string inputText, string datasetName)
+        [Obsolete("Static EncryptAsync method is deprecated, please use equivalent instance method")]
+        public static async Task<string> EncryptAsync(IUbiqCredentials ubiqCredentials, string inputText, string datasetName)
 		{
 			return await EncryptAsync(ubiqCredentials, inputText, datasetName, null);
 		}
 
-		public static async Task<string> EncryptAsync(IUbiqCredentials ubiqCredentials, string inputText, string datasetName, byte[] tweak)
+        [Obsolete("Static EncryptAsync method is deprecated, please use equivalent instance method")]
+        public static async Task<string> EncryptAsync(IUbiqCredentials ubiqCredentials, string inputText, string datasetName, byte[] tweak)
 		{
 			var response = string.Empty;
 			using (var ubiqEncrypt = new UbiqFPEEncryptDecrypt(ubiqCredentials))

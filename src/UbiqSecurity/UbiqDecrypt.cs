@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -225,7 +225,8 @@ namespace UbiqSecurity
 			return finalPlainBytes;
 		}
 
-		public static async Task<byte[]> DecryptAsync(IUbiqCredentials ubiqCredentials, byte[] data)
+        [Obsolete("Static DecryptAsync method is deprecated, please use equivalent instance method")]
+        public static async Task<byte[]> DecryptAsync(IUbiqCredentials ubiqCredentials, byte[] data)
 		{
 			using (var ubiqDecrypt = new UbiqDecrypt(ubiqCredentials))
 			{
