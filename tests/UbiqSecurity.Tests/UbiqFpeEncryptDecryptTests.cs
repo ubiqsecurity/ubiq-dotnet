@@ -94,9 +94,9 @@ namespace UbiqSecurity.Tests
 			var ffsName = "ERROR_MSG"; // does not exist
 			var original = " 01121231231231231& 1 &2311200 ";
 
-			var ex = await Assert.ThrowsAsync<ArgumentException>(async () => await sut.EncryptAsync(ffsName, original));
+			var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await sut.EncryptAsync(ffsName, original));
 
-			Assert.Contains("does not exist", ex.Message);
+			Assert.Contains("Invalid Dataset name", ex.Message);
 		}
 
 		[Theory]

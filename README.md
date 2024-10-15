@@ -266,41 +266,7 @@ The eFPE functions work with the credentials file and/or environmental variables
 earlier in this document. You'll only need to make sure that the API keys you pull from the Ubiq dashboard are enabled for
 eFPE capability.
 
-### Encrypt a social security text field - simple interface
-
-Pass credentials, the name of a Field Format Specification, FFS, and data into the encryption function.
-The encrypted data will be returned.
-
-```cs
-{
-  byte[] tweakFF1 = {};
-  var ffsName = "SSN";
-  var plainText = "123-45-6789";
-
-  var ubiqCredentials = UbiqFactory.ReadCredentialsFromFile("path/to/credentials/file", "default");
-
-  var cipherText = await UbiqFPEEncryptDecrypt.EncryptAsync(ubiqCredentials, plainText, ffsName, tweakFF1);
-}
-```
-
-### Decrypt a social security text field - simple interface
-
-Pass credentials, the name of a Field Format Specification, FFS, and data into the decryption function.
-The plain text data will be returned.
-
-```cs
-{
-  byte[] tweakFF1 = {};
-  var ffsName = "SSN";
-  var cipherText = "7\"c-`P-fGj?";
-
-  var ubiqCredentials = UbiqFactory.ReadCredentialsFromFile("path/to/credentials/file", "default");
-
-  var plainText = await UbiqFPEEncryptDecrypt.DecryptAsync(ubiqCredentials, cipherText, ffsName, tweakFF1);
-}
-```
-
-### Encrypt a social security text field - bulk interface
+### Encrypt a social security text field
 
 Create an Encryption / Decryption object with the credentials and then allow repeatedly call encrypt
 data using a Field Format Specification, FFS, and the data.  The encrypted data will be returned after each call
@@ -325,7 +291,7 @@ async Task EncryptionAsync(String FfsName, String plainText, IUbiqCredentials ub
 }
 ```
 
-### Decrypt a social security text field - bulk interface
+### Decrypt a social security text field
 
 Create an Encryption / Decryption object with the credentials and then repeatedly decrypt
 data using a Field Format Specification, FFS, and the data.  The decrypted data will be returned after each call.

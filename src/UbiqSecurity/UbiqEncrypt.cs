@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
@@ -153,6 +153,7 @@ namespace UbiqSecurity
 			return finalBytes;
 		}
 
+        [Obsolete("Static EncryptAsync method is deprecated, please use equivalent instance method")]
 		public static async Task<byte[]> EncryptAsync(IUbiqCredentials ubiqCredentials, byte[] plainBytes)
 		{
 			using (var ubiqEncrypt = new UbiqEncrypt(ubiqCredentials, 1))
