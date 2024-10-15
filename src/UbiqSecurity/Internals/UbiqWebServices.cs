@@ -63,33 +63,16 @@ namespace UbiqSecurity.Internals
 			var base64DataKey = Convert.ToBase64String(encryptedDataKey);
 			var jsonRequest = $"{{\"encrypted_data_key\": \"{base64DataKey}\"}}";
 
-			try
-			{
-				var jsonResponse = await BuildAndHttpSendAsync(url, jsonRequest, HttpMethod.Post, HttpStatusCode.OK)
-									.ConfigureAwait(false);
+			var jsonResponse = await BuildAndHttpSendAsync(url, jsonRequest, HttpMethod.Post, HttpStatusCode.OK)
+								.ConfigureAwait(false);
 
-				// deserialize JSON response to POCO
-				var decryptionKeyResponse = JsonConvert.DeserializeObject<DecryptionKeyResponse>(jsonResponse);
+			// deserialize JSON response to POCO
+			var decryptionKeyResponse = JsonConvert.DeserializeObject<DecryptionKeyResponse>(jsonResponse);
 
-				// decrypt the server-provided decryption key
-				decryptionKeyResponse.PostProcess(_ubiqCredentials.SecretCryptoAccessKey);
+			// decrypt the server-provided decryption key
+			decryptionKeyResponse.PostProcess(_ubiqCredentials.SecretCryptoAccessKey);
 
-				return decryptionKeyResponse;
-			}
-#if !DEBUG
-#pragma warning disable CS0168 // Variable is declared but never used
-#endif
-			catch (Exception ex)
-#if !DEBUG
-#pragma warning restore CS0168 // Variable is declared but never used
-#endif
-			{
-#if DEBUG
-				Debug.WriteLine($"Trapped exception: {ex.Message}");
-#endif
-
-				return null;
-			}
+			return decryptionKeyResponse;
 		}
 
 		public async Task<EncryptionKeyResponse> GetEncryptionKeyAsync(int uses)
@@ -98,33 +81,16 @@ namespace UbiqSecurity.Internals
 
 			var jsonRequest = $"{{\"uses\": {uses}}}";
 
-			try
-			{
-				var jsonResponse = await BuildAndHttpSendAsync(url, jsonRequest, HttpMethod.Post, HttpStatusCode.Created)
-									.ConfigureAwait(false);
+			var jsonResponse = await BuildAndHttpSendAsync(url, jsonRequest, HttpMethod.Post, HttpStatusCode.Created)
+								.ConfigureAwait(false);
 
-				// deserialize JSON response to POCO
-				var encryptionKeyResponse = JsonConvert.DeserializeObject<EncryptionKeyResponse>(jsonResponse);
+			// deserialize JSON response to POCO
+			var encryptionKeyResponse = JsonConvert.DeserializeObject<EncryptionKeyResponse>(jsonResponse);
 
-				// decrypt the server-provided encryption key
-				encryptionKeyResponse.PostProcess(_ubiqCredentials.SecretCryptoAccessKey);
+			// decrypt the server-provided encryption key
+			encryptionKeyResponse.PostProcess(_ubiqCredentials.SecretCryptoAccessKey);
 
-				return encryptionKeyResponse;
-			}
-#if !DEBUG
-#pragma warning disable CS0168 // Variable is declared but never used
-#endif
-			catch (Exception ex)
-#if !DEBUG
-#pragma warning restore CS0168 // Variable is declared but never used
-#endif
-			{
-#if DEBUG
-				Debug.WriteLine($"Trapped exception: {ex.Message}");
-#endif
-
-				return null;
-			}
+			return encryptionKeyResponse;
 		}
 
 		public async Task<FfsRecord> GetFfsDefinitionAsync(string ffsName)
@@ -132,29 +98,12 @@ namespace UbiqSecurity.Internals
 			var key = UrlHelper.GenerateFfsUrl(ffsName, _ubiqCredentials);
 			var url = $"{_baseUrl}/{_restApiRoot}/ffs?{key}";
 
-			try
-			{
-				var jsonResponse = await BuildAndHttpSendAsync(url, null, HttpMethod.Get, HttpStatusCode.OK)
-									.ConfigureAwait(false);
+			var jsonResponse = await BuildAndHttpSendAsync(url, null, HttpMethod.Get, HttpStatusCode.OK)
+								.ConfigureAwait(false);
 
-				// deserialize JSON response to POCO
-				var ffsRecord = JsonConvert.DeserializeObject<FfsRecord>(jsonResponse);
-				return ffsRecord;
-			}
-#if !DEBUG
-#pragma warning disable CS0168 // Variable is declared but never used
-#endif
-			catch (Exception ex)
-#if !DEBUG
-#pragma warning restore CS0168 // Variable is declared but never used
-#endif
-			{
-#if DEBUG
-				Debug.WriteLine($"Trapped exception: {ex.Message}");
-#endif
-
-				return null;
-			}
+			// deserialize JSON response to POCO
+			var ffsRecord = JsonConvert.DeserializeObject<FfsRecord>(jsonResponse);
+			return ffsRecord;
 		}
 
 		public async Task<FpeKeyResponse> GetFpeDecryptionKeyAsync(string ffsName, int keyNumber)
@@ -162,30 +111,13 @@ namespace UbiqSecurity.Internals
 			var key = UrlHelper.GenerateFpeUrlDecrypt(ffsName, keyNumber, _ubiqCredentials);
 			var url = $"{_baseUrl}/{_restApiRoot}/fpe/key?{key}";
 
-			try
-			{
-				var jsonResponse = await BuildAndHttpSendAsync(url, null, HttpMethod.Get, HttpStatusCode.OK)
-									.ConfigureAwait(false);
+			var jsonResponse = await BuildAndHttpSendAsync(url, null, HttpMethod.Get, HttpStatusCode.OK)
+								.ConfigureAwait(false);
 
-				// deserialize JSON response to POCO
-				var encryptionKeyResponse = JsonConvert.DeserializeObject<FpeKeyResponse>(jsonResponse);
+			// deserialize JSON response to POCO
+			var encryptionKeyResponse = JsonConvert.DeserializeObject<FpeKeyResponse>(jsonResponse);
 
-				return encryptionKeyResponse;
-			}
-#if !DEBUG
-#pragma warning disable CS0168 // Variable is declared but never used
-#endif
-			catch (Exception ex)
-#if !DEBUG
-#pragma warning restore CS0168 // Variable is declared but never used
-#endif
-			{
-#if DEBUG
-				Debug.WriteLine($"Trapped exception: {ex.Message}");
-#endif
-
-				return null;
-			}
+			return encryptionKeyResponse;
 		}
 
 		public async Task<DatasetAndKeysResponse> GetDatasetAndKeysAsync(string datasetName)
@@ -193,30 +125,13 @@ namespace UbiqSecurity.Internals
 			var key = UrlHelper.GenerateFpeUrlEncrypt(datasetName, _ubiqCredentials);
 			var url = $"{_baseUrl}/{_restApiRoot}/fpe/def_keys?{key}";
 
-			try
-			{
-				var jsonResponse = await BuildAndHttpSendAsync(url, null, HttpMethod.Get, HttpStatusCode.OK)
-									.ConfigureAwait(false);
+			var jsonResponse = await BuildAndHttpSendAsync(url, null, HttpMethod.Get, HttpStatusCode.OK)
+								.ConfigureAwait(false);
 
-				// deserialize JSON response to POCO
-				var encryptionKeyResponse = JsonConvert.DeserializeObject<DatasetAndKeysResponse>(jsonResponse);
+			// deserialize JSON response to POCO
+			var encryptionKeyResponse = JsonConvert.DeserializeObject<DatasetAndKeysResponse>(jsonResponse);
 
-				return encryptionKeyResponse;
-			}
-#if !DEBUG
-#pragma warning disable CS0168 // Variable is declared but never used
-#endif
-			catch (Exception ex)
-#if !DEBUG
-#pragma warning restore CS0168 // Variable is declared but never used
-#endif
-			{
-#if DEBUG
-				Debug.WriteLine($"Trapped exception: {ex.Message}");
-#endif
-
-				return null;
-			}
+			return encryptionKeyResponse;
 		}
 
 		public async Task<FpeKeyResponse> GetFpeEncryptionKeyAsync(string ffsName)
@@ -224,30 +139,13 @@ namespace UbiqSecurity.Internals
 			var key = UrlHelper.GenerateFpeUrlEncrypt(ffsName, _ubiqCredentials);
 			var url = $"{_baseUrl}/{_restApiRoot}/fpe/key?{key}";
 
-			try
-			{
-				var jsonResponse = await BuildAndHttpSendAsync(url, null, HttpMethod.Get, HttpStatusCode.OK)
-									.ConfigureAwait(false);
+			var jsonResponse = await BuildAndHttpSendAsync(url, null, HttpMethod.Get, HttpStatusCode.OK)
+								.ConfigureAwait(false);
 
-				// deserialize JSON response to POCO
-				var encryptionKeyResponse = JsonConvert.DeserializeObject<FpeKeyResponse>(jsonResponse);
+			// deserialize JSON response to POCO
+			var encryptionKeyResponse = JsonConvert.DeserializeObject<FpeKeyResponse>(jsonResponse);
 
-				return encryptionKeyResponse;
-			}
-#if !DEBUG
-#pragma warning disable CS0168 // Variable is declared but never used
-#endif
-			catch (Exception ex)
-#if !DEBUG
-#pragma warning restore CS0168 // Variable is declared but never used
-#endif
-			{
-#if DEBUG
-				Debug.WriteLine($"Trapped exception: {ex.Message}");
-#endif
-
-				return null;
-			}
+			return encryptionKeyResponse;
 		}
 
 		public async Task<FpeBillingResponse> SendTrackingEventsAsync(TrackingEventsRequest trackingEventsRequest)
@@ -256,24 +154,16 @@ namespace UbiqSecurity.Internals
 
 			string jsonPayload = JsonConvert.SerializeObject(trackingEventsRequest);
 
-			try
-			{
-				var jsonResponse = await BuildAndHttpSendAsync(url, jsonPayload, HttpMethod.Post, HttpStatusCode.OK)
-									.ConfigureAwait(false);
+			var jsonResponse = await BuildAndHttpSendAsync(url, jsonPayload, HttpMethod.Post, HttpStatusCode.OK)
+								.ConfigureAwait(false);
 
-				if (string.IsNullOrEmpty(jsonResponse))
-				{
-					return new FpeBillingResponse(200, string.Empty);
-				}
-
-				var response = JsonConvert.DeserializeObject<FpeBillingResponse>(jsonResponse);
-				return response;
-			}
-			catch (InvalidOperationException ex)
+			if (string.IsNullOrEmpty(jsonResponse))
 			{
-				var response = JsonConvert.DeserializeObject<FpeBillingResponse>(ex.Message);
-				return response;
+				return new FpeBillingResponse(200, string.Empty);
 			}
+
+			var response = JsonConvert.DeserializeObject<FpeBillingResponse>(jsonResponse);
+			return response;
 		}
 
 		#region Private Methods
@@ -382,24 +272,10 @@ namespace UbiqSecurity.Internals
 					return responseString;
 				}
 			}
-#if !DEBUG
-#pragma warning disable CS0168 // Variable is declared but never used
-#endif
-			catch (Exception ex)
-#if !DEBUG
-#pragma warning restore CS0168 // Variable is declared but never used
-#endif
-			{
-#if DEBUG
-				Debug.WriteLine($"HttpSendAsync trapped exception: {ex.Message}");
-#endif
-			}
 			finally
 			{
 				httpRequestMessage?.Dispose();
 			}
-
-			return null;
 		}
 
 		private static string UnixTimeAsString()

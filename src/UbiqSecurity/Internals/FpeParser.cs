@@ -85,7 +85,7 @@ namespace UbiqSecurity.Internals
 
             foreach (var c in input.ToCharArray())
             {
-                if (passthroughCharacters.IndexOf(c) != -1)
+                if (passthroughCharacters.Contains(c))
                 {
                     templateBuilder.Append(c);
                 }
@@ -117,7 +117,7 @@ namespace UbiqSecurity.Internals
             {
                 char ch = parseModel.StringTemplate.First();
 
-                if (passthroughCharacters.IndexOf(ch) != -1)
+                if (passthroughCharacters.Contains(ch))
                 {
                     prefixBuilder.Append(ch);
                 }
@@ -150,7 +150,7 @@ namespace UbiqSecurity.Internals
             {
                 char ch = parseModel.StringTemplate.Last();
 
-                if (passthroughCharacters.IndexOf(ch) != -1)
+                if (passthroughCharacters.Contains(ch))
                 {
                     suffixBuilder.Insert(0, ch);
                 }

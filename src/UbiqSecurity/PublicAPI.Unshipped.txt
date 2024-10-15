@@ -1,1 +1,2 @@
-﻿
+UbiqSecurity.UbiqFPEEncryptDecrypt.UbiqFPEEncryptDecrypt(UbiqSecurity.IUbiqCredentials ubiqCredentials, Microsoft.Extensions.Logging.ILogger logger) -> void
+UbiqSecurity.UbiqFPEEncryptDecrypt.UbiqFPEEncryptDecrypt(UbiqSecurity.IUbiqCredentials ubiqCredentials, UbiqSecurity.UbiqConfiguration ubiqConfiguration, Microsoft.Extensions.Logging.ILogger logger) -> void
