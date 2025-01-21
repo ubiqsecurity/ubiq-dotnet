@@ -8,7 +8,7 @@ using UbiqSecurity.Model;
 
 namespace UbiqSecurity
 {
-	public class UbiqEncrypt : IDisposable
+    public class UbiqEncrypt : IDisposable
 	{
 		private readonly IUbiqCredentials _ubiqCredentials;
 		private readonly IBillingEventsManager _billingEvents;
@@ -27,9 +27,10 @@ namespace UbiqSecurity
 		{
 			_ubiqCredentials = ubiqCredentials;
 			_usesRequested = usesRequested;
-			_ubiqWebService = new UbiqWebServices(_ubiqCredentials);
-			_billingEvents = new BillingEventsManager(ubiqConfiguration, _ubiqWebService);
-		}
+
+            _ubiqWebService = new UbiqWebServices(ubiqCredentials, ubiqConfiguration);
+            _billingEvents = new BillingEventsManager(ubiqConfiguration, _ubiqWebService);
+        }
 
 		public void AddReportingUserDefinedMetadata(string jsonString)
 		{

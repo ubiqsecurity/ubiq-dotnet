@@ -1,8 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
-#if DEBUG
-using System.Diagnostics;
-#endif
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -99,22 +96,12 @@ namespace UbiqSecurity.Billing
 					return existingBillingEvent;
 				});
 			}
-#if !DEBUG
-#pragma warning disable CS0168 // Variable is declared but never used
-#endif
-			catch (Exception ex)
-#if !DEBUG
-#pragma warning restore CS0168 // Variable is declared but never used
-#endif
+			catch
 			{
 				if (!_configuration.EventReportingTrapExceptions)
 				{
 					throw;
 				}
-
-#if DEBUG
-				Debug.WriteLine($"Trapped exception: {ex.Message}");
-#endif
 			}
 		}
 
@@ -124,10 +111,6 @@ namespace UbiqSecurity.Billing
 			{
 				return;
 			}
-
-#if DEBUG
-			Debug.WriteLine($"Flushing {_billingEvents.Select(x => x.Value.Count).Sum()} events");
-#endif
 
 			TrackingEventsRequest trackingRequest = null;
 
@@ -144,22 +127,12 @@ namespace UbiqSecurity.Billing
 			{
 				await _ubiqWebService.SendTrackingEventsAsync(trackingRequest).ConfigureAwait(false);
 			}
-#if !DEBUG
-#pragma warning disable CS0168 // Variable is declared but never used
-#endif
-			catch (Exception ex)
-#if !DEBUG
-#pragma warning restore CS0168 // Variable is declared but never used
-#endif
+			catch
 			{
 				if (!_configuration.EventReportingTrapExceptions)
 				{
 					throw;
 				}
-
-#if DEBUG
-				Debug.WriteLine($"FlushAsync trapped exception: {ex.Message}");
-#endif
 			}
 		}
 

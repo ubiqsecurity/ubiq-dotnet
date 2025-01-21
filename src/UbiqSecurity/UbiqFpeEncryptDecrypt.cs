@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using UbiqSecurity.Billing;
 using UbiqSecurity.Cache;
 using UbiqSecurity.Fpe;
@@ -16,47 +14,30 @@ namespace UbiqSecurity
     public class UbiqFPEEncryptDecrypt : IDisposable
 	{
 		private readonly IUbiqCredentials _ubiqCredentials;
-		private readonly IBillingEventsManager _billingEvents;
-        private readonly ILogger _logger;
 
-		private IUbiqWebService _ubiqWebService; // null when disposed
+        private readonly IBillingEventsManager _billingEvents;
+
+        private IUbiqWebService _ubiqWebService; // null when disposed
 		private IFfxCache _ffxCache;
 		private IDatasetCache _datasetCache;
 
-        private static readonly Action<ILogger, string, Exception> LogException =
-            LoggerMessage.Define<string>(
-                logLevel: LogLevel.Error,
-                eventId: 1,
-                formatString: "Error: {StackTrace}");
-
         public UbiqFPEEncryptDecrypt(IUbiqCredentials ubiqCredentials)
-			: this(ubiqCredentials, new UbiqConfiguration(), null)
+			: this(ubiqCredentials, new UbiqConfiguration())
 		{
 		}
 
-        public UbiqFPEEncryptDecrypt(IUbiqCredentials ubiqCredentials, ILogger logger)
-            : this(ubiqCredentials, new UbiqConfiguration(), logger)
-        {
-        }
-
-        public UbiqFPEEncryptDecrypt(IUbiqCredentials ubiqCredentials, UbiqConfiguration ubiqConfiguration)
-            : this(ubiqCredentials, ubiqConfiguration, null)
-        {
-        }
-
-        public UbiqFPEEncryptDecrypt(IUbiqCredentials ubiqCredentials, UbiqConfiguration ubiqConfiguration, ILogger logger)
+		public UbiqFPEEncryptDecrypt(IUbiqCredentials ubiqCredentials, UbiqConfiguration ubiqConfiguration)
 		{
 			_ubiqCredentials = ubiqCredentials;
-			_ubiqWebService = new UbiqWebServices(ubiqCredentials);
+
+            _ubiqWebService = new UbiqWebServices(ubiqCredentials, ubiqConfiguration);
 			_billingEvents = new BillingEventsManager(ubiqConfiguration, _ubiqWebService);
 			_datasetCache = new DatasetCache(_ubiqWebService);
 			_ffxCache = new FfxCache(_ubiqCredentials, _ubiqWebService);
-            _logger = logger ?? NullLoggerFactory.Instance.CreateLogger<UbiqFPEEncryptDecrypt>();
         }
 
 		internal UbiqFPEEncryptDecrypt(IUbiqCredentials ubiqCredentials, IUbiqWebService ubiqWebService, IBillingEventsManager billingEvents)
 		{
-			// TODO: background executor
 			_ubiqCredentials = ubiqCredentials;
 			_ubiqWebService = ubiqWebService;
 			_billingEvents = billingEvents;
@@ -129,9 +110,8 @@ namespace UbiqSecurity
 
 			    return formattedPlainText;
             }
-            catch (Exception ex)
+            catch
             {
-                LogException(_logger, ex.StackTrace, ex);
                 throw;
             }
         }
@@ -166,9 +146,8 @@ namespace UbiqSecurity
 
 			    return await EncryptAsync(dataset, ffx, plainText, tweak);
             }
-            catch (Exception ex)
+            catch
             {
-                LogException(_logger, ex.StackTrace, ex);
                 throw;
             }
         }
@@ -286,7 +265,7 @@ namespace UbiqSecurity
 				tweak = Convert.FromBase64String(ffs.Tweak);
 			}
 
-			byte[] key = KeyUnwrapper.UnwrapKey(encryptedPrivateKey, wrappedDataKey, _ubiqCredentials.SecretCryptoAccessKey);
+			byte[] key = PayloadEncryption.UnwrapDataKey(encryptedPrivateKey, wrappedDataKey, _ubiqCredentials.SecretCryptoAccessKey);
 			switch (ffs.EncryptionAlgorithm)
 			{
 				case "FF1":

@@ -17,257 +17,281 @@ using System.Globalization;
 
 namespace UbiqSecurity.Internals
 {
-	internal class UbiqWebServices : IUbiqWebService, IDisposable
-	{
-		private const string _applicationJson = "application/json";
-		private const string _restApiRoot = "api/v0";
-		private const string _restApiV3Root = "api/v3";
+    internal class UbiqWebServices : IUbiqWebService, IDisposable
+    {
+        private const string _applicationJson = "application/json";
+        private const string _restApiRoot = "api/v0";
+        private const string _restApiV3Root = "api/v3";
 
-		private readonly IUbiqCredentials _ubiqCredentials;
-		private readonly string _baseUrl;
+        private readonly IUbiqCredentials _ubiqCredentials;
+        private readonly UbiqConfiguration _ubiqConfiguration;
 
-		private Lazy<HttpClient> _lazyHttpClient;
+        private readonly string _baseUrl;
 
-		internal UbiqWebServices(IUbiqCredentials ubiqCredentials)
-		{
-			_ubiqCredentials = ubiqCredentials;
+        private Lazy<HttpClient> _lazyHttpClient;
 
-			if (!_ubiqCredentials.Host.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-			{
-				_baseUrl = $"https://{_ubiqCredentials.Host}";
-			}
-			else
-			{
-				_baseUrl = _ubiqCredentials.Host;
-			}
+        internal UbiqWebServices(IUbiqCredentials ubiqCredentials, UbiqConfiguration ubiqConfiguration)
+        {
+            _ubiqCredentials = ubiqCredentials;
+            _ubiqConfiguration = ubiqConfiguration;
 
-			// thread-safe lazy init: 'BuildHttpClient' doesn't get called
-			// until _lazyHttpClient.Value is accessed
-			_lazyHttpClient = new Lazy<HttpClient>(BuildHttpClient);
-		}
+            if (!_ubiqCredentials.Host.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                _baseUrl = $"https://{_ubiqCredentials.Host}";
+            }
+            else
+            {
+                _baseUrl = _ubiqCredentials.Host;
+            }
 
-		public void Dispose()
-		{
-			if (_lazyHttpClient != null && _lazyHttpClient.IsValueCreated)
-			{
-				_lazyHttpClient.Value.Dispose();
-				_lazyHttpClient = null;
-			}
-		}
+            // thread-safe lazy init: 'BuildHttpClient' doesn't get called
+            // until _lazyHttpClient.Value is accessed
+            _lazyHttpClient = new Lazy<HttpClient>(BuildHttpClient);
+        }
 
-		public async Task<DecryptionKeyResponse> GetDecryptionKeyAsync(byte[] encryptedDataKey)
-		{
-			var url = $"{_baseUrl}/{_restApiRoot}/decryption/key";
+        public void Dispose()
+        {
+            if (_lazyHttpClient != null && _lazyHttpClient.IsValueCreated)
+            {
+                _lazyHttpClient.Value.Dispose();
+                _lazyHttpClient = null;
+            }
+        }
 
-			// convert binary key bytes to Base64
-			var base64DataKey = Convert.ToBase64String(encryptedDataKey);
-			var jsonRequest = $"{{\"encrypted_data_key\": \"{base64DataKey}\"}}";
+        public async Task<DecryptionKeyResponse> GetDecryptionKeyAsync(byte[] encryptedDataKey)
+        {
+            var url = $"{_baseUrl}/{_restApiRoot}/decryption/key";
 
-			var jsonResponse = await BuildAndHttpSendAsync(url, jsonRequest, HttpMethod.Post, HttpStatusCode.OK)
-								.ConfigureAwait(false);
+            // convert binary key bytes to Base64
+            var base64DataKey = Convert.ToBase64String(encryptedDataKey);
 
-			// deserialize JSON response to POCO
-			var decryptionKeyResponse = JsonConvert.DeserializeObject<DecryptionKeyResponse>(jsonResponse);
+            var request = new DecryptionKeyRequest(base64DataKey);
 
-			// decrypt the server-provided decryption key
-			decryptionKeyResponse.PostProcess(_ubiqCredentials.SecretCryptoAccessKey);
+            var jsonResponse = await BuildAndHttpSendAsync(url, request, HttpMethod.Post, HttpStatusCode.OK)
+                                .ConfigureAwait(false);
 
-			return decryptionKeyResponse;
-		}
+            // deserialize JSON response to POCO
+            var decryptionKeyResponse = JsonConvert.DeserializeObject<DecryptionKeyResponse>(jsonResponse);
 
-		public async Task<EncryptionKeyResponse> GetEncryptionKeyAsync(int uses)
-		{
-			var url = $"{_baseUrl}/{_restApiRoot}/encryption/key";
+            // unwrap data key
+            decryptionKeyResponse.UnwrappedDataKey = PayloadEncryption.UnwrapDataKey(decryptionKeyResponse.EncryptedPrivateKey, decryptionKeyResponse.WrappedDataKey, _ubiqCredentials.SecretCryptoAccessKey);
 
-			var jsonRequest = $"{{\"uses\": {uses}}}";
+            return decryptionKeyResponse;
+        }
 
-			var jsonResponse = await BuildAndHttpSendAsync(url, jsonRequest, HttpMethod.Post, HttpStatusCode.Created)
-								.ConfigureAwait(false);
+        public async Task<EncryptionKeyResponse> GetEncryptionKeyAsync(int uses)
+        {
+            var url = $"{_baseUrl}/{_restApiRoot}/encryption/key";
 
-			// deserialize JSON response to POCO
-			var encryptionKeyResponse = JsonConvert.DeserializeObject<EncryptionKeyResponse>(jsonResponse);
+            var request = new EncryptionKeyRequest(uses);
 
-			// decrypt the server-provided encryption key
-			encryptionKeyResponse.PostProcess(_ubiqCredentials.SecretCryptoAccessKey);
+            
+            var jsonResponse = await BuildAndHttpSendAsync(url, request, HttpMethod.Post, HttpStatusCode.Created)
+                                .ConfigureAwait(false);
 
-			return encryptionKeyResponse;
-		}
+            // deserialize JSON response to POCO
+            var encryptionKeyResponse = JsonConvert.DeserializeObject<EncryptionKeyResponse>(jsonResponse);
 
-		public async Task<FfsRecord> GetFfsDefinitionAsync(string ffsName)
-		{
-			var key = UrlHelper.GenerateFfsUrl(ffsName, _ubiqCredentials);
-			var url = $"{_baseUrl}/{_restApiRoot}/ffs?{key}";
+            // unwrap data key
+            encryptionKeyResponse.UnwrappedDataKey = PayloadEncryption.UnwrapDataKey(encryptionKeyResponse.EncryptedPrivateKey, encryptionKeyResponse.WrappedDataKey, _ubiqCredentials.SecretCryptoAccessKey);
 
-			var jsonResponse = await BuildAndHttpSendAsync(url, null, HttpMethod.Get, HttpStatusCode.OK)
-								.ConfigureAwait(false);
+            return encryptionKeyResponse;
+        }
 
-			// deserialize JSON response to POCO
-			var ffsRecord = JsonConvert.DeserializeObject<FfsRecord>(jsonResponse);
-			return ffsRecord;
-		}
+        public async Task<FfsRecord> GetFfsDefinitionAsync(string ffsName)
+        {
+            var key = UrlHelper.GenerateFfsUrl(ffsName, _ubiqCredentials);
+            var url = $"{_baseUrl}/{_restApiRoot}/ffs?{key}";
 
-		public async Task<FpeKeyResponse> GetFpeDecryptionKeyAsync(string ffsName, int keyNumber)
-		{
-			var key = UrlHelper.GenerateFpeUrlDecrypt(ffsName, keyNumber, _ubiqCredentials);
-			var url = $"{_baseUrl}/{_restApiRoot}/fpe/key?{key}";
+            
+            var jsonResponse = await BuildAndHttpSendAsync(url, HttpMethod.Get, HttpStatusCode.OK).ConfigureAwait(false);
 
-			var jsonResponse = await BuildAndHttpSendAsync(url, null, HttpMethod.Get, HttpStatusCode.OK)
-								.ConfigureAwait(false);
+            // deserialize JSON response to POCO
+            var ffsRecord = JsonConvert.DeserializeObject<FfsRecord>(jsonResponse);
+            return ffsRecord;
+        }
 
-			// deserialize JSON response to POCO
-			var encryptionKeyResponse = JsonConvert.DeserializeObject<FpeKeyResponse>(jsonResponse);
+        public async Task<FpeKeyResponse> GetFpeDecryptionKeyAsync(string ffsName, int keyNumber)
+        {
+            var key = UrlHelper.GenerateFpeUrlDecrypt(ffsName, keyNumber, _ubiqCredentials);
+            var url = $"{_baseUrl}/{_restApiRoot}/fpe/key?{key}";
 
-			return encryptionKeyResponse;
-		}
+            var jsonResponse = await BuildAndHttpSendAsync(url, HttpMethod.Get, HttpStatusCode.OK).ConfigureAwait(false);
 
-		public async Task<DatasetAndKeysResponse> GetDatasetAndKeysAsync(string datasetName)
-		{
-			var key = UrlHelper.GenerateFpeUrlEncrypt(datasetName, _ubiqCredentials);
-			var url = $"{_baseUrl}/{_restApiRoot}/fpe/def_keys?{key}";
+            // deserialize JSON response to POCO
+            var encryptionKeyResponse = JsonConvert.DeserializeObject<FpeKeyResponse>(jsonResponse);
 
-			var jsonResponse = await BuildAndHttpSendAsync(url, null, HttpMethod.Get, HttpStatusCode.OK)
-								.ConfigureAwait(false);
+            return encryptionKeyResponse;
+        }
 
-			// deserialize JSON response to POCO
-			var encryptionKeyResponse = JsonConvert.DeserializeObject<DatasetAndKeysResponse>(jsonResponse);
+        public async Task<DatasetAndKeysResponse> GetDatasetAndKeysAsync(string datasetName)
+        {
+            var key = UrlHelper.GenerateFpeUrlEncrypt(datasetName, _ubiqCredentials);
+            var url = $"{_baseUrl}/{_restApiRoot}/fpe/def_keys?{key}";
 
-			return encryptionKeyResponse;
-		}
+            var jsonResponse = await BuildAndHttpSendAsync(url, HttpMethod.Get, HttpStatusCode.OK).ConfigureAwait(false);
 
-		public async Task<FpeKeyResponse> GetFpeEncryptionKeyAsync(string ffsName)
-		{
-			var key = UrlHelper.GenerateFpeUrlEncrypt(ffsName, _ubiqCredentials);
-			var url = $"{_baseUrl}/{_restApiRoot}/fpe/key?{key}";
+            // deserialize JSON response to POCO
+            var encryptionKeyResponse = JsonConvert.DeserializeObject<DatasetAndKeysResponse>(jsonResponse);
 
-			var jsonResponse = await BuildAndHttpSendAsync(url, null, HttpMethod.Get, HttpStatusCode.OK)
-								.ConfigureAwait(false);
+            return encryptionKeyResponse;
+        }
 
-			// deserialize JSON response to POCO
-			var encryptionKeyResponse = JsonConvert.DeserializeObject<FpeKeyResponse>(jsonResponse);
+        public async Task<FpeKeyResponse> GetFpeEncryptionKeyAsync(string ffsName)
+        {
+            var key = UrlHelper.GenerateFpeUrlEncrypt(ffsName, _ubiqCredentials);
+            var url = $"{_baseUrl}/{_restApiRoot}/fpe/key?{key}";
 
-			return encryptionKeyResponse;
-		}
+            var jsonResponse = await BuildAndHttpSendAsync(url, HttpMethod.Get, HttpStatusCode.OK).ConfigureAwait(false);
 
-		public async Task<FpeBillingResponse> SendTrackingEventsAsync(TrackingEventsRequest trackingEventsRequest)
-		{
-			var url = $"{_baseUrl}/{_restApiV3Root}/tracking/events";
+            // deserialize JSON response to POCO
+            var encryptionKeyResponse = JsonConvert.DeserializeObject<FpeKeyResponse>(jsonResponse);
 
-			string jsonPayload = JsonConvert.SerializeObject(trackingEventsRequest);
+            return encryptionKeyResponse;
+        }
 
-			var jsonResponse = await BuildAndHttpSendAsync(url, jsonPayload, HttpMethod.Post, HttpStatusCode.OK)
-								.ConfigureAwait(false);
+        public async Task<FpeBillingResponse> SendTrackingEventsAsync(TrackingEventsRequest trackingEventsRequest)
+        {
+            var url = $"{_baseUrl}/{_restApiV3Root}/tracking/events";
 
-			if (string.IsNullOrEmpty(jsonResponse))
-			{
-				return new FpeBillingResponse(200, string.Empty);
-			}
+           
+            var jsonResponse = await BuildAndHttpSendAsync(url, trackingEventsRequest, HttpMethod.Post, HttpStatusCode.OK)
+                                .ConfigureAwait(false);
 
-			var response = JsonConvert.DeserializeObject<FpeBillingResponse>(jsonResponse);
-			return response;
-		}
+            if (string.IsNullOrEmpty(jsonResponse))
+            {
+                return new FpeBillingResponse(200, string.Empty);
+            }
 
-		#region Private Methods
+            var response = JsonConvert.DeserializeObject<FpeBillingResponse>(jsonResponse);
+            return response;
+        }
 
-		private static HttpClient BuildHttpClient()
-		{
-			HttpClient httpClient = new HttpClient();
+        #region Private Methods
 
-			// start clean
-			httpClient.DefaultRequestHeaders.Clear();
+        private static HttpClient BuildHttpClient()
+        {
+            HttpClient httpClient = new HttpClient();
 
-			var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
-			httpClient.DefaultRequestHeaders.Add("User-Agent", $"ubiq-dotnet/{assemblyVersion}");
+            // start clean
+            httpClient.DefaultRequestHeaders.Clear();
 
-			// set KeepAlive false to clean up socket connections ASAP
-			httpClient.DefaultRequestHeaders.Add("Connection", "close");
+            var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
+            httpClient.DefaultRequestHeaders.Add("User-Agent", $"ubiq-dotnet/{assemblyVersion}");
 
-			// assume all responses are JSON messages
-			httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(_applicationJson));
+            // set KeepAlive false to clean up socket connections ASAP
+            httpClient.DefaultRequestHeaders.Add("Connection", "close");
 
-			return httpClient;
-		}
+            // assume all responses are JSON messages
+            httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(_applicationJson));
 
-		private static HttpRequestMessage BuildSignedHttpRequest(HttpMethod httpMethod, string requestUrl,
-			string jsonRequest, string publicAccessKey, string secretSigningKey)
-		{
-			if (httpMethod.Method != HttpMethod.Get.Method && string.IsNullOrEmpty(jsonRequest))
-			{
-				throw new ArgumentException("Invalid (null or empty) jsonRequest", nameof(jsonRequest));
-			}
+            return httpClient;
+        }
 
-			if (string.IsNullOrEmpty(jsonRequest))
-			{
-				jsonRequest = string.Empty;
-			}
+        private async Task<HttpRequestMessage> BuildSignedHttpRequest<T>(HttpMethod httpMethod, string requestUrl, T request, string publicAccessKey, string secretSigningKey)
+        {
+            var idpEnabled = _ubiqCredentials.IsIdp && _ubiqConfiguration.Idp != null;
+            if (idpEnabled)
+            {
+                // ensure IDP has been initialized and refresh the token+cert if expired
+                await _ubiqCredentials.CheckInitAndExpirationAsync(_ubiqConfiguration);
 
-			var requestUri = new Uri(requestUrl);
-			var content = new StringContent(jsonRequest, Encoding.UTF8, _applicationJson);
+                // for any web request that supports a payload cert (e.g. get enc/dec keys), include it
+                if (request is IPayloadEncryptionRequest payloadRequest)
+                {
+                    payloadRequest.PayloadCertificate = _ubiqCredentials.IdpPayloadCert;
+                }
+            }
 
-			var digestValue = BuildDigestValue(content, out int contentLength);
+            var jsonRequest = request == null ? null : JsonConvert.SerializeObject(request);
 
-			// tricky: StringContent does not set Content-Length, so do that explicitly
-			content.Headers.ContentLength = contentLength;
+            if (httpMethod.Method != HttpMethod.Get.Method && string.IsNullOrEmpty(jsonRequest))
+            {
+                throw new ArgumentException("Invalid (null or empty) jsonRequest", nameof(request));
+            }
 
-			var signedHttpRequest = new HttpRequestMessage(httpMethod, requestUri)
-			{
-				Headers =
-				{
-					{ HttpRequestHeader.Date.ToString(), DateTime.UtcNow.ToString("r") },      // ddd, dd MMM yyyy HH:mm:ss GMT
+            if (string.IsNullOrEmpty(jsonRequest))
+            {
+                jsonRequest = string.Empty;
+            }
+
+            var requestUri = new Uri(requestUrl);
+            var content = new StringContent(jsonRequest, Encoding.UTF8, _applicationJson);
+
+            var digestValue = BuildDigestValue(content, out int contentLength);
+
+            // tricky: StringContent does not set Content-Length, so do that explicitly
+            content.Headers.ContentLength = contentLength;
+
+            var signedHttpRequest = new HttpRequestMessage(httpMethod, requestUri)
+            {
+                Headers =
+                {
+                    { HttpRequestHeader.Date.ToString(), DateTime.UtcNow.ToString("r") },      // ddd, dd MMM yyyy HH:mm:ss GMT
                     { HttpRequestHeader.Host.ToString(), requestUri.Host },
-					{ "Digest", digestValue },
-				},
-			};
+                    { "Digest", digestValue },
+                },
+            };
 
-			if (httpMethod != HttpMethod.Get)
-			{
-				signedHttpRequest.Content = content;
-			}
+            if (httpMethod != HttpMethod.Get)
+            {
+                signedHttpRequest.Content = content;
+            }
 
-			var unixTimeString = UnixTimeAsString();
-			var requestTarget = BuildRequestTarget(httpMethod.ToString(), requestUri);
-			var signature = BuildSignature(signedHttpRequest,
-				unixTimeString, requestTarget,
-				publicAccessKey, secretSigningKey);
+            var unixTimeString = UnixTimeAsString();
+            var requestTarget = BuildRequestTarget(httpMethod.ToString(), requestUri);
+            var signature = BuildSignature(signedHttpRequest,
+                unixTimeString, requestTarget,
+                publicAccessKey, secretSigningKey);
 
-			signedHttpRequest.Headers.Add("Signature", signature);
+            signedHttpRequest.Headers.Add("Signature", signature);
 
-			return signedHttpRequest;
-		}
+            return signedHttpRequest;
+        }
 
-		private async Task<string> BuildAndHttpSendAsync(string url, string jsonRequest, HttpMethod method, HttpStatusCode successCode)
-		{
-			var signedHttpRequest = BuildSignedHttpRequest(method, url, jsonRequest,
-								_ubiqCredentials.AccessKeyId,
-								_ubiqCredentials.SecretSigningKey);
-			var jsonResponse = await HttpSendAsync(signedHttpRequest, successCode).ConfigureAwait(false);
-			return jsonResponse;
-		}
+        private async Task<string> BuildAndHttpSendAsync<T>(string url, T request, HttpMethod method, HttpStatusCode successCode)
+        {
+            var signedHttpRequest = await BuildSignedHttpRequest(method, url, request, _ubiqCredentials.AccessKeyId, _ubiqCredentials.SecretSigningKey).ConfigureAwait(false);
 
-		private async Task<string> HttpSendAsync(HttpRequestMessage httpRequestMessage, HttpStatusCode successCode)
-		{
-			if (_lazyHttpClient == null)
-			{
-				throw new ObjectDisposedException(GetType().Name);
-			}
+            var jsonResponse = await HttpSendAsync(signedHttpRequest, successCode).ConfigureAwait(false);
 
-			try
-			{
-				// JIT-create and cache reusable HttpClient instance
-				using (var httpResponse = await _lazyHttpClient.Value.SendAsync(httpRequestMessage).ConfigureAwait(false))
-				{
-					var responseString = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-					if (httpResponse.StatusCode != successCode)
-					{
-						var errorMessage = JsonConvert.SerializeObject(
-						  new
-						  {
-							  status = httpResponse.StatusCode,
-							  message = responseString ?? ""
-						  }
-						);
+            return jsonResponse;
+        }
 
-						throw new InvalidOperationException(errorMessage);
-					}
+        private async Task<string> BuildAndHttpSendAsync(string url, HttpMethod method, HttpStatusCode successCode)
+        {
+            var signedHttpRequest = await BuildSignedHttpRequest(method, url, (object)null, _ubiqCredentials.AccessKeyId, _ubiqCredentials.SecretSigningKey).ConfigureAwait(false);
+
+            var jsonResponse = await HttpSendAsync(signedHttpRequest, successCode).ConfigureAwait(false);
+
+            return jsonResponse;
+        }
+
+        private async Task<string> HttpSendAsync(HttpRequestMessage httpRequestMessage, HttpStatusCode successCode)
+        {
+            if (_lazyHttpClient == null)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
+
+            try
+            {
+                // JIT-create and cache reusable HttpClient instance
+                using (var httpResponse = await _lazyHttpClient.Value.SendAsync(httpRequestMessage).ConfigureAwait(false))
+                {
+                    var responseString = await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    if (httpResponse.StatusCode != successCode)
+                    {
+                        var errorMessage = JsonConvert.SerializeObject(
+                            new
+                            {
+                                status = httpResponse.StatusCode,
+                                message = responseString ?? ""
+                            }
+                        );
+
+                        throw new InvalidOperationException(errorMessage);
+                    }
 
 					return responseString;
 				}
@@ -278,107 +302,108 @@ namespace UbiqSecurity.Internals
 			}
 		}
 
-		private static string UnixTimeAsString()
-		{
-			var utcNow = DateTime.UtcNow;
-			long unixTime = ((DateTimeOffset)utcNow).ToUnixTimeSeconds();
+        private static string UnixTimeAsString()
+        {
+            var utcNow = DateTime.UtcNow;
+            long unixTime = ((DateTimeOffset)utcNow).ToUnixTimeSeconds();
 
-			return unixTime.ToString(CultureInfo.InvariantCulture);
-		}
+            return unixTime.ToString(CultureInfo.InvariantCulture);
+        }
 
-		// build (request-target) HTTP header field of the form:
-		//  method path?query
-		private static string BuildRequestTarget(string httpMethod, Uri requestUri)
-		{
-			// assemble the request-target field value
-			return $"{httpMethod.ToLowerInvariant()} {requestUri.PathAndQuery}";
-		}
+        // build (request-target) HTTP header field of the form:
+        //  method path?query
+        private static string BuildRequestTarget(string httpMethod, Uri requestUri)
+        {
+            // assemble the request-target field value
+            return $"{httpMethod.ToLowerInvariant()} {requestUri.PathAndQuery}";
+        }
 
-		private static string BuildDigestValue(HttpContent httpContent, out int contentLength)
-		{
-			contentLength = 0;
+        private static string BuildDigestValue(HttpContent httpContent, out int contentLength)
+        {
+            contentLength = 0;
 
-			using (var contentStream = new MemoryStream())
-			{
-				httpContent.CopyToAsync(contentStream).Wait();
-				contentStream.Position = 0;     // rewind
+            using (var contentStream = new MemoryStream())
+            { 
 
-				// return content length, in bytes
-				contentLength = (int)contentStream.Length;
+                httpContent.CopyToAsync(contentStream).Wait();
+                contentStream.Position = 0;     // rewind
 
-				// calculate SHA-512 hash
-				byte[] hashBytes = null;
-				using (var sha512 = new SHA512Managed())
-				{
-					hashBytes = sha512.ComputeHash(contentStream);
-				}
+                // return content length, in bytes
+                contentLength = (int)contentStream.Length;
 
-				// return SHA-512 result as Base64 string
-				return $"SHA-512={Convert.ToBase64String(hashBytes)}";
-			}
-		}
+                // calculate SHA-512 hash
+                byte[] hashBytes = null;
+                using (var sha512 = SHA512.Create())
+                {
+                    hashBytes = sha512.ComputeHash(contentStream);
+                }
 
-		private static string BuildSignature(HttpRequestMessage httpRequestMessage,
-			string unixTimeString,
-			string requestTarget,
-			string publicAccessKey,
-			string secretSigningKey)
-		{
-			var secretSigningKeyBytes = Encoding.UTF8.GetBytes(secretSigningKey);
+                // return SHA-512 result as Base64 string
+                return $"SHA-512={Convert.ToBase64String(hashBytes)}";
+            }
+        }
 
-			using (var hashStream = new MemoryStream())
-			{
-				WriteHashableBytes(hashStream, "(created)", unixTimeString);
-				WriteHashableBytes(hashStream, "(request-target)", requestTarget);
-				if (httpRequestMessage.Content != null)
-				{
-					WriteHashableBytes(hashStream, "Content-Length", httpRequestMessage.Content.Headers.GetValues("Content-Length").First());
-					WriteHashableBytes(hashStream, "Content-Type", httpRequestMessage.Content.Headers.GetValues("Content-Type").First());
-				}
-				WriteHashableBytes(hashStream, "Date", httpRequestMessage.Headers.GetValues("Date").First());
-				WriteHashableBytes(hashStream, "Digest", httpRequestMessage.Headers.GetValues("Digest").First());
-				WriteHashableBytes(hashStream, "Host", httpRequestMessage.Headers.GetValues("Host").First());
+        private static string BuildSignature(HttpRequestMessage httpRequestMessage,
+            string unixTimeString,
+            string requestTarget,
+            string publicAccessKey,
+            string secretSigningKey)
+        {
+            var secretSigningKeyBytes = Encoding.UTF8.GetBytes(secretSigningKey);
 
-				hashStream.Position = 0;        // rewind
+            using (var hashStream = new MemoryStream())
+            {
+                WriteHashableBytes(hashStream, "(created)", unixTimeString);
+                WriteHashableBytes(hashStream, "(request-target)", requestTarget);
+                if (httpRequestMessage.Content != null)
+                {
+                    WriteHashableBytes(hashStream, "Content-Length", httpRequestMessage.Content.Headers.GetValues("Content-Length").First());
+                    WriteHashableBytes(hashStream, "Content-Type", httpRequestMessage.Content.Headers.GetValues("Content-Type").First());
+                }
+                WriteHashableBytes(hashStream, "Date", httpRequestMessage.Headers.GetValues("Date").First());
+                WriteHashableBytes(hashStream, "Digest", httpRequestMessage.Headers.GetValues("Digest").First());
+                WriteHashableBytes(hashStream, "Host", httpRequestMessage.Headers.GetValues("Host").First());
 
-				using (var hmac = new HMACSHA512(secretSigningKeyBytes))
-				{
-					// Compute the hash of the input data
-					var hashBytes = hmac.ComputeHash(hashStream);
+                hashStream.Position = 0;        // rewind
 
-					// assemble final signature string
-					var signature = new StringBuilder();
+                using (var hmac = new HMACSHA512(secretSigningKeyBytes))
+                {
+                    // Compute the hash of the input data
+                    var hashBytes = hmac.ComputeHash(hashStream);
 
-					signature.AppendFormat(CultureInfo.InvariantCulture, "keyId=\"{0}\"", publicAccessKey);
-					signature.Append(", algorithm=\"hmac-sha512\"");
-					signature.AppendFormat(CultureInfo.InvariantCulture, ", created={0}", unixTimeString);
-					if (httpRequestMessage.Content != null)
-					{
-						signature.Append(", headers=\"(created) (request-target) content-length content-type date digest host\"");
-					}
-					else
-					{
-						signature.Append(", headers=\"(created) (request-target) date digest host\"");
-					}
+                    // assemble final signature string
+                    var signature = new StringBuilder();
 
-					signature.AppendFormat(CultureInfo.InvariantCulture, ", signature=\"{0}\"", Convert.ToBase64String(hashBytes));
-					return signature.ToString();
-				}
-			}
-		}
+                    signature.AppendFormat(CultureInfo.InvariantCulture, "keyId=\"{0}\"", publicAccessKey);
+                    signature.Append(", algorithm=\"hmac-sha512\"");
+                    signature.AppendFormat(CultureInfo.InvariantCulture, ", created={0}", unixTimeString);
+                    if (httpRequestMessage.Content != null)
+                    {
+                        signature.Append(", headers=\"(created) (request-target) content-length content-type date digest host\"");
+                    }
+                    else
+                    {
+                        signature.Append(", headers=\"(created) (request-target) date digest host\"");
+                    }
 
-		private static void WriteHashableBytes(Stream stream, string name, string value)
-		{
-			// build Unicode string
-			var hashableString = $"{name.ToLowerInvariant()}: {value}\n";
+                    signature.AppendFormat(CultureInfo.InvariantCulture, ", signature=\"{0}\"", Convert.ToBase64String(hashBytes));
+                    return signature.ToString();
+                }
+            }
+        }
 
-			// convert to UTF-8 bytes
-			var hashableBytes = Encoding.UTF8.GetBytes(hashableString);
+        private static void WriteHashableBytes(Stream stream, string name, string value)
+        {
+            // build Unicode string
+            var hashableString = $"{name.ToLowerInvariant()}: {value}\n";
 
-			// write bytes to caller-provided Stream
-			stream.Write(hashableBytes, 0, hashableBytes.Length);
-		}
+            // convert to UTF-8 bytes
+            var hashableBytes = Encoding.UTF8.GetBytes(hashableString);
 
-		#endregion
-	}
+            // write bytes to caller-provided Stream
+            stream.Write(hashableBytes, 0, hashableBytes.Length);
+        }
+
+        #endregion
+    }
 }

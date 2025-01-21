@@ -1,20 +1,18 @@
-﻿using System;
+using System;
 using System.Security.Cryptography;
 
 namespace UbiqSecurity.Fpe.Ciphers
 {
 	internal class SystemCipher : ICipher, IDisposable
 	{
-		private readonly AesManaged _cipher;
+		private readonly Aes _cipher;
 
 		public SystemCipher()
 		{
-			_cipher = new AesManaged()
-			{
-				Mode = CipherMode.CBC,
-				Padding = PaddingMode.None,
-				KeySize = 128
-			};
+            _cipher = Aes.Create();
+            _cipher.KeySize = 128;
+            _cipher.Padding = PaddingMode.None;
+            _cipher.Mode = CipherMode.CBC;
 		}
 
 		public void Ciph(byte[] key, byte[] src, int srcOffset, byte[] dest, int destOffset)

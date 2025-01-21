@@ -1,2 +1,27 @@
-UbiqSecurity.UbiqFPEEncryptDecrypt.UbiqFPEEncryptDecrypt(UbiqSecurity.IUbiqCredentials ubiqCredentials, Microsoft.Extensions.Logging.ILogger logger) -> void
-UbiqSecurity.UbiqFPEEncryptDecrypt.UbiqFPEEncryptDecrypt(UbiqSecurity.IUbiqCredentials ubiqCredentials, UbiqSecurity.UbiqConfiguration ubiqConfiguration, Microsoft.Extensions.Logging.ILogger logger) -> void
+UbiqSecurity.Config.IdpConfig
+UbiqSecurity.Config.IdpConfig.CustomerId.get -> string
+UbiqSecurity.Config.IdpConfig.CustomerId.set -> void
+UbiqSecurity.Config.IdpConfig.IdpClientSecret.get -> string
+UbiqSecurity.Config.IdpConfig.IdpClientSecret.set -> void
+UbiqSecurity.Config.IdpConfig.IdpConfig() -> void
+UbiqSecurity.Config.IdpConfig.IdpTenantId.get -> string
+UbiqSecurity.Config.IdpConfig.IdpTenantId.set -> void
+UbiqSecurity.Config.IdpConfig.IdpTokenEndpointUrl.get -> string
+UbiqSecurity.Config.IdpConfig.IdpTokenEndpointUrl.set -> void
+UbiqSecurity.Config.IdpConfig.Provider.get -> UbiqSecurity.Config.IdpProvider
+UbiqSecurity.Config.IdpConfig.Provider.set -> void
+UbiqSecurity.Config.IdpProvider
+UbiqSecurity.Config.IdpProvider.MicrosoftEntraId = 0 -> UbiqSecurity.Config.IdpProvider
+UbiqSecurity.IUbiqCredentials.AccessKeyId.set -> void
+UbiqSecurity.IUbiqCredentials.CheckInitAndExpirationAsync(UbiqSecurity.UbiqConfiguration ubiqConfiguration) -> System.Threading.Tasks.Task
+UbiqSecurity.IUbiqCredentials.Host.set -> void
+UbiqSecurity.IUbiqCredentials.IdpPassword.get -> string
+UbiqSecurity.IUbiqCredentials.IdpPassword.set -> void
+UbiqSecurity.IUbiqCredentials.IdpPayloadCert.get -> string
+UbiqSecurity.IUbiqCredentials.IdpUsername.get -> string
+UbiqSecurity.IUbiqCredentials.IdpUsername.set -> void
+UbiqSecurity.IUbiqCredentials.IsIdp.get -> bool
+UbiqSecurity.IUbiqCredentials.SecretCryptoAccessKey.set -> void
+UbiqSecurity.IUbiqCredentials.SecretSigningKey.set -> void
+UbiqSecurity.UbiqConfiguration.Idp.get -> UbiqSecurity.Config.IdpConfig
+UbiqSecurity.UbiqConfiguration.Idp.set -> void

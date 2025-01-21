@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using UbiqSecurity.Config;
 
 namespace UbiqSecurity
 {
@@ -65,5 +66,7 @@ namespace UbiqSecurity
 		public bool EventReportingTrapExceptions { get; private set; }
 
 		public ChronoUnit EventReportingTimestampGranularity { get; set; } = ChronoUnit.Nanoseconds;
+
+        public IdpConfig Idp { get; set; }
 	}
 }

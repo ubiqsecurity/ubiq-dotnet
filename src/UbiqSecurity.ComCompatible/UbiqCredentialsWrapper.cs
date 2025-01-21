@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
-namespace UbiqSecurity
+namespace UbiqSecurity.ComCompatible
 {
     [ComVisible(true)]
     [ClassInterface(ClassInterfaceType.None)]
@@ -16,5 +17,18 @@ namespace UbiqSecurity
         public string SecretCryptoAccessKey { get; set; }
 
         public string Host { get; set; }
+
+        public string IdpUsername { get; set; }
+
+        public string IdpPassword { get; set; }
+
+        public bool IsIdp => !string.IsNullOrEmpty(IdpUsername) && !string.IsNullOrEmpty(IdpPassword);
+
+        public string IdpPayloadCert { get; }
+
+        public Task CheckInitAndExpirationAsync(UbiqConfiguration ubiqConfiguration)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

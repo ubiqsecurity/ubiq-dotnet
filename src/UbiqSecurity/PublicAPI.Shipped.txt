@@ -1,4 +1,4 @@
-﻿static UbiqSecurity.UbiqDecrypt.DecryptAsync(UbiqSecurity.IUbiqCredentials ubiqCredentials, byte[] data) -> System.Threading.Tasks.Task<byte[]>
+static UbiqSecurity.UbiqDecrypt.DecryptAsync(UbiqSecurity.IUbiqCredentials ubiqCredentials, byte[] data) -> System.Threading.Tasks.Task<byte[]>
 static UbiqSecurity.UbiqEncrypt.EncryptAsync(UbiqSecurity.IUbiqCredentials ubiqCredentials, byte[] plainBytes) -> System.Threading.Tasks.Task<byte[]>
 static UbiqSecurity.UbiqFactory.CreateCredentials(string accessKeyId = null, string secretSigningKey = null, string secretCryptoAccessKey = null, string host = "api.ubiqsecurity.com") -> UbiqSecurity.IUbiqCredentials
 static UbiqSecurity.UbiqFactory.ReadCredentialsFromFile(string pathname, string profile = "default") -> UbiqSecurity.IUbiqCredentials
@@ -36,7 +36,7 @@ UbiqSecurity.UbiqDecrypt.DecryptAsync(byte[] data) -> System.Threading.Tasks.Tas
 UbiqSecurity.UbiqDecrypt.End() -> byte[]
 UbiqSecurity.UbiqDecrypt.GetCopyOfUsage() -> string
 UbiqSecurity.UbiqDecrypt.UbiqDecrypt(UbiqSecurity.IUbiqCredentials ubiqCredentials) -> void
-UbiqSecurity.UbiqDecrypt.UbiqDecrypt(UbiqSecurity.IUbiqCredentials ubiqCredentials, UbiqSecurity.UbiqConfiguration configuration) -> void
+UbiqSecurity.UbiqDecrypt.UbiqDecrypt(UbiqSecurity.IUbiqCredentials ubiqCredentials, UbiqSecurity.UbiqConfiguration ubiqConfiguration) -> void
 UbiqSecurity.UbiqDecrypt.UpdateAsync(byte[] cipherBytes, int offset, int count) -> System.Threading.Tasks.Task<byte[]>
 UbiqSecurity.UbiqEncrypt
 UbiqSecurity.UbiqEncrypt.AddReportingUserDefinedMetadata(string jsonString) -> void

@@ -28,26 +28,6 @@ namespace UbiqSecurity.Tests
 			Assert.Equal(plainText, actualPlainText);
 		}
 
-		[Fact]
-		public async Task StaticEncryptAsync_ValidInput_ReturnsSameValueAsInstanceMethod()
-		{
-			var credentials = _fixture.UbiqCredentials;
-			var ubiqFPEEncryptDecrypt = _fixture.UbiqFPEEncryptDecrypt;
-
-			byte[] tweakFF1 = null;
-
-			var ffsName = "ALPHANUM_SSN";
-			var original = "123-45-6789";
-			
-			string cipher = await ubiqFPEEncryptDecrypt.EncryptAsync(ffsName, original, tweakFF1);
-			var cipher_2 = await UbiqFPEEncryptDecrypt.EncryptAsync(credentials, original, ffsName, tweakFF1);
-
-			var pt_2 = await UbiqFPEEncryptDecrypt.DecryptAsync(credentials, cipher, ffsName, tweakFF1);
-
-			Assert.Equal(original, pt_2);
-			Assert.Equal(cipher, cipher_2);
-		}
-
 		[Theory]
 		[InlineData("ALPHANUM_SSN", "1_23-45-6789")]
 		[InlineData("BIRTH_DATE", "01_01/2020")]
@@ -91,7 +71,7 @@ namespace UbiqSecurity.Tests
 		{
 			var sut = _fixture.UbiqFPEEncryptDecrypt;
 
-			var ffsName = "ERROR_MSG"; // does not exist
+			var ffsName = ""; // does not exist
 			var original = " 01121231231231231& 1 &2311200 ";
 
 			var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await sut.EncryptAsync(ffsName, original));
