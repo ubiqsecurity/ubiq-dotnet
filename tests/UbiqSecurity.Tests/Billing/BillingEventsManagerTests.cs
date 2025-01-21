@@ -1,8 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using UbiqSecurity.Billing;
 using UbiqSecurity.Internals;
@@ -10,7 +5,7 @@ using UbiqSecurity.Model;
 
 namespace UbiqSecurity.Tests.Billing
 {
-	public class BillingEventsManagerTests
+    public class BillingEventsManagerTests
 	{
 		[Fact]
 		public void GetSerializedEvents_NoBillingEventsInQueue_ReturnsEmptyUsageArray()
@@ -21,7 +16,7 @@ namespace UbiqSecurity.Tests.Billing
 			};
 
 			var credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, "ubiq-dotnet");
-			var webservice = new UbiqWebServices(credentials);
+			var webservice = new UbiqWebServices(credentials, config);
 			
 			var sut = new BillingEventsManager(config, webservice);
 
@@ -39,7 +34,7 @@ namespace UbiqSecurity.Tests.Billing
 			};
 
 			var credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, "ubiq-dotnet");
-			var webservice = new UbiqWebServices(credentials);
+			var webservice = new UbiqWebServices(credentials, config);
 
 			var sut = new BillingEventsManager(config, webservice);
 

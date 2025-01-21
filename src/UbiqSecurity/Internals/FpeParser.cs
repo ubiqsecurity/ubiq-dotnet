@@ -30,7 +30,9 @@ namespace UbiqSecurity.Internals
             var result = new FpeParseModel()
             {
                 PassthroughProcessed = false,
-                TemplateChar = firstCharacter.First()
+                TemplateChar = firstCharacter.First(),
+                Trimmed = input,
+                StringTemplate = new string(firstCharacter.First(), input.Length),
             };
 
             // backwards compatibility for old datasets that don't support Dataset.PassthroughRules and still uses Dataset.PassthroughCharacters
@@ -45,6 +47,11 @@ namespace UbiqSecurity.Internals
                         RuleType = PassthroughRuleType.Passthrough
                     }
                 };
+            }
+
+            if (dataset.PassthroughRules == null || !dataset.PassthroughRules.Any())
+            {
+                return result;
             }
 
             var passthroughCharacters = dataset.PassthroughCharacters;

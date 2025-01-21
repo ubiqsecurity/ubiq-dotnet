@@ -8,7 +8,7 @@ using UbiqSecurity.Model;
 
 namespace UbiqSecurity
 {
-	public class UbiqDecrypt : IDisposable
+    public class UbiqDecrypt : IDisposable
 	{
 		private readonly IUbiqCredentials _credentials;
 		private readonly IBillingEventsManager _billingEvents;
@@ -24,12 +24,13 @@ namespace UbiqSecurity
 		{
 		}
 
-		public UbiqDecrypt(IUbiqCredentials ubiqCredentials, UbiqConfiguration configuration)
+		public UbiqDecrypt(IUbiqCredentials ubiqCredentials, UbiqConfiguration ubiqConfiguration)
 		{
-			_credentials = ubiqCredentials;
-			_ubiqWebService = new UbiqWebServices(ubiqCredentials);
-			_billingEvents = new BillingEventsManager(configuration, _ubiqWebService);
-		}
+            _credentials = ubiqCredentials;
+
+            _ubiqWebService = new UbiqWebServices(ubiqCredentials, ubiqConfiguration);
+            _billingEvents = new BillingEventsManager(ubiqConfiguration, _ubiqWebService);
+        }
 
 		internal UbiqDecrypt(IUbiqCredentials ubiqCredentials, IUbiqWebService webService, IBillingEventsManager billingEvents)
 		{

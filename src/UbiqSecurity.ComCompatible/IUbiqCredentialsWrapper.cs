@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace UbiqSecurity
+namespace UbiqSecurity.ComCompatible
 {
     [ComVisible(true)]
     [InterfaceType(ComInterfaceType.InterfaceIsDual)]

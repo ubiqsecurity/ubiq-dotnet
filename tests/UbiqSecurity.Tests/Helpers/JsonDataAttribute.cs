@@ -30,36 +30,36 @@ namespace UbiqSecurity.Tests.Helpers
             {
                 using var fileStream = File.OpenRead(filePath);
 
-                JsonElement json = JsonDocument.Parse(fileStream).RootElement;
-                if (json.ValueKind != JsonValueKind.Array)
-                {
-                    throw new Exception("JSON file does not contain an array");
-                }
+				JsonElement json = JsonDocument.Parse(fileStream).RootElement;
+				if (json.ValueKind != JsonValueKind.Array)
+				{
+					throw new Exception("JSON file does not contain an array");
+				}
 
-                foreach (JsonElement element in json.EnumerateArray())
-                {
-                    var objects = new List<object>();
+				foreach (JsonElement element in json.EnumerateArray())
+				{
+					var objects = new List<object>();
 
-                    foreach (var parameter in methodParameters)
-                    {
-                        // find json property w/ same name as the method parameter
-                        var property = element.GetProperty(parameter.Name.ToLowerInvariant());
+					foreach (var parameter in methodParameters)
+					{
+						// find json property w/ same name as the method parameter
+						var property = element.GetProperty(parameter.Name.ToLowerInvariant());
 
-                        object value = parameter.ParameterType switch
-                        {
-                            Type stringType when stringType == typeof(string) => property.GetString(),
-                            Type intType when intType == typeof(int) => property.GetInt32(),
-                            Type nullableIntType when nullableIntType == typeof(int?) => string.IsNullOrWhiteSpace(property.GetString()) ? (int?)null : property.GetInt32(),
-                            _ => property.GetString()
-                        };
+						object value = parameter.ParameterType switch
+						{
+							Type stringType when stringType == typeof(string) => property.GetString(),
+							Type intType when intType == typeof(int) => property.GetInt32(),
+							Type nullableIntType when nullableIntType == typeof(int?) => string.IsNullOrWhiteSpace(property.GetString()) ? (int?)null : property.GetInt32(),
+							_ => property.GetString()
+						};
 
-                        objects.Add(value);
+						objects.Add(value);
+					
+					}
 
-                    }
-
-                    yield return objects.ToArray();
-                }
-            }
+					yield return objects.ToArray();
+				}
+			}
 		}
 	}
 }

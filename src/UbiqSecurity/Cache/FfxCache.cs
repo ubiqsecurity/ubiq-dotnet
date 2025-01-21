@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Specialized;
-#if DEBUG
-using System.Diagnostics;
-#endif
 using System.Runtime.Caching;
 using System.Threading.Tasks;
 using UbiqSecurity.Internals;
@@ -56,10 +53,6 @@ namespace UbiqSecurity.Cache
             var ffx = (FfxContext)_cache.Get(cacheKey);
             if (ffx == null)
 			{
-#if DEBUG
-                Debug.WriteLine($"FFX cache miss {cacheKey}");
-#endif
-
 				ffx = await GetFfsKeyAsync(key);
 
 				_cache.Set(cacheKey, ffx, DefaultPolicy);
@@ -140,7 +133,7 @@ namespace UbiqSecurity.Cache
 				tweak = Convert.FromBase64String(keyId.FfsRecord.Tweak);
 			}
 
-			byte[] key = KeyUnwrapper.UnwrapKey(keyResponse.EncryptedPrivateKey, keyResponse.WrappedDataKey, _credentials.SecretCryptoAccessKey);
+			byte[] key = PayloadEncryption.UnwrapDataKey(keyResponse.EncryptedPrivateKey, keyResponse.WrappedDataKey, _credentials.SecretCryptoAccessKey);
 
 			switch (keyId.FfsRecord.EncryptionAlgorithm)
 			{

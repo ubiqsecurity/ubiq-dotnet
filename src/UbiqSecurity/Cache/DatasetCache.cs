@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Specialized;
-#if DEBUG
-using System.Diagnostics;
-#endif
 using System.Runtime.Caching;
 using System.Threading.Tasks;
 using UbiqSecurity.Internals;
@@ -46,10 +43,6 @@ namespace UbiqSecurity.Cache
             var ffs = (FfsRecord)_cache.Get(ffsName);
             if (ffs == null)
 			{
-#if DEBUG
-                Debug.WriteLine($"FFX cache miss {ffsName}");
-#endif
-
 				ffs = await _ubiqWebService.GetFfsDefinitionAsync(ffsName);
 				if (ffs == null)
 				{
@@ -81,9 +74,9 @@ namespace UbiqSecurity.Cache
 				{
 					var cacheSettings = new NameValueCollection(3)
 					{
-						{ "CacheMemoryLimitMegabytes", $"{1024}" },
-						{ "PhysicalMemoryLimit", $"{5}" },  //set % here
-						{ "pollingInterval", "00:00:10" }
+						{ "CacheMemoryLimitMegabytes", "1024" },
+						{ "PhysicalMemoryLimit", "5" },
+						{ "PollingInterval", "00:00:10" }
 					};
 					_cache = new MemoryCache($"FFS:{Guid.NewGuid()}", cacheSettings);
 					_cacheLock = false;
