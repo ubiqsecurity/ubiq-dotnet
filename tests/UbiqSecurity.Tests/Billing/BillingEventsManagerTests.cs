@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using UbiqSecurity.Billing;
+using UbiqSecurity.Config;
 using UbiqSecurity.Internals;
 using UbiqSecurity.Model;
 
@@ -12,7 +13,10 @@ namespace UbiqSecurity.Tests.Billing
 		{
 			var config = new UbiqConfiguration()
 			{
-				EventReportingTimestampGranularity = ChronoUnit.Hours
+				EventReporting = new EventReportingConfig
+                {
+                    TimestampGranularity = ChronoUnit.Hours.ToString(),
+                }
 			};
 
 			var credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, "ubiq-dotnet");
@@ -28,12 +32,15 @@ namespace UbiqSecurity.Tests.Billing
 		[Fact]
 		public async Task GetSerializedEvents_BillingEventInQueue_ReturnsPopulatedUsageArray()
 		{
-			var config = new UbiqConfiguration()
-			{
-				EventReportingTimestampGranularity = ChronoUnit.Hours
-			};
+            var config = new UbiqConfiguration()
+            {
+                EventReporting = new EventReportingConfig
+                {
+                    TimestampGranularity = ChronoUnit.Hours.ToString(),
+                }
+            };
 
-			var credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, "ubiq-dotnet");
+            var credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, "ubiq-dotnet");
 			var webservice = new UbiqWebServices(credentials, config);
 
 			var sut = new BillingEventsManager(config, webservice);

@@ -20,15 +20,7 @@ UbiqSecurity.IUbiqCredentials.Host.get -> string
 UbiqSecurity.IUbiqCredentials.SecretCryptoAccessKey.get -> string
 UbiqSecurity.IUbiqCredentials.SecretSigningKey.get -> string
 UbiqSecurity.UbiqConfiguration
-UbiqSecurity.UbiqConfiguration.EventReportingFlushInterval.get -> int
-UbiqSecurity.UbiqConfiguration.EventReportingMinimumCount.get -> int
-UbiqSecurity.UbiqConfiguration.EventReportingTimestampGranularity.get -> UbiqSecurity.ChronoUnit
-UbiqSecurity.UbiqConfiguration.EventReportingTimestampGranularity.set -> void
-UbiqSecurity.UbiqConfiguration.EventReportingTrapExceptions.get -> bool
-UbiqSecurity.UbiqConfiguration.EventReportingWakeInterval.get -> int
 UbiqSecurity.UbiqConfiguration.UbiqConfiguration() -> void
-UbiqSecurity.UbiqConfiguration.UbiqConfiguration(int wakeInterval, int minimumCount, int flushInterval, bool trapExceptions) -> void
-UbiqSecurity.UbiqConfiguration.UbiqConfiguration(int wakeInterval, int minimumCount, int flushInterval, bool trapExceptions, string timestampGranularity) -> void
 UbiqSecurity.UbiqDecrypt
 UbiqSecurity.UbiqDecrypt.AddReportingUserDefinedMetadata(string jsonString) -> void
 UbiqSecurity.UbiqDecrypt.Begin() -> byte[]
@@ -49,24 +41,9 @@ UbiqSecurity.UbiqEncrypt.UbiqEncrypt(UbiqSecurity.IUbiqCredentials ubiqCredentia
 UbiqSecurity.UbiqEncrypt.UbiqEncrypt(UbiqSecurity.IUbiqCredentials ubiqCredentials, int usesRequested, UbiqSecurity.UbiqConfiguration ubiqConfiguration) -> void
 UbiqSecurity.UbiqFactory
 UbiqSecurity.UbiqFPEEncryptDecrypt
-UbiqSecurity.UbiqFPEEncryptDecrypt.AddReportingUserDefinedMetadata(string jsonString) -> void
-UbiqSecurity.UbiqFPEEncryptDecrypt.ClearCache() -> void
-UbiqSecurity.UbiqFPEEncryptDecrypt.DecryptAsync(string datasetName, byte[] cipherBytes) -> System.Threading.Tasks.Task<byte[]>
-UbiqSecurity.UbiqFPEEncryptDecrypt.DecryptAsync(string datasetName, byte[] cipherBytes, byte[] tweak) -> System.Threading.Tasks.Task<byte[]>
-UbiqSecurity.UbiqFPEEncryptDecrypt.DecryptAsync(string datasetName, string cipherText) -> System.Threading.Tasks.Task<string>
-UbiqSecurity.UbiqFPEEncryptDecrypt.DecryptAsync(string datasetName, string cipherText, byte[] tweak) -> System.Threading.Tasks.Task<string>
-UbiqSecurity.UbiqFPEEncryptDecrypt.EncryptAsync(string datasetName, byte[] plainBytes) -> System.Threading.Tasks.Task<byte[]>
-UbiqSecurity.UbiqFPEEncryptDecrypt.EncryptAsync(string datasetName, byte[] plainBytes, byte[] tweak) -> System.Threading.Tasks.Task<byte[]>
-UbiqSecurity.UbiqFPEEncryptDecrypt.EncryptAsync(string datasetName, string plainText) -> System.Threading.Tasks.Task<string>
-UbiqSecurity.UbiqFPEEncryptDecrypt.EncryptAsync(string datasetName, string plainText, byte[] tweak) -> System.Threading.Tasks.Task<string>
-UbiqSecurity.UbiqFPEEncryptDecrypt.EncryptForSearchAsync(string datasetName, string plainText) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>>
-UbiqSecurity.UbiqFPEEncryptDecrypt.EncryptForSearchAsync(string datasetName, string plainText, byte[] tweak) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>>
-UbiqSecurity.UbiqFPEEncryptDecrypt.GetCopyOfUsage() -> string
 UbiqSecurity.UbiqFPEEncryptDecrypt.UbiqFPEEncryptDecrypt(UbiqSecurity.IUbiqCredentials ubiqCredentials) -> void
 UbiqSecurity.UbiqFPEEncryptDecrypt.UbiqFPEEncryptDecrypt(UbiqSecurity.IUbiqCredentials ubiqCredentials, UbiqSecurity.UbiqConfiguration ubiqConfiguration) -> void
 virtual UbiqSecurity.UbiqDecrypt.Dispose() -> void
 virtual UbiqSecurity.UbiqDecrypt.Dispose(bool disposing) -> void
 virtual UbiqSecurity.UbiqEncrypt.Dispose() -> void
 virtual UbiqSecurity.UbiqEncrypt.Dispose(bool disposing) -> void
-virtual UbiqSecurity.UbiqFPEEncryptDecrypt.Dispose() -> void
-virtual UbiqSecurity.UbiqFPEEncryptDecrypt.Dispose(bool disposing) -> void

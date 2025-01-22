@@ -9,6 +9,11 @@ to encrypt and decrypt data.
 
 See the [.NET API docs][ubiq-dotnet-docs].
 
+## Requirements
+
+- .NET Framework (4.6.2 or newer) desktop development
+- .NET Core (6.0 or newer) cross-platform development
+
 ## Installation
 
 Using the [.NET Core command-line interface (CLI) tools][dotnet-core-cli-tools]:
@@ -28,11 +33,6 @@ Using the [Package Manager Console][package-manager-console]:
 ```powershell
 Install-Package ubiq-security
 ```
-
-### Requirements to Use Ubiq-Security library
-
-- .NET Framework (4.6.2 or newer) desktop development
-- .NET Core (6.0 or newer) cross-platform development
 
 ## Building from source
 
@@ -125,35 +125,37 @@ await UbiqEncrypt.EncryptAsync(credentials, plainBytes).ConfigureAwait(false);
 More information can be found about C# `SynchronizationContext` can be found
 [here][sync-context-info].
 
-### Encrypt a simple block of data
+### Unstructured encryption of a simple block of data
 
-Pass credentials and plaintext bytes into the encryption function.  The encrypted data
+Pass credentials and plaintext bytes into the unstructured encryption function.  The encrypted data
 bytes will be returned.
 **Note:** This is a non-blocking function, so be sure to use the appropriate process controls to make sure the results are available when desired.  See the the following [Microsoft documentation][dotnet-async] for additional information.
 
 ```cs
 using UbiqSecurity;
 
+UbiqCredentials credentials = ...;
 byte[] plainBytes = ...;
 byte[] encryptedBytes = await UbiqEncrypt.EncryptAsync(credentials, plainBytes);
 ```
 
-### Decrypt a simple block of data
+### Unstructured decryption of a simple block of data
 
-Pass credentials and encrypted data into the decryption function.  The plaintext data
+Pass credentials and encrypted data into the unstructured decryption function.  The plaintext data
 bytes will be returned.
 **Note:** This is a non-blocking function, so be sure to use the appropriate process controls to make sure the results are available when desired.  See the the following [Microsoft documentation][dotnet-async] for additional information.
 
 ```cs
 using UbiqSecurity;
 
+UbiqCredentials credentials = ...;
 byte[] encryptedBytes = ...;
 byte[] plainBytes = await UbiqDecrypt.DecryptAsync(credentials, encryptedBytes);
 ```
 
-### Encrypt a large data element where data is loaded in chunks
+### Unstructured encryption of a large data element where data is loaded in chunks
 
-- Create an encryption object using the credentials.
+- Create an unstructured encryption object using the credentials.
 - Call the encryption instance ```BeginAsync()``` method.
 - Call the encryption instance ```Update()``` method repeatedly until all the data is processed.
 - Call the encryption instance ```End()``` method.
@@ -193,9 +195,69 @@ async Task PiecewiseEncryptionAsync(string inFile, string outFile, IUbiqCredenti
 }
 ```
 
-### Decrypt a large data element where data is loaded in chunks
+### Encrypt several objects using the same data encryption key (fewer calls to the server)
 
-- Create a decryption object using the credentials.
+In this example, the same data encryption key is used to encrypt several different plain text objects,
+object1 .. objectn.  In each case, a different initialization vector, IV, is automatically used but the ubiq
+platform is not called to obtain a new data encryption key, resulting in better throughput.  For data security
+reasons, you should limit n to be less than 2^32 (4,294,967,296) for each unique data encryption key.
+
+1. Create an encryption object using the credentials.
+2. Repeat following three steps as many times as appropriate
+
+    - Call the encryption instance begin method
+    - Call the encryption instance update method repeatedly until a single object's data is processed
+    - Call the encryption instance end method
+
+3. Call the encryption instance close method
+
+```cs
+      UbiqCredentials ubiqCredentials = UbiqFactory.readCredentialsFromFile("path/to/file", "default");
+
+      ... 
+      UbiqEncrypt ubiqEncrypt = new UbiqEncrypt(ubiqCredentials, 1);
+
+      List<Byte> cipherBytes = new ArrayList<Byte>();
+      // object1 is a full unencrypted object
+      byte[] tmp = ubiqEncrypt.begin();
+      cipherBytes.addAll(Bytes.asList(tmp))
+      tmp = ubiqEncrypt.update(object1, 0, object1.length);
+      cipherBytes.addAll(Bytes.asList(tmp))
+      tmp = ubiqEncrypt.end();
+      cipherBytes.addAll(Bytes.asList(tmp))
+      // Do something with the encrypted data: cipherBytes
+
+      // In this case, object2 is broken into two pieces, object2_part1 and object2_part2
+      cipherBytes = new ArrayList<Byte>();
+      tmp = ubiqEncrypt.begin();
+      cipherBytes.addAll(Bytes.asList(tmp))
+      tmp = ubiqEncrypt.update(object2_part1, 0, object2_part1.length);
+      cipherBytes.addAll(Bytes.asList(tmp))
+      tmp = ubiqEncrypt.update(object2_part2, 0, object2_part2.length);
+      cipherBytes.addAll(Bytes.asList(tmp))
+      tmp = ubiqEncrypt.end();
+      cipherBytes.addAll(Bytes.asList(tmp))
+      // Do something with the encrypted data: cipherBytes
+
+      ...
+      // In this case, objectb is broken into two pieces, object2_part1 and object2_part2
+      cipherBytes = new ArrayList<Byte>();
+      // objectn is a full unencrypted object
+      tmp = ubiqEncrypt.begin();
+      cipherBytes.addAll(Bytes.asList(tmp))
+      tmp = ubiqEncrypt.update(objectn, 0, objectn.length);
+      cipherBytes.addAll(Bytes.asList(tmp))
+      tmp = ubiqEncrypt.end();
+      cipherBytes.addAll(Bytes.asList(tmp))
+      // Do something with the encrypted data: cipherBytes
+
+      ubiqEncrypt.close()
+}
+```
+
+### Unstructured decryption of a large data element where data is loaded in chunks
+
+- Create a unstructured decryption object using the credentials.
 - Call the decryption instance ```Begin()``` method.
 - Call the decryption instance ```UpdateAsync()``` method repeatedly until all data is processed.
 - Call the decryption instance ```End()``` method
@@ -235,41 +297,17 @@ async Task PiecewiseDecryptionAsync(string inFile, string outFile, IUbiqCredenti
 }
 ```
 
-## Ubiq Format Preserving Encryption
-
-This library incorporates Ubiq Format Preserving Encryption (eFPE).
-
-## Requirements
-
-- Please follow the same requirements as described above for the non-eFPE functionality.
-
-## Usage
-
-You will need to obtain account credentials in the same way as described above for conventional encryption/decryption. When
-you do this in your [Ubiq Dashboard][dashboard] [credentials][credentials], you'll need to enable the eFPE option.
-The credentials can be set using environment variables, loaded from an explicitly
-specified file, or read from the default location (c:/users/*yourlogin*/.ubiq/credentials).
-
-### Referencing the Ubiq Security library
-
-Make sure your project has a reference to the UbiqSecurity DLL library, either by adding the NuGet package
-(if using prebuilt library) or by adding a project reference (if built from source).
-Then, add the following to the top of your C# source file:
-
-```cs
-using UbiqSecurity;
-```
+## Ubiq Structured Encryption
 
 ### Reading and setting credentials
 
-The eFPE functions work with the credentials file and/or environmental variables in the same way as described
-earlier in this document. You'll only need to make sure that the API keys you pull from the Ubiq dashboard are enabled for
-eFPE capability.
+The structured encryption functions work with the credentials file and/or environmental variables in the same way as described
+earlier in this document. You'll only need to make sure that the API keys you pull from the Ubiq dashboard are are associated with a structured dataset.
 
 ### Encrypt a social security text field
 
 Create an Encryption / Decryption object with the credentials and then allow repeatedly call encrypt
-data using a Field Format Specification, FFS, and the data.  The encrypted data will be returned after each call
+data using a structured dataset and the data.  The encrypted data will be returned after each call.
 
 Note that you would only need to create the "ubiqEncryptDecrypt" object once for any number of
 EncryptAsync and DecryptAsync calls, for example when you are bulk processing many such
@@ -281,7 +319,7 @@ async Task EncryptionAsync(String FfsName, String plainText, IUbiqCredentials ub
     // default tweak in case the FFS model allows for external tweak insertion          
     byte[] tweakFF1 = {};
 
-    using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(ubiqCredentials))
+    using (var ubiqEncryptDecrypt = new UbiqStructuredEncryptDecrypt(ubiqCredentials))
     {
         var cipherText = await ubiqEncryptDecrypt.EncryptAsync(FfsName, plainText, tweakFF1);
         Console.WriteLine($"ENCRYPTED cipherText= {cipherText}\n");
@@ -294,7 +332,7 @@ async Task EncryptionAsync(String FfsName, String plainText, IUbiqCredentials ub
 ### Decrypt a social security text field
 
 Create an Encryption / Decryption object with the credentials and then repeatedly decrypt
-data using a Field Format Specification, FFS, and the data.  The decrypted data will be returned after each call.
+data using a structured dataset and the data. The decrypted data will be returned after each call.
 
 Note that you would only need to create the "ubiqEncryptDecrypt" object once for any number of
 EncryptAsync and DecryptAsync calls, for example when you are bulk processing many such
@@ -306,7 +344,7 @@ async Task DecryptionAsync(String FfsName, String cipherText, IUbiqCredentials u
 
     byte[] tweakFF1 = {};
 
-    using (var ubiqEncryptDecrypt = new UbiqFPEEncryptDecrypt(ubiqCredentials))
+    using (var ubiqEncryptDecrypt = new UbiqStructuredEncryptDecrypt(ubiqCredentials))
     {
         var plainText = await ubiqEncryptDecrypt.DecryptAsync(FfsName, cipherText, tweakFF1);
         Console.WriteLine($"DECRYPTED plainText= {plainText}\n");
@@ -318,18 +356,14 @@ async Task DecryptionAsync(String FfsName, String cipherText, IUbiqCredentials u
 
 ### Custom Metadata for Usage Reporting
 
-There are cases where a developer would like to attach metadata to usage information reported by the application. Both the structured and unstructured interfaces 
-allow user_defined metadata to be sent with the usage information reported by the libraries.
+There are cases where a developer would like to attach metadata to usage information reported by the application. Both the structured and unstructured interfaces allow user_defined metadata to be sent with the usage information reported by the libraries.
 
-The <b>AddReportingUserDefinedMetadata</b> function accepts a string in JSON format that will be stored in the database with the usage records. The string 
-must be less than 1024 characters and be a valid JSON format.  The string must include both the <b>{</b> and <b>}</b> symbols.  The supplied value will be used 
-until the object goes out of scope.  Due to asynchronous processing, changing the value may be immediately reflected in subsequent usage.  If immediate changes to 
-the values are required, it would be safer to create a new encrypt / decrypt object and call the <b>AddReportingUserDefinedMetadata</b> function with the new values.
+The **AddReportingUserDefinedMetadata** function accepts a string in JSON format that will be stored in the database with the usage records. The string must be less than 1024 characters and be a valid JSON format.  The string must include both the **{** and **}** symbols.  The supplied value will be used until the object goes out of scope.  Due to asynchronous processing, changing the value may be immediately reflected in subsequent usage.  If immediate changes to the values are required, it would be safer to create a new encrypt / decrypt object and call the **AddReportingUserDefinedMetadata** function with the new values.
 
 Examples are shown below.
 
 ```cs
-    using var ubiq = new UbiqFPEEncryptDecrypt(ubiqCredentials);
+    using var ubiq = new UbiqStructuredEncryptDecrypt(ubiqCredentials);
     ubiqEncryptDecrypt.AddReportingUserDefinedMetadata("{\"some_meaningful_flag\" : true }");
 }
 ```
@@ -344,7 +378,7 @@ Examples are shown below.
 For example say we want to search for an employee by SSN, but that field was encrypted in the database. The encryption key may have rotated since the employee SSN was originally encrypted, so we can use the EncryptForSearchAsync() method to get an array of all possible encrypted values.
 
 ```cs
-using var ubiq = new UbiqFPEEncryptDecrypt(ubiqCredentials);
+using var ubiq = new UbiqStructuredEncryptDecrypt(ubiqCredentials);
 
 var encryptedSsns = await ubiq.EncryptForSearchAsync("SSN_Dataset", unencryptedSsn)
 
@@ -354,11 +388,53 @@ var user = _dbContext
                 .FirstOrDefault();
 ```
 
-### More Information
+## UbiqConfiguration object
 
-Additional information on how to use these FFS models in your own applications is available by contacting
-Ubiq. You may also view some use-cases implemented in the unit test [UbiqFpeEncryptDecryptTests.cs]
-and the sample application [source code][ubiq-dotnet-samples].
+### Event Reporting
+
+The **EventReporting** section contains values to control how often the usage is reported.  
+
+- **WakeInterval** indicates the number of seconds to sleep before waking to determine if there has been enough activity to report usage
+- **MinimumCount** indicates the minimum number of usage records that must be queued up before sending the usage
+- **FlushInterval** indicates the sleep interval before all usage will be flushed to server.
+- **TrapExceptions** indicates whether exceptions encountered while reporting usage will be trapped and ignored or if it will become an error that gets reported to the application
+- **TimestampGranularity** indicates the how granular the timestamp will be when reporting events.  Valid values are
+  - "NANOS"  
+    // DEFAULT: values are reported down to the nanosecond resolution when possible
+  - "MILLIS"  
+  // values are reported to the millisecond
+  - "SECONDS"  
+  // values are reported to the second
+  - "MINUTES"  
+  // values are reported to minute
+  - "HOURS"  
+  // values are reported to hour
+  - "HALF_DAYS"  
+  // values are reported to half day
+  - "DAYS"  
+  // values are reported to the day
+
+### Key Caching
+
+The **KeyCaching** section contains values to control how and when keys are cached.
+
+- **TtlSeconds** indicates how many seconds a cache element should remain before it must be re-retrieved. (default: 1800)
+- **Structured** indicates whether keys will be cached when doing structured encryption and decryption. (default: true)
+- **Unstructured** indicates whether keys will be cached when doing unstructured decryption. (default: true)
+- **Encrypt** indicates if keys should be stored encrypted. If keys are encrypted, they will be harder to access via memory, but require them to be decrypted with each use. (default: false)
+
+## Ubiq API Error Reference
+
+Occasionally, you may encounter issues when interacting with the Ubiq API.
+
+| Status Code | Meaning | Solution |
+|---|---|---|
+| 400 | Bad Request | Check name of datasets and credentials are complete. |
+| 401 | Authentication issue | Check you have the correct API keys, and it has access to the datasets you are using.  Check dataset name. |
+| 426 | Upgrade Required | You are using an out of date version of the library, or are trying to use newer features not supported by the library you are using.  Update the library and try again. |
+| 429 | Rate Limited | You are performing operations too quickly. Either slow down, or contact <support@ubiqsecurity.com> to increase your limits. |
+| 500 | Internal Server Error | Something went wrong. Contact support if this persists. |
+| 504 | Internal Error | Possible API key issue.  Check credentials or contact support. |
 
 [ubiq-dotnet-docs]:https://dev.ubiqsecurity.com/docs/dotnet-library
 [ubiq-dotnet-samples]:https://gitlab.com/ubiqsecurity/ubiq-dotnet-sample
@@ -368,8 +444,5 @@ and the sample application [source code][ubiq-dotnet-samples].
 [package-manager-console]: https://docs.microsoft.com/en-us/nuget/tools/package-manager-console
 [dotnet-async]:https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/
 [sync-context-info]:https://docs.microsoft.com/en-us/archive/msdn-magazine/2011/february/msdn-magazine-parallel-computing-it-s-all-about-the-synchronizationcontext
-[efpesample]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/CoreConsoleFpe/Program.cs
 [manage-keys]:https://dev.ubiqsecurity.com/docs/api-keys
 [use-credentials]:https://dev.ubiqsecurity.com/docs/using-api-key-credentials
-[credentials]:https://dev.ubiqsecurity.com/docs/api-key-credentials
-[UbiqFpeEncryptDecryptTests.cs]:https://gitlab.com/ubiqsecurity/ubiq-dotnet/-/blob/master/tests/UbiqSecurity.Tests/UbiqFpeEncryptDecryptTests.cs
