@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UbiqSecurity.Billing;
+using UbiqSecurity.Cache;
 using UbiqSecurity.Internals;
 using UbiqSecurity.Model;
 
@@ -12,9 +13,10 @@ namespace UbiqSecurity
 	{
 		private readonly IUbiqCredentials _credentials;
 		private readonly IBillingEventsManager _billingEvents;
+        private readonly IUbiqWebService _ubiqWebService;
+        private readonly IUnstructuredKeyCache _decryptionKeyCache;
 
-		private IUbiqWebService _ubiqWebService;	// null on dispose
-		private CipherHeader _cipherHeader;			// extracted from beginning of ciphertext
+		private CipherHeader _cipherHeader; // extracted from beginning of ciphertext
 		private ByteBuffer _byteBuffer;
 		private DecryptionKeyResponse _decryptionKey;
 		private AesGcmBlockCipher _aesGcmBlockCipher;
@@ -30,14 +32,8 @@ namespace UbiqSecurity
 
             _ubiqWebService = new UbiqWebServices(ubiqCredentials, ubiqConfiguration);
             _billingEvents = new BillingEventsManager(ubiqConfiguration, _ubiqWebService);
+            _decryptionKeyCache = new UnstructuredKeyCache(_ubiqWebService, ubiqConfiguration, ubiqCredentials);
         }
-
-		internal UbiqDecrypt(IUbiqCredentials ubiqCredentials, IUbiqWebService webService, IBillingEventsManager billingEvents)
-		{
-			_credentials = ubiqCredentials;
-			_ubiqWebService = webService;
-			_billingEvents = billingEvents;
-		}
 
 		public void AddReportingUserDefinedMetadata(string jsonString)
 		{
@@ -57,12 +53,7 @@ namespace UbiqSecurity
 				Reset();
 
 				_billingEvents?.Dispose();
-
-				if (_ubiqWebService != null)
-				{
-					_ubiqWebService.Dispose();
-					_ubiqWebService = null;
-				}
+                _ubiqWebService?.Dispose();
 			}
 		}
 
@@ -89,11 +80,6 @@ namespace UbiqSecurity
 
 		public byte[] Begin()
 		{
-			if (_ubiqWebService == null)
-			{
-				throw new ObjectDisposedException(nameof(_ubiqWebService));
-			}
-
 			if (_aesGcmBlockCipher != null)
 			{
 				throw new InvalidOperationException("decryption in progress");
@@ -123,12 +109,7 @@ namespace UbiqSecurity
 		// the data in its internal buffer
 		public async Task<byte[]> UpdateAsync(byte[] cipherBytes, int offset, int count)
 		{
-			if (_ubiqWebService == null)
-			{
-				throw new ObjectDisposedException(nameof(_ubiqWebService));
-			}
-
-			byte[] plainBytes = Array.Empty<byte>();	// returned
+			byte[] plainBytes = Array.Empty<byte>(); // returned
 
 			if (_byteBuffer == null)
 			{
@@ -167,8 +148,7 @@ namespace UbiqSecurity
 					// If needed, use the header info to fetch the decryption key.
 					if (_decryptionKey == null)
 					{
-						// JIT: request encryption key from server
-						_decryptionKey = await _ubiqWebService.GetDecryptionKeyAsync(_cipherHeader.EncryptedDataKeyBytes).ConfigureAwait(false);
+                        _decryptionKey = await _decryptionKeyCache.GetAsync(_cipherHeader.EncryptedDataKeyBytes).ConfigureAwait(false);
 					}
 
 					if (_decryptionKey != null)

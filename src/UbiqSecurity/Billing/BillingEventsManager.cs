@@ -62,13 +62,13 @@ namespace UbiqSecurity.Billing
 
 		public async Task ProcessBillingEventsAsync()
 		{
-			if (EventCount < _configuration.EventReportingMinimumCount &&
-				DateTime.Now.Subtract(_lastFlushed).TotalSeconds < _configuration.EventReportingFlushInterval)
+			if (EventCount < _configuration.EventReporting.MinimumCount &&
+				DateTime.Now.Subtract(_lastFlushed).TotalSeconds < _configuration.EventReporting.FlushInterval)
 			{
 				return;
 			}
 
-			if (DateTime.Now.Subtract(_lastFlushed).TotalSeconds < _configuration.EventReportingWakeInterval)
+			if (DateTime.Now.Subtract(_lastFlushed).TotalSeconds < _configuration.EventReporting.WakeInterval)
 			{
 				return;
 			}
@@ -83,7 +83,7 @@ namespace UbiqSecurity.Billing
 				var billingEvent = new BillingEvent(apiKey, datasetName, datasetGroupName, billingAction, datasetType, keyNumber, count)
 				{
 					UserDefinedMetadata = _userDefinedMetadata,
-					TimestampGranularity = _configuration.EventReportingTimestampGranularity,
+					TimestampGranularity = _configuration.EventReporting.ChronoTimestampGranularity,
 				};
 
 				var key = billingEvent.ToString();
@@ -98,7 +98,7 @@ namespace UbiqSecurity.Billing
 			}
 			catch
 			{
-				if (!_configuration.EventReportingTrapExceptions)
+				if (!_configuration.EventReporting.TrapExceptions)
 				{
 					throw;
 				}
@@ -129,7 +129,7 @@ namespace UbiqSecurity.Billing
 			}
 			catch
 			{
-				if (!_configuration.EventReportingTrapExceptions)
+				if (!_configuration.EventReporting.TrapExceptions)
 				{
 					throw;
 				}

@@ -7,7 +7,7 @@ using UbiqSecurity.Model;
 
 namespace UbiqSecurity.Cache
 {
-    internal class DatasetCache : IDatasetCache, IDisposable
+    internal class StructuredKeyCache : IStructuredKeyCache, IDisposable
     {
         private readonly IUbiqWebService _ubiqWebService;
         private readonly UbiqConfiguration _configuration;
@@ -15,13 +15,13 @@ namespace UbiqSecurity.Cache
         private bool _cacheLock;
         private MemoryCache _cache;
 
-        internal DatasetCache(IUbiqWebService ubiqWebService, UbiqConfiguration configuration)
+        internal StructuredKeyCache(IUbiqWebService ubiqWebService, UbiqConfiguration configuration)
         {
             _ubiqWebService = ubiqWebService;
             _configuration = configuration;
 
             _cacheLock = false;
-            _cache = new MemoryCache("FFS");
+            _cache = new MemoryCache("StructuredKey");
 
             InitCache();
         }
@@ -37,31 +37,43 @@ namespace UbiqSecurity.Cache
             InitCache();
         }
 
-        public async Task<FfsRecord> GetAsync(string ffsName)
+        public async Task<FpeKeyResponse> GetAsync(FfsKeyId ffsKeyId)
         {
-            var ffs = (FfsRecord)_cache.Get(ffsName);
-            if (ffs == null)
+            var cacheKey = $"{ffsKeyId.FfsRecord.Name}|{ffsKeyId.KeyNumber ?? -1}";
+
+            var response = (FpeKeyResponse)_cache.Get(cacheKey);
+            if (response == null)
             {
-                ffs = await _ubiqWebService.GetFfsDefinitionAsync(ffsName);
-                if (ffs == null)
+                if (ffsKeyId.KeyNumber.HasValue)
                 {
-                    throw new ArgumentException($"Dataset '{ffsName}' does not exist", nameof(ffsName));
+                    response = await _ubiqWebService.GetFpeDecryptionKeyAsync(ffsKeyId.FfsRecord.Name, ffsKeyId.KeyNumber.Value);
+                }
+                else
+                {
+                    response = await _ubiqWebService.GetFpeEncryptionKeyAsync(ffsKeyId.FfsRecord.Name);
                 }
 
-                _cache.Set(ffsName, ffs, GetCachePolicy());
+                if (response == null)
+                {
+                    throw new InvalidOperationException("FpeKeyResponse is null");
+                }
+
+                _cache.Set(cacheKey, response, GetCachePolicy());
             }
 
-            return ffs;
+            return response;
         }
 
-        public void TryAdd(FfsRecord dataset)
+        public void TryAdd(FfsKeyId ffsKeyId, FpeKeyResponse response)
         {
-            if (_cache.Contains(dataset.Name))
+            var cacheKey = $"{ffsKeyId.FfsRecord.Name}|{ffsKeyId.KeyNumber ?? -1}";
+
+            if (_cache.Contains(cacheKey))
             {
                 return;
             }
 
-            _cache.Set(dataset.Name, dataset, GetCachePolicy());
+            _cache.Set(cacheKey, response, GetCachePolicy());
         }
 
         private void InitCache()
@@ -77,7 +89,7 @@ namespace UbiqSecurity.Cache
                         { "PhysicalMemoryLimit", "5" },
                         { "PollingInterval", "00:00:10" }
                     };
-                    _cache = new MemoryCache($"FFS:{Guid.NewGuid()}", cacheSettings);
+                    _cache = new MemoryCache($"StructuredKey:{Guid.NewGuid()}", cacheSettings);
                     _cacheLock = false;
                 }
             }
@@ -85,7 +97,7 @@ namespace UbiqSecurity.Cache
 
         private CacheItemPolicy GetCachePolicy()
         {
-            var ttlSeconds = _configuration.KeyCaching.TtlSeconds;
+            var ttlSeconds = _configuration.KeyCaching.Structured ? _configuration.KeyCaching.TtlSeconds : 0;
 
             return new CacheItemPolicy
             {
