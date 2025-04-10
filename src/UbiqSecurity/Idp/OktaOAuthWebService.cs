@@ -1,25 +1,24 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using System.Collections.Generic;
 using UbiqSecurity.Config;
 
 namespace UbiqSecurity.Idp
 {
-    internal class EntraIdOAuthWebServices : IOAuthWebService
+    internal class OktaOAuthWebService : IOAuthWebService
     {
         private Lazy<HttpClient> _lazyHttpClient;
         private readonly IUbiqCredentials _ubiqCredentials;
 
-        internal EntraIdOAuthWebServices(IUbiqCredentials ubiqCredentials)
+        internal OktaOAuthWebService(IUbiqCredentials ubiqCredentials)
         {
             // thread-safe lazy init: 'BuildHttpClient' doesn't get called
             // until _lazyHttpClient.Value is accessed
             _lazyHttpClient = new Lazy<HttpClient>(BuildHttpClient);
             _ubiqCredentials = ubiqCredentials;
         }
-
 
         public void Dispose()
         {
@@ -42,7 +41,7 @@ namespace UbiqSecurity.Idp
                 new KeyValuePair<string, string>("username", _ubiqCredentials.IdpUsername),
                 new KeyValuePair<string, string>("password", _ubiqCredentials.IdpPassword),
                 new KeyValuePair<string, string>("grant_type", "password"),
-                new KeyValuePair<string, string>("scope", $"api://{idpConfig.IdpTenantId}/.default"),
+                new KeyValuePair<string, string>("scope", "openid offline_access okta.users.read okta.groups.read"),
             });
 
             var response = await _lazyHttpClient.Value.PostAsync(url, formContent).ConfigureAwait(false);

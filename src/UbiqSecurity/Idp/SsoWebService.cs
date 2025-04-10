@@ -51,7 +51,7 @@ namespace UbiqSecurity.Idp
 
         public async Task<SsoResponse> SsoAsync(SsoRequest request)
         {
-            var url = $"{_baseUrl}/{Configuration.Idp.CustomerId}/{RestApiV3Root}/scim/sso";
+            var url = $"{_baseUrl}/{Configuration.Idp.UbiqCustomerId}/{RestApiV3Root}/scim/sso";
 
             _lazyHttpClient.Value.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", request.AccessToken);
 

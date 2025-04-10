@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using UbiqSecurity.Billing;
 using UbiqSecurity.Internals;
+using UbiqSecurity.Internals.WebService;
 using UbiqSecurity.Model;
 
 namespace UbiqSecurity
@@ -38,8 +39,16 @@ namespace UbiqSecurity
             _ubiqCredentials = ubiqCredentials;
             _usesRequested = usesRequested;
 
-            _ubiqWebService = new UbiqWebServices(ubiqCredentials, ubiqConfiguration);
+            _ubiqWebService = new UbiqWebService(ubiqCredentials, ubiqConfiguration);
             _billingEvents = new BillingEventsManager(ubiqConfiguration, _ubiqWebService);
+        }
+
+        internal UbiqEncrypt(IUbiqCredentials ubiqCredentials, int usesRequested, IUbiqWebService webService, IBillingEventsManager billingEventsManager)
+        {
+            _ubiqCredentials = ubiqCredentials;
+            _usesRequested = usesRequested;
+            _ubiqWebService = webService;
+            _billingEvents = billingEventsManager;
         }
 
         public void AddReportingUserDefinedMetadata(string jsonString)

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Specialized;
 using System.Runtime.Caching;
 using System.Threading.Tasks;
-using UbiqSecurity.Internals;
+using UbiqSecurity.Internals.WebService;
 using UbiqSecurity.Model;
 
 namespace UbiqSecurity.Cache
@@ -42,7 +42,7 @@ namespace UbiqSecurity.Cache
             var ffs = (FfsRecord)_cache.Get(ffsName);
             if (ffs == null)
             {
-                ffs = await _ubiqWebService.GetFfsDefinitionAsync(ffsName);
+                ffs = await _ubiqWebService.GetDatasetAsync(ffsName);
                 if (ffs == null)
                 {
                     throw new ArgumentException($"Dataset '{ffsName}' does not exist", nameof(ffsName));

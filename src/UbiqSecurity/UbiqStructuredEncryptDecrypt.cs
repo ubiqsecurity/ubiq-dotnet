@@ -7,6 +7,7 @@ using UbiqSecurity.Billing;
 using UbiqSecurity.Cache;
 using UbiqSecurity.Fpe;
 using UbiqSecurity.Internals;
+using UbiqSecurity.Internals.WebService;
 using UbiqSecurity.Model;
 
 namespace UbiqSecurity
@@ -21,19 +22,30 @@ namespace UbiqSecurity
         private IFfxCache _ffxCache;
         private IDatasetCache _datasetCache;
 
+        [Obsolete("Use CryptoBuilder .BuildStructured()")]
         public UbiqStructuredEncryptDecrypt(IUbiqCredentials ubiqCredentials)
             : this(ubiqCredentials, new UbiqConfiguration())
         {
         }
 
+        [Obsolete("Use CryptoBuilder .BuildStructured()")]
         public UbiqStructuredEncryptDecrypt(IUbiqCredentials ubiqCredentials, UbiqConfiguration ubiqConfiguration)
         {
             _ubiqCredentials = ubiqCredentials;
 
-            _ubiqWebService = new UbiqWebServices(ubiqCredentials, ubiqConfiguration);
+            _ubiqWebService = new UbiqWebService(ubiqCredentials, ubiqConfiguration);
             _billingEvents = new BillingEventsManager(ubiqConfiguration, _ubiqWebService);
-            _datasetCache = new DatasetCache(_ubiqWebService, ubiqConfiguration);
             _ffxCache = new FfxCache(_ubiqWebService, ubiqConfiguration, ubiqCredentials);
+            _datasetCache = new DatasetCache(_ubiqWebService, ubiqConfiguration);
+        }
+
+        internal UbiqStructuredEncryptDecrypt(IUbiqCredentials ubiqCredentials, IUbiqWebService webService, IBillingEventsManager billingEventsManager, IFfxCache ffxCache, IDatasetCache datasetCache)
+        {
+            _ubiqCredentials = ubiqCredentials;
+            _billingEvents = billingEventsManager;
+            _ubiqWebService = webService;
+            _ffxCache = ffxCache;
+            _datasetCache = datasetCache;
         }
 
         public virtual void Dispose()

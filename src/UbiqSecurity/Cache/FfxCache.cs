@@ -4,6 +4,7 @@ using System.Runtime.Caching;
 using System.Threading.Tasks;
 using UbiqSecurity.Fpe;
 using UbiqSecurity.Internals;
+using UbiqSecurity.Internals.WebService;
 using UbiqSecurity.Model;
 
 namespace UbiqSecurity.Cache

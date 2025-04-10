@@ -5,6 +5,7 @@ using UbiqSecurity.Tests.Helpers;
 
 namespace UbiqSecurity.Tests
 {
+#pragma warning disable 0618
     public class UbiqFpeEncryptDecryptTests : IClassFixture<UbiqFPEEncryptDecryptFixture>
 	{
 		private readonly UbiqFPEEncryptDecryptFixture _fixture;
@@ -57,7 +58,7 @@ namespace UbiqSecurity.Tests
 		public async Task EncryptAsync_PlainTextLengthGreaterThanMaxLength_ThrowsException()
 		{
 			var datasetName = "ALPHANUM_SSN";
-			var plainText = new string('1', 256); // max length = 255
+			var plainText = new string('1', 1256); // max length = 255
 
 			var sut = _fixture.UbiqFPEEncryptDecrypt;
 
@@ -142,4 +143,5 @@ namespace UbiqSecurity.Tests
 			Assert.Equal(1, request.Usage.Last().Count);
 		}
     }
+#pragma warning restore 0618
 }

@@ -79,7 +79,7 @@ namespace UbiqSecurity.Tests
 			Assert.Contains("Invalid Dataset name", ex.Message);
 		}
 
-		[Theory]
+        [Theory]
 		[InlineData("ALPHANUM_SSN", ";0123456-789ABCDEF|")]
 		[InlineData("BIRTH_DATE", ";01\\02-1960|")]
 		[InlineData("SSN", "-0-1-2-3-4-5-6-7-8-9-")]
@@ -106,8 +106,8 @@ namespace UbiqSecurity.Tests
 		[Fact]
 		public void GetCopyOfUsage_NoBillingEventInQueue_ReturnsEmptyUsageArray()
 		{
-			// purposefully not re-using the shared test fixture as we want to count billing usage w/o interference from other tests
-			var sut = new UbiqFPEEncryptDecrypt(UbiqFactory.ReadCredentialsFromFile(string.Empty));
+            // purposefully not re-using the shared test fixture as we want to count billing usage w/o interference from other tests
+            var sut = CryptographyBuilder.Create().BuildStructured();
 
 			var result = sut.GetCopyOfUsage();
 			var request = JsonConvert.DeserializeObject<TrackingEventsRequest>(result);
@@ -119,7 +119,7 @@ namespace UbiqSecurity.Tests
 		public async Task GetCopyOfUsage_MultipleEncryptDecrypts_ReturnsPopulatedUsageArray()
 		{
 			// purposefully not re-using the shared test fixture as we want to count billing usage w/o interference from other tests
-			var sut = new UbiqFPEEncryptDecrypt(UbiqFactory.ReadCredentialsFromFile(string.Empty));
+			var sut = CryptographyBuilder.Create().BuildStructured();
 
 			var cipherText = await sut.EncryptAsync("ALPHANUM_SSN", ";0123456-789ABCDEF|");
 			var plainText = await sut.DecryptAsync("ALPHANUM_SSN", cipherText);

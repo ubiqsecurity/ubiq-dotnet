@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.3.0 - Unreleased
+* Added support for IDP integration using Okta and Entra
+
 ## 2.2.0 - 2024-05-28
 *  Add Partial Encryption Prefix/Suffix support
 

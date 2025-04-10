@@ -6,14 +6,14 @@ namespace UbiqSecurity.LoadTests
 	public class Benchmark : IDisposable
 	{
 		private readonly Stopwatch _stopwatch = new();
-		private readonly UbiqFPEEncryptDecrypt _fpeEncryptDecrypt = null;
+		private readonly UbiqStructuredEncryptDecrypt _fpeEncryptDecrypt = null;
 
 		private bool _isWarm = false;
 		private Timings _timings = null;
 
 		public Benchmark(IUbiqCredentials credentials)
 		{
-			_fpeEncryptDecrypt = new UbiqFPEEncryptDecrypt(credentials);
+			_fpeEncryptDecrypt = CryptographyBuilder.Create().WithCredentials(credentials).BuildStructured();
 		}
 
 		public async Task<Timings> RunAsync(IEnumerable<string> jsonDataPaths)
