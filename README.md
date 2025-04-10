@@ -109,6 +109,21 @@ var credentials = UbiqFactory.CreateCredentials()
 var credentials = UbiqFactory.CreateCredentials(accessKeyId: "...", secretSigningKey: "...", secretCryptoAccessKey: "...");
 ```
 
+### IDP integration
+Ubiq currently supports both Okta and Entra IDP integration.  Instead of using the credentials provided when creating the API Key, the username (email) and password will be used to authenticate with the IDP and provide access to the Ubiq platform.
+
+### Use the following environment variables to set the credential values
+IDP_USERNAME  
+IDP_PASSWORD  
+```cs
+var credentials = UbiqFactory.CreateCredentials();
+```
+
+### Explicitly set the credentials
+```cs
+var credentials = UbiqFactory.CreateIdpCredentials(idpUsername, idpPassword);
+```
+
 ### Runtime exceptions
 
 Unsuccessful requests raise exceptions. The exception object will contain the error details.
@@ -388,17 +403,15 @@ var user = _dbContext
                 .FirstOrDefault();
 ```
 
-## UbiqConfiguration object
+## Configuration file
 
-### Event Reporting
+A sample configuration file is shown below.  The configuration is in JSON format.  The <b>event_reporting</b> section contains values to control how often the usage is reported.  
 
-The **EventReporting** section contains values to control how often the usage is reported.  
-
-- **WakeInterval** indicates the number of seconds to sleep before waking to determine if there has been enough activity to report usage
-- **MinimumCount** indicates the minimum number of usage records that must be queued up before sending the usage
-- **FlushInterval** indicates the sleep interval before all usage will be flushed to server.
-- **TrapExceptions** indicates whether exceptions encountered while reporting usage will be trapped and ignored or if it will become an error that gets reported to the application
-- **TimestampGranularity** indicates the how granular the timestamp will be when reporting events.  Valid values are
+- <b>wake_interval</b> indicates the number of seconds to sleep before waking to determine if there has been enough activity to report usage
+- <b>minimum_count</b> indicates the minimum number of usage records that must be queued up before sending the usage
+- <b>flush_interval</b> indicates the sleep interval before all usage will be flushed to server.
+- <b>trap_exceptions</b> indicates whether exceptions encountered while reporting usage will be trapped and ignored or if it will become an error that gets reported to the application
+- <b>timestamp_granularity</b> indicates the how granular the timestamp will be when reporting events.  Valid values are
   - "NANOS"  
     // DEFAULT: values are reported down to the nanosecond resolution when possible
   - "MILLIS"  
@@ -414,14 +427,45 @@ The **EventReporting** section contains values to control how often the usage is
   - "DAYS"  
   // values are reported to the day
 
-### Key Caching
+  #### Key Caching
+  The <b>key_caching</b> section contains values to control how and when keys are cached.
 
-The **KeyCaching** section contains values to control how and when keys are cached.
+  - <b>ttl_seconds</b> indicates how many seconds a cache element should remain before it must be re-retrieved. (default: 1800)
+  - <b>structured</b> indicates whether keys will be cached when doing structured encryption and decryption. (default: true)
+  - <b>unstructured</b> indicates whether keys will be cached when doing unstructured decryption. (default: true)
+  - <b>encrypt</b> indicates if keys should be stored encrypted. If keys are encrypted, they will be harder to access via memory, but require them to be decrypted with each use. (default: false)
 
-- **TtlSeconds** indicates how many seconds a cache element should remain before it must be re-retrieved. (default: 1800)
-- **Structured** indicates whether keys will be cached when doing structured encryption and decryption. (default: true)
-- **Unstructured** indicates whether keys will be cached when doing unstructured decryption. (default: true)
-- **Encrypt** indicates if keys should be stored encrypted. If keys are encrypted, they will be harder to access via memory, but require them to be decrypted with each use. (default: false)
+   #### IDP specific parameters
+   - <b>provider</b> indicates the IDP provider, either <b>okta</b> or <b>entra</b>
+   - <b>ubiq_customer_id</b> The UUID for this customer.  Will be provided by Ubiq.
+   - <b>idp_token_endpoint_url</b> The endpoint needed to authenticate the user credentials, provided by Okta or Entra
+   - <b>idp_tenant_id</b> contains the tenant value provided by Okta or Entra
+   - <b>idp_client_secret</b> contains the client secret value provided by Okta or Entra
+
+```json
+{
+  "event_reporting": {
+    "wake_interval": 1,
+    "minimum_count": 2,
+    "flush_interval": 2,
+    "trap_exceptions": false,
+    "timestamp_granularity" : "NANOS"
+  },
+  "key_caching" : {
+     "structured" : true,
+     "unstructured" : true,
+     "encrypted" : false,
+     "ttl_seconds" : 1800
+  },
+   "idp": {
+    "provider": "okta",
+    "ubiq_customer_id": "f6f.....08c5",
+    "idp_token_endpoint_url": " https://dev-<domain>.okta.com/oauth2/v1/token",
+    "idp_tenant_id": "0o....d7",
+    "idp_client_secret": "yro.....2Db"
+  }
+}
+```
 
 ## Ubiq API Error Reference
 

@@ -7,6 +7,7 @@ namespace UbiqSecurity.Idp
         [JsonIgnore]
         public string AccessToken { get; set; }
 
+        [JsonProperty("csr")]
         public string Csr { get; set; }
     }
 }

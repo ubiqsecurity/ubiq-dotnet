@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Org.BouncyCastle.X509;
@@ -21,7 +20,6 @@ namespace UbiqSecurity.Internals
         private OAuthLoginResponse _oauthLoginResponse;
 
         internal UbiqCredentials()
-            :this(null, null, null)
         {
         }
 
@@ -96,9 +94,11 @@ namespace UbiqSecurity.Internals
 
         public string IdpPassword { get; set; }
 
-        public bool IsIdp { get; private set; }
+        public bool IsIdp => !string.IsNullOrEmpty(IdpUsername) && !string.IsNullOrEmpty(IdpPassword);
 
         public string IdpPayloadCert => _payloadCertInfo.ApiCert;
+
+        internal PayloadCertInfo IdpPayloadCertInfo => _payloadCertInfo;
 
         public async Task CheckInitAndExpirationAsync(UbiqConfiguration ubiqConfiguration)
         {
@@ -146,19 +146,19 @@ namespace UbiqSecurity.Internals
 
         internal async Task DoSsoAsync(UbiqConfiguration ubiqConfiguration)
         {
-            if (string.IsNullOrEmpty(_oauthLoginResponse.AccessToken))
-            {
-                throw new InvalidOperationException("OAuthResponse AccessToken is invalid");
-            }
-
-            if (string.IsNullOrEmpty(_payloadCertInfo.ApiCert))
-            {
-                throw new InvalidOperationException("PayloadCertInfo is invalid");
-            }
-
             using (var oauthService = OAuthWebServiceFactory.Create(ubiqConfiguration.Idp.Provider, this))
             {
                 _oauthLoginResponse = await oauthService.LoginAsync(ubiqConfiguration.Idp);
+
+                if (_oauthLoginResponse == null)
+                {
+                    throw new InvalidOperationException("No oauth response");
+                }
+
+                if (string.IsNullOrEmpty(_oauthLoginResponse.AccessToken))
+                {
+                    throw new InvalidOperationException("OAuthResponse AccessToken is invalid");
+                }
 
                 using (var ssoService = new SsoWebService(this, ubiqConfiguration))
                 {
@@ -169,6 +169,11 @@ namespace UbiqSecurity.Internals
                     };
 
                     var ssoResponse = await ssoService.SsoAsync(ssoRequest);
+
+                    if (string.IsNullOrEmpty(ssoResponse.ApiCert))
+                    {
+                        throw new InvalidOperationException("PayloadCertInfo is invalid");
+                    }
 
                     _payloadCertInfo.ApiCert = ssoResponse.ApiCert;
 
@@ -190,9 +195,8 @@ namespace UbiqSecurity.Internals
                 throw new InvalidOperationException($"Credentials data is incomplete (Host)");
             }
 
-            if (!string.IsNullOrEmpty(IdpUsername) && !string.IsNullOrEmpty(IdpPassword))
+            if (IsIdp)
             {
-                IsIdp = true;
                 return;
             }
 

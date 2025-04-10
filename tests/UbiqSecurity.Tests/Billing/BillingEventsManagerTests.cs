@@ -2,6 +2,7 @@ using Newtonsoft.Json;
 using UbiqSecurity.Billing;
 using UbiqSecurity.Config;
 using UbiqSecurity.Internals;
+using UbiqSecurity.Internals.WebService;
 using UbiqSecurity.Model;
 
 namespace UbiqSecurity.Tests.Billing
@@ -20,7 +21,7 @@ namespace UbiqSecurity.Tests.Billing
 			};
 
 			var credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, "ubiq-dotnet");
-			var webservice = new UbiqWebServices(credentials, config);
+			var webservice = new UbiqWebService(credentials, config);
 			
 			var sut = new BillingEventsManager(config, webservice);
 
@@ -41,7 +42,7 @@ namespace UbiqSecurity.Tests.Billing
             };
 
             var credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, "ubiq-dotnet");
-			var webservice = new UbiqWebServices(credentials, config);
+			var webservice = new UbiqWebService(credentials, config);
 
 			var sut = new BillingEventsManager(config, webservice);
 

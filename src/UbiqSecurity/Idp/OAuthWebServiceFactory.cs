@@ -10,7 +10,9 @@ namespace UbiqSecurity.Idp
             switch (idpProvider)
             {
                 case IdpProvider.MicrosoftEntraId:
-                    return new EntraIdOAuthWebServices(ubiqCredentials);
+                    return new EntraIdOAuthWebService(ubiqCredentials);
+                case IdpProvider.Okta:
+                    return new OktaOAuthWebService(ubiqCredentials);
                 default:
                     throw new NotImplementedException($"IdpProvider '{idpProvider}' not implemented");
             }

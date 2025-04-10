@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using UbiqSecurity.Billing;
 using UbiqSecurity.Cache;
 using UbiqSecurity.Internals;
+using UbiqSecurity.Internals.WebService;
 using UbiqSecurity.Model;
 
 namespace UbiqSecurity
@@ -30,12 +31,20 @@ namespace UbiqSecurity
 		{
             _credentials = ubiqCredentials;
 
-            _ubiqWebService = new UbiqWebServices(ubiqCredentials, ubiqConfiguration);
+            _ubiqWebService = new UbiqWebService(ubiqCredentials, ubiqConfiguration);
             _billingEvents = new BillingEventsManager(ubiqConfiguration, _ubiqWebService);
             _decryptionKeyCache = new UnstructuredKeyCache(_ubiqWebService, ubiqConfiguration, ubiqCredentials);
         }
 
-		public void AddReportingUserDefinedMetadata(string jsonString)
+        internal UbiqDecrypt(IUbiqCredentials credentials, IUbiqWebService webService, IBillingEventsManager billingEventsManager, IUnstructuredKeyCache unstructuredKeyCache)
+        {
+            _credentials = credentials;
+            _ubiqWebService = webService;
+            _billingEvents = billingEventsManager;
+            _decryptionKeyCache = unstructuredKeyCache;
+        }
+
+        public void AddReportingUserDefinedMetadata(string jsonString)
 		{
 			_billingEvents.AddUserDefinedMetadata(jsonString);
 		}

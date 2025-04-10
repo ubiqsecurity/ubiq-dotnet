@@ -1,17 +1,28 @@
 using System;
 using System.Threading.Tasks;
+using UbiqSecurity.Billing;
+using UbiqSecurity.Cache;
+using UbiqSecurity.Internals.WebService;
 
 namespace UbiqSecurity
 {
+    [Obsolete("Use UbiqStructuredEncryptDecrypt via new CryptoBuilder().BuildStructured()")]
     public class UbiqFPEEncryptDecrypt : UbiqStructuredEncryptDecrypt
     {
+        [Obsolete("Use CryptoBuilder .BuildStructured()")]
         public UbiqFPEEncryptDecrypt(IUbiqCredentials ubiqCredentials)
             : base(ubiqCredentials, new UbiqConfiguration())
         {
         }
 
+        [Obsolete("Use CryptoBuilder .BuildStructured()")]
         public UbiqFPEEncryptDecrypt(IUbiqCredentials ubiqCredentials, UbiqConfiguration ubiqConfiguration)
             : base(ubiqCredentials, ubiqConfiguration)
+        {
+        }
+
+        internal UbiqFPEEncryptDecrypt(IUbiqCredentials ubiqCredentials, IUbiqWebService webService, IBillingEventsManager billingEventsManager, IFfxCache ffxCache, IDatasetCache datasetCache)
+            :base(ubiqCredentials, webService, billingEventsManager, ffxCache, datasetCache)
         {
         }
 

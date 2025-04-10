@@ -1,34 +1,29 @@
 namespace UbiqSecurity.Tests.Fixtures
 {
     public class UbiqStructuredEncryptDecryptFixture : IDisposable
-	{
-		public UbiqStructuredEncryptDecryptFixture()
-		{
-            InitNormalApiKey();
-		}
-
-		public UbiqStructuredEncryptDecrypt UbiqStructuredEncryptDecrypt { get; private set; }
-
-		public IUbiqCredentials UbiqCredentials { get; private set; }
-
-        private void InitNormalApiKey()
+    {
+        public UbiqStructuredEncryptDecryptFixture()
         {
             UbiqCredentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, Environment.GetEnvironmentVariable("JsonTestProfile") ?? "default");
-            UbiqStructuredEncryptDecrypt = new UbiqStructuredEncryptDecrypt(UbiqCredentials);
+            UbiqStructuredEncryptDecrypt = CryptographyBuilder.Create().WithCredentials(UbiqCredentials).BuildStructured();
         }
 
-        public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
+        public UbiqStructuredEncryptDecrypt UbiqStructuredEncryptDecrypt { get; private set; }
 
-		protected virtual void Dispose(bool disposing)
-		{
-			if (disposing)
-			{
+        public IUbiqCredentials UbiqCredentials { get; private set; }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
                 UbiqStructuredEncryptDecrypt?.Dispose();
-			}
-		}
-	}
+            }
+        }
+    }
 }

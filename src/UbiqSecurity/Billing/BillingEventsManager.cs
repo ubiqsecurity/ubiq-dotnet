@@ -3,12 +3,12 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using UbiqSecurity.Internals;
+using UbiqSecurity.Internals.WebService;
 using UbiqSecurity.Model;
 
 namespace UbiqSecurity.Billing
 {
-	internal class BillingEventsManager : IBillingEventsManager
+    internal class BillingEventsManager : IBillingEventsManager
 	{
 		private readonly UbiqConfiguration _configuration;
 		private readonly IUbiqWebService _ubiqWebService;

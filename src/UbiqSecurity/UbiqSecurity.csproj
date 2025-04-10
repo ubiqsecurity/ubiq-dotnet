@@ -4,6 +4,7 @@
 		<TargetFrameworks>netstandard2.0;net481</TargetFrameworks>
 		<AnalysisLevel>6.0-recommended</AnalysisLevel>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 	</PropertyGroup>
 
 	<PropertyGroup>

@@ -1,3 +1,5 @@
+static UbiqSecurity.CryptographyBuilder.Create() -> UbiqSecurity.CryptographyBuilder
+static UbiqSecurity.UbiqFactory.CreateIdpCredentials(string idpUsername, string idpPassword, string host = "api.ubiqsecurity.com") -> UbiqSecurity.IUbiqCredentials
 UbiqSecurity.Config.EventReportingConfig
 UbiqSecurity.Config.EventReportingConfig.ChronoTimestampGranularity.get -> UbiqSecurity.ChronoUnit
 UbiqSecurity.Config.EventReportingConfig.EventReportingConfig() -> void
@@ -12,8 +14,6 @@ UbiqSecurity.Config.EventReportingConfig.TrapExceptions.set -> void
 UbiqSecurity.Config.EventReportingConfig.WakeInterval.get -> int
 UbiqSecurity.Config.EventReportingConfig.WakeInterval.set -> void
 UbiqSecurity.Config.IdpConfig
-UbiqSecurity.Config.IdpConfig.CustomerId.get -> string
-UbiqSecurity.Config.IdpConfig.CustomerId.set -> void
 UbiqSecurity.Config.IdpConfig.IdpClientSecret.get -> string
 UbiqSecurity.Config.IdpConfig.IdpClientSecret.set -> void
 UbiqSecurity.Config.IdpConfig.IdpConfig() -> void
@@ -23,8 +23,11 @@ UbiqSecurity.Config.IdpConfig.IdpTokenEndpointUrl.get -> string
 UbiqSecurity.Config.IdpConfig.IdpTokenEndpointUrl.set -> void
 UbiqSecurity.Config.IdpConfig.Provider.get -> UbiqSecurity.Config.IdpProvider
 UbiqSecurity.Config.IdpConfig.Provider.set -> void
+UbiqSecurity.Config.IdpConfig.UbiqCustomerId.get -> string
+UbiqSecurity.Config.IdpConfig.UbiqCustomerId.set -> void
 UbiqSecurity.Config.IdpProvider
 UbiqSecurity.Config.IdpProvider.MicrosoftEntraId = 0 -> UbiqSecurity.Config.IdpProvider
+UbiqSecurity.Config.IdpProvider.Okta = 1 -> UbiqSecurity.Config.IdpProvider
 UbiqSecurity.Config.KeyCachingConfig
 UbiqSecurity.Config.KeyCachingConfig.Encrypt.get -> bool
 UbiqSecurity.Config.KeyCachingConfig.Encrypt.set -> void
@@ -35,6 +38,17 @@ UbiqSecurity.Config.KeyCachingConfig.TtlSeconds.get -> int
 UbiqSecurity.Config.KeyCachingConfig.TtlSeconds.set -> void
 UbiqSecurity.Config.KeyCachingConfig.Unstructured.get -> bool
 UbiqSecurity.Config.KeyCachingConfig.Unstructured.set -> void
+UbiqSecurity.CryptographyBuilder
+UbiqSecurity.CryptographyBuilder.BuildStructured() -> UbiqSecurity.UbiqStructuredEncryptDecrypt
+UbiqSecurity.CryptographyBuilder.BuildUnstructuredDecrypt() -> UbiqSecurity.UbiqDecrypt
+UbiqSecurity.CryptographyBuilder.BuildUnstructuredEncrypt() -> UbiqSecurity.UbiqEncrypt
+UbiqSecurity.CryptographyBuilder.CryptographyBuilder() -> void
+UbiqSecurity.CryptographyBuilder.WithConfig(string jsonPath) -> UbiqSecurity.CryptographyBuilder
+UbiqSecurity.CryptographyBuilder.WithConfig(System.Action<UbiqSecurity.UbiqConfiguration> configAction) -> UbiqSecurity.CryptographyBuilder
+UbiqSecurity.CryptographyBuilder.WithConfig(UbiqSecurity.UbiqConfiguration configuration) -> UbiqSecurity.CryptographyBuilder
+UbiqSecurity.CryptographyBuilder.WithCredentials(string pathToCredentialsFile, string profile = "default") -> UbiqSecurity.CryptographyBuilder
+UbiqSecurity.CryptographyBuilder.WithCredentials(System.Action<UbiqSecurity.IUbiqCredentials> credentialsAction) -> UbiqSecurity.CryptographyBuilder
+UbiqSecurity.CryptographyBuilder.WithCredentials(UbiqSecurity.IUbiqCredentials credentials) -> UbiqSecurity.CryptographyBuilder
 UbiqSecurity.IUbiqCredentials.AccessKeyId.set -> void
 UbiqSecurity.IUbiqCredentials.CheckInitAndExpirationAsync(UbiqSecurity.UbiqConfiguration ubiqConfiguration) -> System.Threading.Tasks.Task
 UbiqSecurity.IUbiqCredentials.Host.set -> void

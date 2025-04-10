@@ -10,11 +10,14 @@ namespace UbiqSecurity.ComCompatible
     [Guid("BE381CB9-1C1C-4DD7-81C6-CFB3434C0456")]
     public class UbiqFpeEncryptDecryptWrapper : IDisposable, IUbiqFpeEncryptDecryptWrapper
     {
-        private readonly UbiqFPEEncryptDecrypt _inner;
+        private readonly UbiqStructuredEncryptDecrypt _inner;
 
         public UbiqFpeEncryptDecryptWrapper(IUbiqCredentials ubiqCredentials, UbiqConfiguration ubiqConfiguration = null)
         {
-            _inner = new UbiqFPEEncryptDecrypt(ubiqCredentials, ubiqConfiguration ?? new UbiqConfiguration());
+            _inner = new CryptographyBuilder()
+                            .WithCredentials(ubiqCredentials)
+                            .WithConfig(ubiqConfiguration)
+                            .BuildStructured();
         }
 
         public virtual void Dispose()
