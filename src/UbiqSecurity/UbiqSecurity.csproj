@@ -22,8 +22,8 @@
 		<Version>2.2.0</Version>
 		<PackageReleaseNotes>
             - Add Partial Encryption Prefix/Suffix support
-            - Add Microsoft Entra ID SSO support
-		</PackageReleaseNotes>
+            - Added support for IDP integration using Okta and Entra
+        </PackageReleaseNotes>
 		<NeutralLanguage>en-US</NeutralLanguage>
 	</PropertyGroup>
 
