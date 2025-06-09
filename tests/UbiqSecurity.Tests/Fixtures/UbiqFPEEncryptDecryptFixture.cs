@@ -1,16 +1,16 @@
 namespace UbiqSecurity.Tests.Fixtures
 {
-    #pragma warning disable 0618
+#pragma warning disable 0618
     public class UbiqFPEEncryptDecryptFixture : IDisposable
-	{
-		public UbiqFPEEncryptDecryptFixture()
-		{
+    {
+        public UbiqFPEEncryptDecryptFixture()
+        {
             InitNormalApiKey();
-		}
+        }
 
-		public UbiqFPEEncryptDecrypt UbiqFPEEncryptDecrypt { get; private set; }
+        public UbiqFPEEncryptDecrypt UbiqFPEEncryptDecrypt { get; private set; }
 
-		public IUbiqCredentials UbiqCredentials { get; private set; }
+        public IUbiqCredentials UbiqCredentials { get; private set; }
 
         private void InitNormalApiKey()
         {
@@ -19,18 +19,18 @@ namespace UbiqSecurity.Tests.Fixtures
         }
 
         public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-		protected virtual void Dispose(bool disposing)
-		{
-			if (disposing)
-			{
-				UbiqFPEEncryptDecrypt?.Dispose();
-			}
-		}
-	}
-    #pragma warning restore 0618
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                UbiqFPEEncryptDecrypt?.Dispose();
+            }
+        }
+    }
+#pragma warning restore 0618
 }
