@@ -1,20 +1,23 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UbiqSecurity.Billing;
+using UbiqSecurity.Cache;
 using UbiqSecurity.Internals;
+using UbiqSecurity.Internals.WebService;
 using UbiqSecurity.Model;
 
 namespace UbiqSecurity
 {
-	public class UbiqDecrypt : IDisposable
+    public class UbiqDecrypt : IDisposable
 	{
 		private readonly IUbiqCredentials _credentials;
 		private readonly IBillingEventsManager _billingEvents;
+        private readonly IUbiqWebService _ubiqWebService;
+        private readonly IUnstructuredKeyCache _decryptionKeyCache;
 
-		private IUbiqWebService _ubiqWebService;	// null on dispose
-		private CipherHeader _cipherHeader;			// extracted from beginning of ciphertext
+		private CipherHeader _cipherHeader; // extracted from beginning of ciphertext
 		private ByteBuffer _byteBuffer;
 		private DecryptionKeyResponse _decryptionKey;
 		private AesGcmBlockCipher _aesGcmBlockCipher;
@@ -24,21 +27,24 @@ namespace UbiqSecurity
 		{
 		}
 
-		public UbiqDecrypt(IUbiqCredentials ubiqCredentials, UbiqConfiguration configuration)
+		public UbiqDecrypt(IUbiqCredentials ubiqCredentials, UbiqConfiguration ubiqConfiguration)
 		{
-			_credentials = ubiqCredentials;
-			_ubiqWebService = new UbiqWebServices(ubiqCredentials);
-			_billingEvents = new BillingEventsManager(configuration, _ubiqWebService);
-		}
+            _credentials = ubiqCredentials;
 
-		internal UbiqDecrypt(IUbiqCredentials ubiqCredentials, IUbiqWebService webService, IBillingEventsManager billingEvents)
-		{
-			_credentials = ubiqCredentials;
-			_ubiqWebService = webService;
-			_billingEvents = billingEvents;
-		}
+            _ubiqWebService = new UbiqWebService(ubiqCredentials, ubiqConfiguration);
+            _billingEvents = new BillingEventsManager(ubiqConfiguration, _ubiqWebService);
+            _decryptionKeyCache = new UnstructuredKeyCache(_ubiqWebService, ubiqConfiguration, ubiqCredentials);
+        }
 
-		public void AddReportingUserDefinedMetadata(string jsonString)
+        internal UbiqDecrypt(IUbiqCredentials credentials, IUbiqWebService webService, IBillingEventsManager billingEventsManager, IUnstructuredKeyCache unstructuredKeyCache)
+        {
+            _credentials = credentials;
+            _ubiqWebService = webService;
+            _billingEvents = billingEventsManager;
+            _decryptionKeyCache = unstructuredKeyCache;
+        }
+
+        public void AddReportingUserDefinedMetadata(string jsonString)
 		{
 			_billingEvents.AddUserDefinedMetadata(jsonString);
 		}
@@ -56,12 +62,7 @@ namespace UbiqSecurity
 				Reset();
 
 				_billingEvents?.Dispose();
-
-				if (_ubiqWebService != null)
-				{
-					_ubiqWebService.Dispose();
-					_ubiqWebService = null;
-				}
+                _ubiqWebService?.Dispose();
 			}
 		}
 
@@ -88,11 +89,6 @@ namespace UbiqSecurity
 
 		public byte[] Begin()
 		{
-			if (_ubiqWebService == null)
-			{
-				throw new ObjectDisposedException(nameof(_ubiqWebService));
-			}
-
 			if (_aesGcmBlockCipher != null)
 			{
 				throw new InvalidOperationException("decryption in progress");
@@ -122,12 +118,7 @@ namespace UbiqSecurity
 		// the data in its internal buffer
 		public async Task<byte[]> UpdateAsync(byte[] cipherBytes, int offset, int count)
 		{
-			if (_ubiqWebService == null)
-			{
-				throw new ObjectDisposedException(nameof(_ubiqWebService));
-			}
-
-			byte[] plainBytes = Array.Empty<byte>();	// returned
+			byte[] plainBytes = Array.Empty<byte>(); // returned
 
 			if (_byteBuffer == null)
 			{
@@ -166,8 +157,7 @@ namespace UbiqSecurity
 					// If needed, use the header info to fetch the decryption key.
 					if (_decryptionKey == null)
 					{
-						// JIT: request encryption key from server
-						_decryptionKey = await _ubiqWebService.GetDecryptionKeyAsync(_cipherHeader.EncryptedDataKeyBytes).ConfigureAwait(false);
+                        _decryptionKey = await _decryptionKeyCache.GetAsync(_cipherHeader.EncryptedDataKeyBytes).ConfigureAwait(false);
 					}
 
 					if (_decryptionKey != null)
@@ -225,7 +215,8 @@ namespace UbiqSecurity
 			return finalPlainBytes;
 		}
 
-		public static async Task<byte[]> DecryptAsync(IUbiqCredentials ubiqCredentials, byte[] data)
+        [Obsolete("Static DecryptAsync method is deprecated, please use equivalent instance method")]
+        public static async Task<byte[]> DecryptAsync(IUbiqCredentials ubiqCredentials, byte[] data)
 		{
 			using (var ubiqDecrypt = new UbiqDecrypt(ubiqCredentials))
 			{

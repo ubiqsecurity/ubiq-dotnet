@@ -30,7 +30,9 @@ namespace UbiqSecurity.Internals
             var result = new FpeParseModel()
             {
                 PassthroughProcessed = false,
-                TemplateChar = firstCharacter.First()
+                TemplateChar = firstCharacter.First(),
+                Trimmed = input,
+                StringTemplate = new string(firstCharacter.First(), input.Length),
             };
 
             // backwards compatibility for old datasets that don't support Dataset.PassthroughRules and still uses Dataset.PassthroughCharacters
@@ -45,6 +47,11 @@ namespace UbiqSecurity.Internals
                         RuleType = PassthroughRuleType.Passthrough
                     }
                 };
+            }
+
+            if (dataset.PassthroughRules == null || !dataset.PassthroughRules.Any())
+            {
+                return result;
             }
 
             var passthroughCharacters = dataset.PassthroughCharacters;
@@ -85,7 +92,7 @@ namespace UbiqSecurity.Internals
 
             foreach (var c in input.ToCharArray())
             {
-                if (passthroughCharacters.IndexOf(c) != -1)
+                if (passthroughCharacters.Contains(c))
                 {
                     templateBuilder.Append(c);
                 }
@@ -117,7 +124,7 @@ namespace UbiqSecurity.Internals
             {
                 char ch = parseModel.StringTemplate.First();
 
-                if (passthroughCharacters.IndexOf(ch) != -1)
+                if (passthroughCharacters.Contains(ch))
                 {
                     prefixBuilder.Append(ch);
                 }
@@ -150,7 +157,7 @@ namespace UbiqSecurity.Internals
             {
                 char ch = parseModel.StringTemplate.Last();
 
-                if (passthroughCharacters.IndexOf(ch) != -1)
+                if (passthroughCharacters.Contains(ch))
                 {
                     suffixBuilder.Insert(0, ch);
                 }

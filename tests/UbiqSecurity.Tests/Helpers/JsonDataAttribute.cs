@@ -4,27 +4,27 @@ using Xunit.Sdk;
 
 namespace UbiqSecurity.Tests.Helpers
 {
-	// <summary>
-	/// Custom xUnit data attribute to pull test data from JSON file
-	/// </summary>
-	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-	internal class JsonTestDataAttribute : DataAttribute
-	{
-		private readonly IEnumerable<string> _filePaths;
+    // <summary>
+    /// Custom xUnit data attribute to pull test data from JSON file
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
+    internal class JsonTestDataAttribute : DataAttribute
+    {
+        private readonly IEnumerable<string> _filePaths;
 
-		public JsonTestDataAttribute()
-		{
-			// default to 100.json but allow automated tests to override that w/ an environment variable
-			// if we default to something larger, the VS Test Explorer will take forever to enumerate all possible tests
-			// environment variable can be passed on commandline, for example: dotnet test -e JsonTestSize:"10k"
-			var folderPath = $@"TestData/{Environment.GetEnvironmentVariable("JsonTestEnv") ?? "prod"}/{Environment.GetEnvironmentVariable("JsonTestSize") ?? "100"}";
+        public JsonTestDataAttribute()
+        {
+            // default to 100.json but allow automated tests to override that w/ an environment variable
+            // if we default to something larger, the VS Test Explorer will take forever to enumerate all possible tests
+            // environment variable can be passed on commandline, for example: dotnet test -e JsonTestSize:"10k"
+            var folderPath = $@"TestData/{Environment.GetEnvironmentVariable("JsonTestEnv") ?? "prod"}/{Environment.GetEnvironmentVariable("JsonTestSize") ?? "100"}";
             _filePaths = Directory.EnumerateFiles(folderPath, "*.json");
-		}
+        }
 
-		public override IEnumerable<object[]> GetData(MethodInfo testMethod)
-		{
-			var methodParameters = testMethod.GetParameters();
-			var parameterTypes = methodParameters.Select(x => x.ParameterType).ToArray();
+        public override IEnumerable<object[]> GetData(MethodInfo testMethod)
+        {
+            var methodParameters = testMethod.GetParameters();
+            var parameterTypes = methodParameters.Select(x => x.ParameterType).ToArray();
 
             foreach (var filePath in _filePaths)
             {
@@ -60,6 +60,6 @@ namespace UbiqSecurity.Tests.Helpers
                     yield return objects.ToArray();
                 }
             }
-		}
-	}
+        }
+    }
 }

@@ -1,57 +1,65 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using UbiqSecurity.Billing;
+using UbiqSecurity.Config;
 using UbiqSecurity.Internals;
+using UbiqSecurity.Internals.WebService;
 using UbiqSecurity.Model;
 
 namespace UbiqSecurity.Tests.Billing
 {
-	public class BillingEventsManagerTests
-	{
-		[Fact]
-		public void GetSerializedEvents_NoBillingEventsInQueue_ReturnsEmptyUsageArray()
-		{
-			var config = new UbiqConfiguration()
-			{
-				EventReportingTimestampGranularity = ChronoUnit.Hours
-			};
+    public class BillingEventsManagerTests
+    {
+        [Fact]
+        public void GetSerializedEvents_NoBillingEventsInQueue_ReturnsEmptyUsageArray()
+        {
+            var config = new UbiqConfiguration()
+            {
+                EventReporting = new EventReportingConfig
+                {
+                    TimestampGranularity = ChronoUnit.Hours.ToString(),
+                }
+            };
 
-			var credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, "ubiq-dotnet");
-			var webservice = new UbiqWebServices(credentials);
-			
-			var sut = new BillingEventsManager(config, webservice);
+            var credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, "ubiq-dotnet");
+            var webservice = new UbiqWebService(credentials, config);
 
-			var result = sut.GetSerializedEvents();
+            var sut = new BillingEventsManager(config, webservice);
 
-			Assert.Equal("{\"usage\":[]}", result);
-		}
+            var result = sut.GetSerializedEvents();
 
-		[Fact]
-		public async Task GetSerializedEvents_BillingEventInQueue_ReturnsPopulatedUsageArray()
-		{
-			var config = new UbiqConfiguration()
-			{
-				EventReportingTimestampGranularity = ChronoUnit.Hours
-			};
+            Assert.Equal("{\"usage\":[]}", result);
+        }
 
-			var credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, "ubiq-dotnet");
-			var webservice = new UbiqWebServices(credentials);
+        [Fact]
+        public async Task GetSerializedEvents_BillingEventInQueue_ReturnsPopulatedUsageArray()
+        {
+            var config = new UbiqConfiguration()
+            {
+                EventReporting = new EventReportingConfig
+                {
+                    TimestampGranularity = ChronoUnit.Hours.ToString(),
+                }
+            };
 
-			var sut = new BillingEventsManager(config, webservice);
+            var credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, "ubiq-dotnet");
+            var webservice = new UbiqWebService(credentials, config);
 
-			await sut.AddBillingEventAsync("key", "dataset", "group", BillingAction.Encrypt, DatasetType.Structured, 1, 1);
-			await sut.AddBillingEventAsync("key", "dataset", "group", BillingAction.Decrypt, DatasetType.Structured, 1, 1);
+            var sut = new BillingEventsManager(config, webservice);
 
-			var result = sut.GetSerializedEvents();
+            await sut.AddBillingEventAsync("key", "dataset", "group", BillingAction.Encrypt, DatasetType.Structured, 1, 1);
+            await sut.AddBillingEventAsync("key", "dataset", "group", BillingAction.Decrypt, DatasetType.Structured, 1, 1);
 
-			var request = JsonConvert.DeserializeObject<TrackingEventsRequest>(result);
+            var result = sut.GetSerializedEvents();
 
-			Assert.Equal(2, request.Usage.Length);
-			Assert.Equal(1, request.Usage.First().Count);
-		}
-	}
+            var request = JsonConvert.DeserializeObject<TrackingEventsRequest>(result);
+
+            Assert.Equal(2, request.Usage.Length);
+            Assert.Equal(1, request.Usage.First().Count);
+        }
+    }
 }

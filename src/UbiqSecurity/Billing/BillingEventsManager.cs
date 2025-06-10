@@ -1,17 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
-#if DEBUG
-using System.Diagnostics;
-#endif
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using UbiqSecurity.Internals;
+using UbiqSecurity.Internals.WebService;
 using UbiqSecurity.Model;
 
 namespace UbiqSecurity.Billing
 {
-	internal class BillingEventsManager : IBillingEventsManager
+    internal class BillingEventsManager : IBillingEventsManager
 	{
 		private readonly UbiqConfiguration _configuration;
 		private readonly IUbiqWebService _ubiqWebService;
@@ -65,13 +62,13 @@ namespace UbiqSecurity.Billing
 
 		public async Task ProcessBillingEventsAsync()
 		{
-			if (EventCount < _configuration.EventReportingMinimumCount &&
-				DateTime.Now.Subtract(_lastFlushed).TotalSeconds < _configuration.EventReportingFlushInterval)
+			if (EventCount < _configuration.EventReporting.MinimumCount &&
+				DateTime.Now.Subtract(_lastFlushed).TotalSeconds < _configuration.EventReporting.FlushInterval)
 			{
 				return;
 			}
 
-			if (DateTime.Now.Subtract(_lastFlushed).TotalSeconds < _configuration.EventReportingWakeInterval)
+			if (DateTime.Now.Subtract(_lastFlushed).TotalSeconds < _configuration.EventReporting.WakeInterval)
 			{
 				return;
 			}
@@ -86,7 +83,7 @@ namespace UbiqSecurity.Billing
 				var billingEvent = new BillingEvent(apiKey, datasetName, datasetGroupName, billingAction, datasetType, keyNumber, count)
 				{
 					UserDefinedMetadata = _userDefinedMetadata,
-					TimestampGranularity = _configuration.EventReportingTimestampGranularity,
+					TimestampGranularity = _configuration.EventReporting.ChronoTimestampGranularity,
 				};
 
 				var key = billingEvent.ToString();
@@ -99,22 +96,12 @@ namespace UbiqSecurity.Billing
 					return existingBillingEvent;
 				});
 			}
-#if !DEBUG
-#pragma warning disable CS0168 // Variable is declared but never used
-#endif
-			catch (Exception ex)
-#if !DEBUG
-#pragma warning restore CS0168 // Variable is declared but never used
-#endif
+			catch
 			{
-				if (!_configuration.EventReportingTrapExceptions)
+				if (!_configuration.EventReporting.TrapExceptions)
 				{
 					throw;
 				}
-
-#if DEBUG
-				Debug.WriteLine($"Trapped exception: {ex.Message}");
-#endif
 			}
 		}
 
@@ -124,10 +111,6 @@ namespace UbiqSecurity.Billing
 			{
 				return;
 			}
-
-#if DEBUG
-			Debug.WriteLine($"Flushing {_billingEvents.Select(x => x.Value.Count).Sum()} events");
-#endif
 
 			TrackingEventsRequest trackingRequest = null;
 
@@ -144,22 +127,12 @@ namespace UbiqSecurity.Billing
 			{
 				await _ubiqWebService.SendTrackingEventsAsync(trackingRequest).ConfigureAwait(false);
 			}
-#if !DEBUG
-#pragma warning disable CS0168 // Variable is declared but never used
-#endif
-			catch (Exception ex)
-#if !DEBUG
-#pragma warning restore CS0168 // Variable is declared but never used
-#endif
+			catch
 			{
-				if (!_configuration.EventReportingTrapExceptions)
+				if (!_configuration.EventReporting.TrapExceptions)
 				{
 					throw;
 				}
-
-#if DEBUG
-				Debug.WriteLine($"FlushAsync trapped exception: {ex.Message}");
-#endif
 			}
 		}
 

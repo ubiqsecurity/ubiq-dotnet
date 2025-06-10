@@ -1,29 +1,32 @@
-﻿namespace UbiqSecurity.Tests
+namespace UbiqSecurity.Tests
 {
 	public class UbiqConfigurationTests
 	{
 		[Fact]
 		public void Constructor_JavaHalfDays_TimestampGranularitySetToHalfDays()
 		{
-			var sut = new UbiqConfiguration(0, 0, 0, false, "HALF_DAYS");
+            var sut = new UbiqConfiguration();
+            sut.EventReporting.TimestampGranularity = "HALF_DAYS";
 
-			Assert.Equal(ChronoUnit.HalfDays, sut.EventReportingTimestampGranularity);
+			Assert.Equal(ChronoUnit.HalfDays, sut.EventReporting.ChronoTimestampGranularity);
 		}
 
 		[Fact]
 		public void Constructor_JavaMillis_TimestampGranularitySetToMilliseconds()
 		{
-			var sut = new UbiqConfiguration(0, 0, 0, false, "MILLIS");
+            var sut = new UbiqConfiguration();
+            sut.EventReporting.TimestampGranularity = "MILLIS";
 
-			Assert.Equal(ChronoUnit.Milliseconds, sut.EventReportingTimestampGranularity);
+			Assert.Equal(ChronoUnit.Milliseconds, sut.EventReporting.ChronoTimestampGranularity);
 		}
 
 		[Fact]
 		public void Constructor_Milliseconds_TimestampGranularitySetToMilliseconds()
 		{
-			var sut = new UbiqConfiguration(0, 0, 0, false, "Milliseconds");
+            var sut = new UbiqConfiguration();
+            sut.EventReporting.TimestampGranularity = "Milliseconds";
 
-			Assert.Equal(ChronoUnit.Milliseconds, sut.EventReportingTimestampGranularity);
+			Assert.Equal(ChronoUnit.Milliseconds, sut.EventReporting.ChronoTimestampGranularity);
 		}
 	}
 }

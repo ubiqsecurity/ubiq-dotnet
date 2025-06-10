@@ -34,4 +34,34 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\UbiqSecurity\UbiqSecurity.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="TestData\prod\100\prod-100.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="TestData\prod\1m\prod-1m-part-001.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="TestData\prod\1m\prod-1m-part-002.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="TestData\prod\1m\prod-1m-part-003.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="TestData\prod\1m\prod-1m-part-004.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="TestData\prod\1m\prod-1m-part-005.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="TestData\prod\1m\prod-1m-part-006.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="TestData\prod\1m\prod-1m-part-007.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="TestData\prod\1m\prod-1m-part-008.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

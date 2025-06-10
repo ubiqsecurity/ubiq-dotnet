@@ -8,7 +8,6 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 
 [*.{cs,vb}]
-dotnet_diagnostic.IDE0270.severity = none
 
 [*.{yml,yaml}]
 indent_size = 2
