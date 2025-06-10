@@ -1,4 +1,4 @@
-﻿using UbiqSecurity.Internals;
+using UbiqSecurity.Internals;
 
 namespace UbiqSecurity
 {
@@ -23,5 +23,14 @@ namespace UbiqSecurity
             return new UbiqCredentials(pathname, profile, DEFAULT_UBIQ_HOST);
         }
 
+        public static IUbiqCredentials CreateIdpCredentials(string idpUsername, string idpPassword, string host = DEFAULT_UBIQ_HOST)
+        {
+            return new UbiqCredentials()
+            {
+                Host = host,
+                IdpUsername = idpUsername,
+                IdpPassword = idpPassword,
+            };
+        }
     }
 }

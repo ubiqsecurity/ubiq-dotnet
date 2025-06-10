@@ -1,91 +1,85 @@
 using System;
 using System.Collections.Specialized;
-#if DEBUG
-using System.Diagnostics;
-#endif
 using System.Runtime.Caching;
 using System.Threading.Tasks;
-using UbiqSecurity.Internals;
 using UbiqSecurity.Fpe;
+using UbiqSecurity.Internals;
+using UbiqSecurity.Internals.WebService;
 using UbiqSecurity.Model;
 
 namespace UbiqSecurity.Cache
 {
     internal class FfxCache : IFfxCache, IDisposable
-	{
-		private static CacheItemPolicy DefaultPolicy => new CacheItemPolicy
-		{
-			AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(30)
-		};
+    {
+        private readonly IUbiqCredentials _credentials;
+        private readonly UbiqConfiguration _configuration;
+        private readonly IStructuredKeyCache _structuredKeyCache;
 
-		private MemoryCache _cache;
-		private bool _cacheLock;
-		private readonly IUbiqCredentials _credentials;
-		private readonly IUbiqWebService _ubiqWebService;
+        private MemoryCache _cache;
+        private bool _cacheLock;
 
-		internal FfxCache(IUbiqCredentials credentials, IUbiqWebService ubiqWebService)
-		{
-			_cacheLock = false;
-			_credentials = credentials;
-			_ubiqWebService = ubiqWebService;
-			_cache = new MemoryCache("FFX");
-			InitCache();
-		}
+        internal FfxCache(IUbiqWebService ubiqWebService, UbiqConfiguration configuration, IUbiqCredentials credentials)
+        {
+            _configuration = configuration;
+            _credentials = credentials;
+            _structuredKeyCache = new StructuredKeyCache(ubiqWebService, configuration);
 
-		public void Dispose()
-		{
+            _cacheLock = false;
+            _cache = new MemoryCache("FFX");
+
+            InitCache();
+        }
+
+        public void Dispose()
+        {
             Dispose(true);
             GC.SuppressFinalize(this);
-		}
+        }
 
-		public void Clear()
-		{
-			_cache.Dispose();
-			InitCache();
-		}
+        public void Clear()
+        {
+            _cache.Dispose();
+            InitCache();
+        }
 
-		public async Task<FfxContext> GetAsync(FfsRecord ffs, int? keyNumber)
-		{
-			return await GetAsync(new FfsKeyId { FfsRecord = ffs, KeyNumber = keyNumber });
-		}
+        public async Task<FfxContext> GetAsync(FfsRecord ffs, int? keyNumber)
+        {
+            return await GetAsync(new FfsKeyId { FfsRecord = ffs, KeyNumber = keyNumber });
+        }
 
-		public async Task<FfxContext> GetAsync(FfsKeyId key)
-		{
-			var cacheKey = $"{key.FfsRecord.Name}|{key.KeyNumber ?? -1}";
+        public async Task<FfxContext> GetAsync(FfsKeyId key)
+        {
+            var cacheKey = $"{key.FfsRecord.Name}|{key.KeyNumber ?? -1}";
 
             var ffx = (FfxContext)_cache.Get(cacheKey);
             if (ffx == null)
-			{
-#if DEBUG
-                Debug.WriteLine($"FFX cache miss {cacheKey}");
-#endif
+            {
+                ffx = await GetFfsKeyAsync(key);
 
-				ffx = await GetFfsKeyAsync(key);
+                _cache.Set(cacheKey, ffx, GetCachePolicy());
 
-				_cache.Set(cacheKey, ffx, DefaultPolicy);
+                // if we were doing an encypt and didn't know the keynumber ahead of time (just want to use the latest one)
+                // we'll cache it twice, once w/ keynumber -1 (for future encrypts) and onces as the real keynumber (for future decrypts)
+                if (!key.KeyNumber.HasValue)
+                {
+                    _cache.Set($"{key.FfsRecord.Name}|{ffx.KeyNumber}", ffx, GetCachePolicy());
+                }
+            }
 
-				// if we were doing an encypt and didn't know the keynumber ahead of time (just want to use the latest one)
-				// we'll cache it twice, once w/ keynumber -1 (for future encrypts) and onces as the real keynumber (for future decrypts)
-				if (!key.KeyNumber.HasValue)
-				{
-					_cache.Set($"{key.FfsRecord.Name}|{ffx.KeyNumber}", ffx, DefaultPolicy);
-				}
-			}
+            return ffx;
+        }
 
-			return ffx;
-		}
+        public void TryAdd(FfsKeyId key, FfxContext context)
+        {
+            var cacheKey = $"{key.FfsRecord.Name}|{key.KeyNumber}";
 
-		public void TryAdd(FfsKeyId key, FfxContext context)
-		{
-			var cacheKey = $"{key.FfsRecord.Name}|{key.KeyNumber}";
+            if (_cache.Contains(cacheKey))
+            {
+                return;
+            }
 
-			if (_cache.Contains(cacheKey))
-			{
-				return;
-			}
-
-			_cache.Set(cacheKey, context, DefaultPolicy);
-		}
+            _cache.Set(cacheKey, context, GetCachePolicy());
+        }
 
         protected virtual void Dispose(bool disposing)
         {
@@ -95,73 +89,79 @@ namespace UbiqSecurity.Cache
             }
         }
 
-		private void InitCache()
-		{
-			if (!_cacheLock)
-			{
-				_cacheLock = true;
-				lock (_cache)
-				{
-					var cacheSettings = new NameValueCollection(3)
-					{
-						{ "CacheMemoryLimitMegabytes", $"{1024}" },
-						{ "PhysicalMemoryLimit", $"{5}" },	//set % here
+        private void InitCache()
+        {
+            if (!_cacheLock)
+            {
+                _cacheLock = true;
+                lock (_cache)
+                {
+                    var cacheSettings = new NameValueCollection(3)
+                    {
+                        { "CacheMemoryLimitMegabytes", $"{1024}" },
+                        { "PhysicalMemoryLimit", $"{5}" },	//set % here
 						{ "pollingInterval", "00:00:10" }
-					};
-					_cache = new MemoryCache($"FFX:{Guid.NewGuid()}", cacheSettings);
-					_cacheLock = false;
-				}
-			}
-		}
+                    };
+                    _cache = new MemoryCache($"FFX:{Guid.NewGuid()}", cacheSettings);
+                    _cacheLock = false;
+                }
+            }
+        }
 
-		private async Task<FfxContext> GetFfsKeyAsync(FfsKeyId keyId)
-		{
-			FfxContext context = new FfxContext();
+        private CacheItemPolicy GetCachePolicy()
+        {
+            var ttlSeconds = _configuration.KeyCaching.TtlSeconds;
 
-			FpeKeyResponse keyResponse;
+            if (!_configuration.KeyCaching.Structured || _configuration.KeyCaching.Encrypt)
+            {
+                ttlSeconds = 0;
+            }
 
-			if (keyId.KeyNumber.HasValue)
-			{
-				keyResponse = await _ubiqWebService.GetFpeDecryptionKeyAsync(keyId.FfsRecord.Name, keyId.KeyNumber.Value);
-			}
-			else
-			{
-				keyResponse = await _ubiqWebService.GetFpeEncryptionKeyAsync(keyId.FfsRecord.Name);
-			}
+            return new CacheItemPolicy
+            {
+                AbsoluteExpiration = DateTimeOffset.Now.AddSeconds(ttlSeconds),
+            };
+        }
 
-			if (keyResponse.EncryptedPrivateKey == null || keyResponse.WrappedDataKey == null)
-			{
-				throw new InvalidOperationException("Missing keys in FPE key definition");
-			}
+        private async Task<FfxContext> GetFfsKeyAsync(FfsKeyId keyId)
+        {
+            FfxContext context = new FfxContext();
 
-			byte[] tweak = Array.Empty<byte>();
-			if (keyId.FfsRecord.TweakSource == "constant")
-			{
-				tweak = Convert.FromBase64String(keyId.FfsRecord.Tweak);
-			}
+            var keyResponse = await _structuredKeyCache.GetAsync(keyId);
 
-			byte[] key = KeyUnwrapper.UnwrapKey(keyResponse.EncryptedPrivateKey, keyResponse.WrappedDataKey, _credentials.SecretCryptoAccessKey);
+            if (keyResponse.EncryptedPrivateKey == null || keyResponse.WrappedDataKey == null)
+            {
+                throw new InvalidOperationException("Missing keys in FPE key definition");
+            }
 
-			switch (keyId.FfsRecord.EncryptionAlgorithm)
-			{
-				case "FF1": 
-					context.SetFF1(
-						new FF1(
-							key,
-							tweak, 
-							keyId.FfsRecord.TweakMinLength, 
-							keyId.FfsRecord.TweakMaxLength,
-							keyId.FfsRecord.InputCharacters.Length,
-							keyId.FfsRecord.InputCharacters
-						),
-						keyResponse.KeyNumber
-					);
-					break;
-				default:
-					throw new NotSupportedException($"Unsupported FPE Algorithm: {keyId.FfsRecord.EncryptionAlgorithm}");
-			}
+            byte[] tweak = Array.Empty<byte>();
+            if (keyId.FfsRecord.TweakSource == "constant")
+            {
+                tweak = Convert.FromBase64String(keyId.FfsRecord.Tweak);
+            }
 
-			return context;
-		}
-	}
+            byte[] key = PayloadEncryption.UnwrapDataKey(keyResponse.EncryptedPrivateKey, keyResponse.WrappedDataKey, _credentials.SecretCryptoAccessKey);
+
+            switch (keyId.FfsRecord.EncryptionAlgorithm)
+            {
+                case "FF1":
+                    context.SetFF1(
+                        new FF1(
+                            key,
+                            tweak,
+                            keyId.FfsRecord.TweakMinLength,
+                            keyId.FfsRecord.TweakMaxLength,
+                            keyId.FfsRecord.InputCharacters.Length,
+                            keyId.FfsRecord.InputCharacters
+                        ),
+                        keyResponse.KeyNumber
+                    );
+                    break;
+                default:
+                    throw new NotSupportedException($"Unsupported FPE Algorithm: {keyId.FfsRecord.EncryptionAlgorithm}");
+            }
+
+            return context;
+        }
+    }
 }

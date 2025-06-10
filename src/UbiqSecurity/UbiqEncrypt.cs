@@ -1,164 +1,185 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using UbiqSecurity.Billing;
 using UbiqSecurity.Internals;
+using UbiqSecurity.Internals.WebService;
 using UbiqSecurity.Model;
 
 namespace UbiqSecurity
 {
-	public class UbiqEncrypt : IDisposable
-	{
-		private readonly IUbiqCredentials _ubiqCredentials;
-		private readonly IBillingEventsManager _billingEvents;
-		private readonly int _usesRequested;
+    public class UbiqEncrypt : IDisposable
+    {
+        private readonly IUbiqCredentials _ubiqCredentials;
+        private readonly IBillingEventsManager _billingEvents;
+        private readonly int _usesRequested;
 
-		private IUbiqWebService _ubiqWebService;	// null when disposed
-		private EncryptionKeyResponse _encryptionKey;
-		private AesGcmBlockCipher _aesGcmBlockCipher;
+        private IUbiqWebService _ubiqWebService;    // null when disposed
+        private EncryptionKeyResponse _encryptionKey;
+        private AesGcmBlockCipher _aesGcmBlockCipher;
 
-		public UbiqEncrypt(IUbiqCredentials ubiqCredentials, int usesRequested)
-			: this(ubiqCredentials, usesRequested, new UbiqConfiguration())
-		{
-		}
+        public UbiqEncrypt(IUbiqCredentials ubiqCredentials)
+            : this(ubiqCredentials, 1, new UbiqConfiguration())
+        {
+        }
 
-		public UbiqEncrypt(IUbiqCredentials ubiqCredentials, int usesRequested, UbiqConfiguration ubiqConfiguration)
-		{
-			_ubiqCredentials = ubiqCredentials;
-			_usesRequested = usesRequested;
-			_ubiqWebService = new UbiqWebServices(_ubiqCredentials);
-			_billingEvents = new BillingEventsManager(ubiqConfiguration, _ubiqWebService);
-		}
+        public UbiqEncrypt(IUbiqCredentials ubiqCredentials, int usesRequested)
+            : this(ubiqCredentials, usesRequested, new UbiqConfiguration())
+        {
+        }
 
-		public void AddReportingUserDefinedMetadata(string jsonString)
-		{
-			_billingEvents.AddUserDefinedMetadata(jsonString);
-		}
+        public UbiqEncrypt(IUbiqCredentials ubiqCredentials, UbiqConfiguration ubiqConfiguration)
+            : this(ubiqCredentials, 1, ubiqConfiguration)
+        {
+        }
 
-		public virtual void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
+        public UbiqEncrypt(IUbiqCredentials ubiqCredentials, int usesRequested, UbiqConfiguration ubiqConfiguration)
+        {
+            _ubiqCredentials = ubiqCredentials;
+            _usesRequested = usesRequested;
 
-		protected virtual void Dispose(bool disposing)
-		{
-			if (disposing)
-			{
-				_billingEvents?.Dispose();
+            _ubiqWebService = new UbiqWebService(ubiqCredentials, ubiqConfiguration);
+            _billingEvents = new BillingEventsManager(ubiqConfiguration, _ubiqWebService);
+        }
 
-				if (_ubiqWebService != null)
-				{
-					_ubiqWebService.Dispose();
-					_ubiqWebService = null;
-				}
-			}
-		}
+        internal UbiqEncrypt(IUbiqCredentials ubiqCredentials, int usesRequested, IUbiqWebService webService, IBillingEventsManager billingEventsManager)
+        {
+            _ubiqCredentials = ubiqCredentials;
+            _usesRequested = usesRequested;
+            _ubiqWebService = webService;
+            _billingEvents = billingEventsManager;
+        }
 
-		public async Task<byte[]> EncryptAsync(byte[] plainBytes)
-		{
-			// handy inline function
-			void WriteBytesToStream(Stream stream, byte[] bytes)
-			{
-				stream.Write(bytes, 0, bytes.Length);
-			}
+        public void AddReportingUserDefinedMetadata(string jsonString)
+        {
+            _billingEvents.AddUserDefinedMetadata(jsonString);
+        }
 
-			using (var memoryStream = new MemoryStream())
-			{
-				WriteBytesToStream(memoryStream, await BeginAsync().ConfigureAwait(false));
-				WriteBytesToStream(memoryStream, Update(plainBytes, 0, plainBytes.Length));
-				WriteBytesToStream(memoryStream, End());
+        public virtual void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-				return memoryStream.ToArray();
-			}
-		}
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _billingEvents?.Dispose();
 
-		public string GetCopyOfUsage() => _billingEvents.GetSerializedEvents();
+                if (_ubiqWebService != null)
+                {
+                    _ubiqWebService.Dispose();
+                    _ubiqWebService = null;
+                }
+            }
+        }
 
-		public async Task<byte[]> BeginAsync()
-		{
-			if (_ubiqWebService == null)
-			{
-				throw new ObjectDisposedException(GetType().Name);
-			}
-			else if (_aesGcmBlockCipher != null)
-			{
-				throw new InvalidOperationException("encryption in progress");
-			}
+        public async Task<byte[]> EncryptAsync(byte[] plainBytes)
+        {
+            // handy inline function
+            void WriteBytesToStream(Stream stream, byte[] bytes)
+            {
+                stream.Write(bytes, 0, bytes.Length);
+            }
 
-			if (_encryptionKey == null)
-			{
-				// JIT: request encryption key from server
-				_encryptionKey = await _ubiqWebService.GetEncryptionKeyAsync(_usesRequested).ConfigureAwait(false);
-			}
+            using (var memoryStream = new MemoryStream())
+            {
+                WriteBytesToStream(memoryStream, await BeginAsync().ConfigureAwait(false));
+                WriteBytesToStream(memoryStream, Update(plainBytes, 0, plainBytes.Length));
+                WriteBytesToStream(memoryStream, End());
 
-			await _billingEvents.AddBillingEventAsync(_ubiqCredentials.AccessKeyId, string.Empty, string.Empty, BillingAction.Encrypt, DatasetType.Unstructured, 0, 1);
+                return memoryStream.ToArray();
+            }
+        }
 
-			var algorithmInfo = new AlgorithmInfo(_encryptionKey.SecurityModel.Algorithm);
+        public string GetCopyOfUsage() => _billingEvents.GetSerializedEvents();
 
-			// generate random IV for encryption
-			byte[] initVector = new byte[algorithmInfo.InitVectorLength];
-			var random = RandomNumberGenerator.Create();
-			random.GetBytes(initVector);
+        public async Task<byte[]> BeginAsync()
+        {
+            if (_ubiqWebService == null)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
+            else if (_aesGcmBlockCipher != null)
+            {
+                throw new InvalidOperationException("encryption in progress");
+            }
 
-			var cipherHeader = new CipherHeader
-			{
-				Version = 0,
-				Flags = CipherHeader.FLAGS_AAD_ENABLED,
-				AlgorithmId = algorithmInfo.Id,
-				InitVectorLength = (byte)initVector.Length,
-				EncryptedDataKeyLength = (short)_encryptionKey.EncryptedDataKeyBytes.Length,
-				InitVectorBytes = initVector,
-				EncryptedDataKeyBytes = _encryptionKey.EncryptedDataKeyBytes
-			};
+            if (_encryptionKey == null)
+            {
+                // JIT: request encryption key from server
+                _encryptionKey = await _ubiqWebService.GetEncryptionKeyAsync(_usesRequested).ConfigureAwait(false);
+            }
 
-			// note: include cipher header bytes in AES result!
-			var cipherHeaderBytes = cipherHeader.Serialize();
+            await _billingEvents.AddBillingEventAsync(_ubiqCredentials.AccessKeyId, string.Empty, string.Empty, BillingAction.Encrypt, DatasetType.Unstructured, 0, 1);
 
-			_aesGcmBlockCipher = new AesGcmBlockCipher(
-				forEncryption: true,
-				algorithmInfo: algorithmInfo, 
-				key: _encryptionKey.UnwrappedDataKey,
-				initVector: initVector,
-				additionalBytes: cipherHeaderBytes);
+            var algorithmInfo = new AlgorithmInfo(_encryptionKey.SecurityModel.Algorithm);
 
-			return cipherHeaderBytes;
-		}
+            // generate random IV for encryption
+            byte[] initVector = new byte[algorithmInfo.InitVectorLength];
+            var random = RandomNumberGenerator.Create();
+            random.GetBytes(initVector);
 
-		public byte[] Update(byte[] plainBytes, int offset, int count)
-		{
-			if (_ubiqWebService == null)
-			{
-				throw new ObjectDisposedException(GetType().Name);
-			}
-			else if ((_encryptionKey == null) || (_aesGcmBlockCipher == null))
-			{
-				throw new InvalidOperationException("encryptor not initialized");
-			}
+            var cipherHeader = new CipherHeader
+            {
+                Version = 0,
+                Flags = CipherHeader.FLAGS_AAD_ENABLED,
+                AlgorithmId = algorithmInfo.Id,
+                InitVectorLength = (byte)initVector.Length,
+                EncryptedDataKeyLength = (short)_encryptionKey.EncryptedDataKeyBytes.Length,
+                InitVectorBytes = initVector,
+                EncryptedDataKeyBytes = _encryptionKey.EncryptedDataKeyBytes
+            };
 
-			var cipherBytes = _aesGcmBlockCipher.Update(plainBytes, offset, count);
-			return cipherBytes;
-		}
+            // note: include cipher header bytes in AES result!
+            var cipherHeaderBytes = cipherHeader.Serialize();
 
-		public byte[] End()
-		{
-			if (_ubiqWebService == null)
-			{
-				throw new ObjectDisposedException(GetType().Name);
-			}
+            _aesGcmBlockCipher = new AesGcmBlockCipher(
+                forEncryption: true,
+                algorithmInfo: algorithmInfo,
+                key: _encryptionKey.UnwrappedDataKey,
+                initVector: initVector,
+                additionalBytes: cipherHeaderBytes);
 
-			var finalBytes = _aesGcmBlockCipher.Finalize();
-			_aesGcmBlockCipher = null;
-			return finalBytes;
-		}
+            return cipherHeaderBytes;
+        }
 
-		public static async Task<byte[]> EncryptAsync(IUbiqCredentials ubiqCredentials, byte[] plainBytes)
-		{
-			using (var ubiqEncrypt = new UbiqEncrypt(ubiqCredentials, 1))
-			{
-				return await ubiqEncrypt.EncryptAsync(plainBytes);
-			}
-		}
-	}
+        public byte[] Update(byte[] plainBytes, int offset, int count)
+        {
+            if (_ubiqWebService == null)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
+            else if ((_encryptionKey == null) || (_aesGcmBlockCipher == null))
+            {
+                throw new InvalidOperationException("encryptor not initialized");
+            }
+
+            var cipherBytes = _aesGcmBlockCipher.Update(plainBytes, offset, count);
+            return cipherBytes;
+        }
+
+        public byte[] End()
+        {
+            if (_ubiqWebService == null)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
+
+            var finalBytes = _aesGcmBlockCipher.Finalize();
+            _aesGcmBlockCipher = null;
+            return finalBytes;
+        }
+
+        [Obsolete("Static EncryptAsync method is deprecated, please use equivalent instance method")]
+        public static async Task<byte[]> EncryptAsync(IUbiqCredentials ubiqCredentials, byte[] plainBytes)
+        {
+            using (var ubiqEncrypt = new UbiqEncrypt(ubiqCredentials, 1))
+            {
+                return await ubiqEncrypt.EncryptAsync(plainBytes);
+            }
+        }
+    }
 }

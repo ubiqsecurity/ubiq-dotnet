@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <AnalysisLevel>6.0-recommended</AnalysisLevel>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <EnableComHosting>true</EnableComHosting>
+        <!--<GenerateDocumentationFile>true</GenerateDocumentationFile>-->
+        <Platforms>AnyCPU;x86</Platforms>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>Ubiq-Security.ComCompatible</PackageId>
+        <Company>Ubiq Security, Inc.</Company>
+        <PackageTags>ubiq cryptography</PackageTags>
+        <Description>COM Compatible DotNet Client library for accessing the Ubiq Platform</Description>
+        <PackageProjectUrl>https://gitlab.com/ubiqsecurity/ubiq-dotnet</PackageProjectUrl>
+        <RepositoryUrl>https://gitlab.com/ubiqsecurity/ubiq-dotnet.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <Copyright>Copyright 2020-2024 Ubiq Security, Inc.</Copyright>
+        <Version>2.2.0</Version>
+        <PackageReleaseNotes>
+            - Add COM Support
+        </PackageReleaseNotes>
+        <NeutralLanguage>en-US</NeutralLanguage>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <RuntimeHostConfigurationOption Include="System.Runtime.InteropServices.COM.LoadComponentInDefaultContext" Value="true" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="dSPACE.Runtime.InteropServices.BuildTasks" Version="1.10.1">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\UbiqSecurity\UbiqSecurity.csproj" />
+    </ItemGroup>
+</Project>

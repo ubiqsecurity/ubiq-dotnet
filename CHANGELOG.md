@@ -1,7 +1,8 @@
 # Changelog
 
-## 2.2.0 - 2024-05-28
-*  Add Partial Encryption Prefix/Suffix support
+## 2.2.0 - 2025-06-09
+* Add Partial Encryption Prefix/Suffix support
+* Added support for IDP integration using Okta and Entra
 
 ## 2.1.0 - 2024-01-23
 * Remove dependency on external Ubiq-Security.FPE package

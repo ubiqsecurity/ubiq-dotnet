@@ -1,13 +1,25 @@
-﻿namespace UbiqSecurity
+using System.Threading.Tasks;
+
+namespace UbiqSecurity
 {
-	public interface IUbiqCredentials
-	{
-		string AccessKeyId { get; }
+    public interface IUbiqCredentials
+    {
+        string Host { get; set; }
 
-		string SecretSigningKey { get; }
+        string AccessKeyId { get; set; }
 
-		string SecretCryptoAccessKey { get; }
+        string SecretSigningKey { get; set; }
 
-		string Host { get; }
-	}
+        string SecretCryptoAccessKey { get; set; }
+
+        string IdpUsername { get; set; }
+
+        string IdpPassword { get; set; }
+
+        bool IsIdp { get; }
+
+        string IdpPayloadCert { get; }
+
+        Task CheckInitAndExpirationAsync(UbiqConfiguration ubiqConfiguration);
+    }
 }
