@@ -1,0 +1,5 @@
+UbiqSecurity.Config.IdpConfig.SelfSignIdentity.get -> string
+UbiqSecurity.Config.IdpConfig.SelfSignIdentity.set -> void
+UbiqSecurity.Config.IdpConfig.SelfSignKey.get -> string
+UbiqSecurity.Config.IdpConfig.SelfSignKey.set -> void
+UbiqSecurity.Config.IdpProvider.SelfSigned = 2 -> UbiqSecurity.Config.IdpProvider

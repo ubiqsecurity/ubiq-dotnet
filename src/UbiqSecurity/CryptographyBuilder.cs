@@ -15,7 +15,6 @@ namespace UbiqSecurity
         public CryptographyBuilder()
         {
             _configuration = new UbiqConfiguration();
-            _credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty);
         }
 
         public static CryptographyBuilder Create()
@@ -39,6 +38,7 @@ namespace UbiqSecurity
 
         public CryptographyBuilder WithCredentials(Action<IUbiqCredentials> credentialsAction)
         {
+            _credentials = UbiqFactory.CreateCredentials(null, null, null, null);
             credentialsAction(_credentials);
             return this;
         }
@@ -68,6 +68,8 @@ namespace UbiqSecurity
 
         public UbiqStructuredEncryptDecrypt BuildStructured()
         {
+            _credentials = _credentials ?? UbiqFactory.ReadCredentialsFromFile(string.Empty);
+
             var webService = new UbiqWebService(_credentials, _configuration);
             var billingEventsManager = new BillingEventsManager(_configuration, webService);
             var ffxCache = new FfxCache(webService, _configuration, _credentials);
@@ -80,6 +82,8 @@ namespace UbiqSecurity
 
         public UbiqEncrypt BuildUnstructuredEncrypt()
         {
+            _credentials = _credentials ?? UbiqFactory.ReadCredentialsFromFile(string.Empty);
+
             var webService = new UbiqWebService(_credentials, _configuration);
             var billingEventsManager = new BillingEventsManager(_configuration, webService);
 
@@ -88,6 +92,8 @@ namespace UbiqSecurity
 
         public UbiqDecrypt BuildUnstructuredDecrypt()
         {
+            _credentials = _credentials ?? UbiqFactory.ReadCredentialsFromFile(string.Empty);
+
             var webService = new UbiqWebService(_credentials, _configuration);
             var billingEventsManager = new BillingEventsManager(_configuration, webService);
             var unstructuredCache = new UnstructuredKeyCache(webService, _configuration, _credentials);

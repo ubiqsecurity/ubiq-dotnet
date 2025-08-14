@@ -67,7 +67,7 @@ namespace UbiqSecurity.Internals
 
             // convert to PEM format
             var csrPem = new StringBuilder();
-            var csrPemWriter = new Org.BouncyCastle.Utilities.IO.Pem.PemWriter(new StringWriter(csrPem));
+            var csrPemWriter = new PemWriter(new StringWriter(csrPem));
             csrPemWriter.WriteObject(encryptedPrivateKeyPemObject);
             csrPemWriter.Writer.Flush();
 
@@ -114,19 +114,22 @@ namespace UbiqSecurity.Internals
         // https://stackoverflow.com/questions/70526272/c-sharp-how-to-decrypt-an-encrypted-private-key-with-bouncy-castle
         public static byte[] UnwrapDataKey(string encryptedPrivateKey, string wrappedDataKey, string cryptoAccessKey)
         {
-            var pemReader = new Org.BouncyCastle.OpenSsl.PemReader(new StringReader(encryptedPrivateKey), new PasswordFinder(cryptoAccessKey));
+            using (var stringReader = new StringReader(encryptedPrivateKey))
+            {
+                var pemReader = new Org.BouncyCastle.OpenSsl.PemReader(stringReader, new PasswordFinder(cryptoAccessKey));
 
-            var keyParameters = (RsaPrivateCrtKeyParameters)pemReader.ReadObject();
+                var keyParameters = (RsaPrivateCrtKeyParameters)pemReader.ReadObject();
 
-            var rsaEngine = new OaepEncoding(new RsaEngine(), new Sha1Digest(), new Sha1Digest(), null);
-            rsaEngine.Init(false, keyParameters);
+                var rsaEngine = new OaepEncoding(new RsaEngine(), new Sha1Digest(), new Sha1Digest(), null);
+                rsaEngine.Init(false, keyParameters);
 
-            // 'UnwrappedDataKey' is used for local encryptions
-            var wrappedDataKeyBytes = Convert.FromBase64String(wrappedDataKey);
+                // 'UnwrappedDataKey' is used for local encryptions
+                var wrappedDataKeyBytes = Convert.FromBase64String(wrappedDataKey);
 
-            var unwrappedDataKey = rsaEngine.ProcessBlock(wrappedDataKeyBytes, 0, wrappedDataKeyBytes.Length);
+                var unwrappedDataKey = rsaEngine.ProcessBlock(wrappedDataKeyBytes, 0, wrappedDataKeyBytes.Length);
 
-            return unwrappedDataKey;
+                return unwrappedDataKey;
+            }
         }
     }
 }
