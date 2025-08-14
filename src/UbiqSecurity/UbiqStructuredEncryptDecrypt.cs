@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using UbiqSecurity.Billing;
-using UbiqSecurity.Cache;
-using UbiqSecurity.Fpe;
 using UbiqSecurity.Internals;
+using UbiqSecurity.Internals.Billing;
+using UbiqSecurity.Internals.Cache;
+using UbiqSecurity.Internals.Structured;
+using UbiqSecurity.Internals.Structured.Pipeline;
 using UbiqSecurity.Internals.WebService;
-using UbiqSecurity.Model;
+using UbiqSecurity.Internals.WebService.Models;
 
 namespace UbiqSecurity
 {
@@ -86,37 +87,9 @@ namespace UbiqSecurity
 
         public async Task<string> DecryptAsync(string datasetName, string cipherText, byte[] tweak)
         {
-            try
-            {
-                var dataset = await _datasetCache.GetAsync(datasetName);
+            var dataset = await _datasetCache.GetAsync(datasetName);
 
-                var parsedInput = FpeParser.Parse(cipherText, dataset, false);
-
-                // P20-1357 verify input length
-                if (parsedInput.Trimmed.Length < dataset.MinInputLength || parsedInput.Trimmed.Length > dataset.MaxInputLength)
-                {
-                    throw new ArgumentException("Input length does not match FFS parameters.");
-                }
-
-                var keyNumber = parsedInput.DecodeKeyNumber(dataset, 0);
-
-                var ffx = await _ffxCache.GetAsync(dataset, keyNumber);
-
-                var convertedRadixCipherText = parsedInput.Trimmed.ConvertRadix(dataset.OutputCharacters, dataset.InputCharacters);
-
-                var plainText = ffx.Cipher(dataset.EncryptionAlgorithm, convertedRadixCipherText, tweak, false);
-
-                var formattedPlainText = MergeToFormattedOutput(parsedInput, plainText, dataset.InputCharacters);
-
-                // create the billing record
-                await _billingEvents.AddBillingEventAsync(_ubiqCredentials.AccessKeyId, dataset.Name, string.Empty, BillingAction.Decrypt, DatasetType.Structured, keyNumber, 1);
-
-                return formattedPlainText;
-            }
-            catch
-            {
-                throw;
-            }
+            return await DecryptPipelineAsync(dataset, _ffxCache, cipherText, tweak);
         }
 
         public async Task<byte[]> EncryptAsync(string datasetName, byte[] plainBytes)
@@ -131,7 +104,6 @@ namespace UbiqSecurity
             var result = await EncryptAsync(datasetName, input, tweak);
 
             return Encoding.ASCII.GetBytes(result);
-
         }
 
         public async Task<string> EncryptAsync(string datasetName, string plainText)
@@ -141,46 +113,9 @@ namespace UbiqSecurity
 
         public async Task<string> EncryptAsync(string datasetName, string plainText, byte[] tweak)
         {
-            try
-            {
-                var dataset = await _datasetCache.GetAsync(datasetName);
+            var dataset = await _datasetCache.GetAsync(datasetName);
 
-                var ffx = await _ffxCache.GetAsync(dataset, null);
-
-                return await EncryptAsync(dataset, ffx, plainText, tweak);
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        private async Task<string> EncryptAsync(FfsRecord dataset, FfxContext ffx, string plainText, byte[] tweak)
-        {
-            var parsedInput = FpeParser.Parse(plainText, dataset, true);
-
-            // P20-1357 verify input length
-            if (parsedInput.Trimmed.Length < dataset.MinInputLength || parsedInput.Trimmed.Length > dataset.MaxInputLength)
-            {
-                throw new ArgumentException("Input length does not match FFS parameters.");
-            }
-
-            // encrypt using desired FPE algorithm
-            string cipherText = ffx.Cipher(dataset.EncryptionAlgorithm, parsedInput.Trimmed, tweak, true);
-
-            // convert to desired output character set
-            string radixConvertedCipherText = cipherText.ConvertRadix(dataset.InputCharacters, dataset.OutputCharacters);
-
-            // encode keynumber into text
-            string encodedValue = EncodeKeyNumber(dataset, ffx.KeyNumber, radixConvertedCipherText);
-
-            // final formatting
-            string formattedValue = MergeToFormattedOutput(parsedInput, encodedValue, dataset.OutputCharacters);
-
-            // create the billing record
-            await _billingEvents.AddBillingEventAsync(_ubiqCredentials.AccessKeyId, dataset.Name, string.Empty, BillingAction.Encrypt, DatasetType.Structured, ffx.KeyNumber, 1);
-
-            return formattedValue;
+            return await EncryptPipelineAsync(dataset, _ffxCache, plainText, tweak);
         }
 
         public async Task<IEnumerable<string>> EncryptForSearchAsync(string datasetName, string plainText)
@@ -198,9 +133,7 @@ namespace UbiqSecurity
 
             for (int keyNumber = 0; keyNumber <= currentFfx.KeyNumber; keyNumber++)
             {
-                var ffx = await _ffxCache.GetAsync(dataset, keyNumber);
-
-                var cipherText = await EncryptAsync(dataset, ffx, plainText, tweak);
+                var cipherText = await EncryptPipelineAsync(dataset, _ffxCache, plainText, tweak);
 
                 results.Add(cipherText);
             }
@@ -234,6 +167,52 @@ namespace UbiqSecurity
                     _ubiqWebService = null;
                 }
             }
+        }
+
+        private async Task<string> EncryptPipelineAsync(FfsRecord dataset, IFfxCache ffxCache, string plainText, byte[] tweak)
+        {
+            var operationContext = new OperationContext()
+            {
+                CurrentValue = plainText,
+                Dataset = dataset,
+                IsEncrypt = true,
+                FfxCache = ffxCache,
+                KeyNumber = null,
+                OriginalValue = plainText,
+                UserSuppliedTweak = tweak,
+            };
+
+            var pipeline = new EncryptionPipeline(dataset);
+
+            var result = await pipeline.InvokeAsync(operationContext);
+
+            // create the billing record
+            await _billingEvents.AddBillingEventAsync(_ubiqCredentials.AccessKeyId, dataset.Name, string.Empty, BillingAction.Encrypt, DatasetType.Structured, operationContext.KeyNumber ?? 0, 1);
+
+            return result;
+        }
+
+        private async Task<string> DecryptPipelineAsync(FfsRecord dataset, IFfxCache ffxCache, string cipherText, byte[] tweak)
+        {
+            var operationContext = new OperationContext()
+            {
+                CurrentValue = cipherText,
+                Dataset = dataset,
+                IsEncrypt = false,
+                FfxCache = ffxCache,
+                KeyNumber = null,
+                OriginalValue = cipherText,
+                UserSuppliedTweak = tweak,
+            };
+
+            var pipeline = new DecryptionPipeline(dataset);
+
+            var result = await pipeline.InvokeAsync(operationContext);
+
+            // create the billing record
+            await _billingEvents.AddBillingEventAsync(_ubiqCredentials.AccessKeyId, dataset.Name, string.Empty, BillingAction.Decrypt, DatasetType.Structured, operationContext.KeyNumber.Value, 1);
+
+            return result;
         }
 
         private async Task LoadAllKeysAsync(string datasetName)
@@ -279,10 +258,8 @@ namespace UbiqSecurity
                             ffs.TweakMinLength,
                             ffs.TweakMaxLength,
                             ffs.InputCharacters.Length,
-                            ffs.InputCharacters
-                        ),
-                        keyNumber
-                    );
+                            ffs.InputCharacters),
+                        keyNumber);
                     break;
                 default:
                     throw new NotSupportedException($"Unsupported FPE Algorithm: {ffs.EncryptionAlgorithm}");
@@ -290,55 +267,5 @@ namespace UbiqSecurity
 
             return context;
         }
-
-        private static string EncodeKeyNumber(FfsRecord dataset, int keyNumber, string str)
-        {
-            var charBuf = str[0];
-
-            var ctValue = dataset.OutputCharacters.IndexOf(charBuf);
-
-            ctValue += keyNumber << (int)dataset.MsbEncodingBits.Value;
-
-            var ch = dataset.OutputCharacters[ctValue];
-
-            return str.ReplaceCharacter(ch, 0);
-        }
-
-        /// <summary>
-        /// Merges the given string into the  "formatted_dest" pattern using the 
-        /// set of provided characters. 
-        /// </summary>
-        /// <param name="formattedDestination">Formatted destination string</param>
-        /// <param name="convertedToRadix">String to be placed in the formattedDestination</param>
-        /// <param name="characterSet">Set of characters to use in the final formattedDestination</param>
-        /// <returns></returns>
-        private static string MergeToFormattedOutput(FpeParseModel input, string convertedToRadix, string characterSet)
-        {
-            string ret = input.StringTemplate;
-
-            var d = ret.Length - 1;
-            var s = convertedToRadix.Length - 1;
-
-            while (s >= 0 && d >= 0)
-            {
-                // Find the first available destination character
-                while (d >= 0 && ret[d] != characterSet[0])
-                {
-                    d--;
-                }
-
-                // Copy the encrypted text into the formatted output string
-                if (d >= 0)
-                {
-                    ret = ret.ReplaceCharacter(convertedToRadix[s], d);
-                }
-
-                s--;
-                d--;
-            }
-
-            return $"{input.Prefix}{ret}{input.Suffix}";
-        }
     }
 }
-

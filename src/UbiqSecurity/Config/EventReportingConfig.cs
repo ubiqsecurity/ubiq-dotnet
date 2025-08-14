@@ -8,15 +8,15 @@ namespace UbiqSecurity.Config
         private string _timestampGranularity = "NANOS";
 
         /// <summary>
-        /// WakeIntervalis how many seconds elapse between when the event processor wakes up
+        /// Gets or sets how many seconds elapse between when the event processor wakes up
         /// and sees what is available to send to the server
         /// </summary>
         [JsonProperty("wake_interval")]
         public int WakeInterval { get; set; } = 1;
 
         /// <summary>
-        /// MinimumCount is how many billing events need to be queued before they will be sent.
-        /// A billing event is based on the combination of API key, dataset, dataset_group, key_number, and 
+        /// Gets or sets how many billing events need to be queued before they will be sent.
+        /// A billing event is based on the combination of API key, dataset, dataset_group, key_number, and
         /// encrypt / decrypt action. So if a single library is used to encrypt 1M records using the same combination
         /// of these fields, this will only count as 1 billing event with a count of 1M
         /// </summary>
@@ -24,7 +24,7 @@ namespace UbiqSecurity.Config
         public int MinimumCount { get; set; } = 5;
 
         /// <summary>
-        /// FlushInterval addresses the issue above where a single combination of data is used to
+        /// Gets or sets FlushInterval, which addresses the issue above where a single combination of data is used to
         /// encrypt 1M records but the billing event isn't sent because it is only one billing event.
         /// When this interval (seconds) is reached, all billing events will be sent.
         /// </summary>
@@ -35,7 +35,8 @@ namespace UbiqSecurity.Config
         public bool TrapExceptions { get; set; } = true;
 
         [JsonProperty("timestamp_granularity")]
-        public string TimestampGranularity {
+        public string TimestampGranularity
+        {
             get => _timestampGranularity;
             set
             {

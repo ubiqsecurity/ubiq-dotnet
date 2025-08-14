@@ -495,8 +495,8 @@
         "dataset": "UTF8_STRING_COMPLEX"
     },
     {
-        "ciphertext": "eΪΪΪΪΪΪΪʓΪΪʔΪΪΪΪΪΪΪΪΪΪΪΪΪΪΪΫんÜR73jΪn-zÚßϻñはÊ6ÏQ63ÚV8mάGέyÍķή5Ï9Ü世Yί5yGoÜÏQCôòWËϽCfέ9ϻϻ8Ñ4ÝAちa5lϻEϻCÊQBϺRóKFB1axeĸちIQ7mqんbZðCwΪUKĶ5ÍX5tËMUSΫvfMʑά8JʓQEfñĸdϾVËgĸÊは91ËίEにÛCΫnñNNlにĸΫÝĶßXÜpήににʑbÛtϽ2xÍwwXWÌwg",
-        "plaintext": "ywĹlfvðôʓbqʔにËϼaqϺlcxķÎmkはĹiϽちÏónnんϽ-osĶòにnÏwrちknϽqshËÊhðfrwϺvetdmķeóĹķĹÊこòuϿô界Ͻ界ÍÌϼϿñbÑivÎϼ世òϼĸðuはĶははķÌyϻhÌñちxこttϺqこjwnjËtちϼsĵnloϾtuϼôち世ϿÊķzdʑbんÎʓmógðĶgqϾÍtaòw界ϽÍx界にðちはËoϾはϺmmははこϾiĶ界eちkʑs世vôvhóyanϾiòf",
-        "dataset": "UTF8_STRING_COMPLEX"
+        "ciphertext": "42-2-0000-000000-0000000-0-0000000000000000000000000-00coT-mm-jCEGjhTx94WSj-78-K78teNQKev4MG1xDlqRFiFrbDyUhpnMHVjDowB2176",
+        "plaintext": "42-3-0717-784337-6044199-8-9740162731727668564369277-42543-25-4603746913582-43-131204437649921882263038300430907606592176",
+        "dataset": "SSN_pre_suf_pass"
     }
 ]
