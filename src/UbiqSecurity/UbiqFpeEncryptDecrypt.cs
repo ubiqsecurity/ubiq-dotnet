@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using UbiqSecurity.Billing;
-using UbiqSecurity.Cache;
+using UbiqSecurity.Internals.Billing;
+using UbiqSecurity.Internals.Cache;
 using UbiqSecurity.Internals.WebService;
 
 namespace UbiqSecurity
@@ -22,7 +22,7 @@ namespace UbiqSecurity
         }
 
         internal UbiqFPEEncryptDecrypt(IUbiqCredentials ubiqCredentials, IUbiqWebService webService, IBillingEventsManager billingEventsManager, IFfxCache ffxCache, IDatasetCache datasetCache)
-            :base(ubiqCredentials, webService, billingEventsManager, ffxCache, datasetCache)
+            : base(ubiqCredentials, webService, billingEventsManager, ffxCache, datasetCache)
         {
         }
 

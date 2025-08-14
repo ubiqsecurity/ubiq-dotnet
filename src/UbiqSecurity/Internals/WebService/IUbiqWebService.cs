@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using UbiqSecurity.Model;
+using UbiqSecurity.Internals.WebService.Models;
 
 namespace UbiqSecurity.Internals.WebService
 {
@@ -18,6 +18,6 @@ namespace UbiqSecurity.Internals.WebService
 
         Task<DatasetAndKeysResponse> GetDatasetAndKeysAsync(string datasetName);
 
-        Task<FpeBillingResponse> SendTrackingEventsAsync(TrackingEventsRequest trackingEventsRequest);
+        Task<TrackingEventsResponse> SendTrackingEventsAsync(TrackingEventsRequest trackingEventsRequest);
     }
 }

@@ -1,9 +1,8 @@
 using System;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
-using UbiqSecurity.Billing;
-using UbiqSecurity.Cache;
 using UbiqSecurity.Internals;
+using UbiqSecurity.Internals.Billing;
+using UbiqSecurity.Internals.Cache;
 using UbiqSecurity.Internals.WebService;
 
 namespace UbiqSecurity
@@ -13,15 +12,15 @@ namespace UbiqSecurity
         private UbiqConfiguration _configuration;
         private IUbiqCredentials _credentials;
 
-        public static CryptographyBuilder Create()
-        {
-            return new CryptographyBuilder();
-        }
-
         public CryptographyBuilder()
         {
             _configuration = new UbiqConfiguration();
             _credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty);
+        }
+
+        public static CryptographyBuilder Create()
+        {
+            return new CryptographyBuilder();
         }
 
         public CryptographyBuilder WithCredentials(IUbiqCredentials credentials)

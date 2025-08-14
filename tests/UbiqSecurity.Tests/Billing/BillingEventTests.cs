@@ -1,9 +1,11 @@
-﻿using Newtonsoft.Json;
-using UbiqSecurity.Billing;
+using System.Text.Json;
+using Newtonsoft.Json;
+using UbiqSecurity.Internals.Billing;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace UbiqSecurity.Tests.Billing
 {
-	public class BillingEventTests
+    public class BillingEventTests
 	{
 		[Fact]
 		public void FirstCalled_ChronoUnitDays_TruncatesFirstCalledToDays()

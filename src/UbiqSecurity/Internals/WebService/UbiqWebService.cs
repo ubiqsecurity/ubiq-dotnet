@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using UbiqSecurity.Model;
+using UbiqSecurity.Internals.WebService.Models;
 
 namespace UbiqSecurity.Internals.WebService
 {
@@ -170,20 +170,20 @@ namespace UbiqSecurity.Internals.WebService
             var encryptionKeyResponse = await HttpSendAsync<FpeKeyResponse>(url, HttpMethod.Get).ConfigureAwait(false);
 
             if (idpEnabled)
-            { 
+            {
                 encryptionKeyResponse.EncryptedPrivateKey = ((UbiqCredentials)_ubiqCredentials).IdpPayloadCertInfo.EncryptedPrivateKey;
             }
 
             return encryptionKeyResponse;
         }
 
-        public async Task<FpeBillingResponse> SendTrackingEventsAsync(TrackingEventsRequest trackingEventsRequest)
+        public async Task<TrackingEventsResponse> SendTrackingEventsAsync(TrackingEventsRequest trackingEventsRequest)
         {
             var url = $"{_baseUrl}/{ApiV3Root}/tracking/events";
 
-            var response = await HttpSendAsync<FpeBillingResponse, TrackingEventsRequest>(url, HttpMethod.Post, trackingEventsRequest).ConfigureAwait(false);
+            var response = await HttpSendAsync<TrackingEventsResponse, TrackingEventsRequest>(url, HttpMethod.Post, trackingEventsRequest).ConfigureAwait(false);
 
-            return response ?? new FpeBillingResponse(200, string.Empty);
+            return response ?? new TrackingEventsResponse(200, string.Empty);
         }
 
         protected async Task<TResponse> HttpSendAsync<TResponse>(string url, HttpMethod method)
@@ -209,7 +209,7 @@ namespace UbiqSecurity.Internals.WebService
             HttpRequestMessage requestMessage = new HttpRequestMessage(method, url);
 
             if (request != null)
-            { 
+            {
                 var jsonRequest = JsonConvert.SerializeObject(request);
                 requestMessage.Content = new StringContent(jsonRequest, Encoding.UTF8, JsonMimeType);
             }
@@ -225,8 +225,7 @@ namespace UbiqSecurity.Internals.WebService
                     {
                         status = responseMessage.StatusCode,
                         message = responseString ?? string.Empty,
-                    }
-                );
+                    });
 
                 throw new InvalidOperationException(errorMessage);
             }

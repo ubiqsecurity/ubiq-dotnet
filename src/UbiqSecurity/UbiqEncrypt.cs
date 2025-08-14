@@ -2,10 +2,10 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using UbiqSecurity.Billing;
-using UbiqSecurity.Internals;
+using UbiqSecurity.Internals.Billing;
+using UbiqSecurity.Internals.Unstructured;
 using UbiqSecurity.Internals.WebService;
-using UbiqSecurity.Model;
+using UbiqSecurity.Internals.WebService.Models;
 
 namespace UbiqSecurity
 {
@@ -51,6 +51,15 @@ namespace UbiqSecurity
             _billingEvents = billingEventsManager;
         }
 
+        [Obsolete("Static EncryptAsync method is deprecated, please use equivalent instance method")]
+        public static async Task<byte[]> EncryptAsync(IUbiqCredentials ubiqCredentials, byte[] plainBytes)
+        {
+            using (var ubiqEncrypt = new UbiqEncrypt(ubiqCredentials, 1))
+            {
+                return await ubiqEncrypt.EncryptAsync(plainBytes);
+            }
+        }
+
         public void AddReportingUserDefinedMetadata(string jsonString)
         {
             _billingEvents.AddUserDefinedMetadata(jsonString);
@@ -60,20 +69,6 @@ namespace UbiqSecurity
         {
             Dispose(true);
             GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _billingEvents?.Dispose();
-
-                if (_ubiqWebService != null)
-                {
-                    _ubiqWebService.Dispose();
-                    _ubiqWebService = null;
-                }
-            }
         }
 
         public async Task<byte[]> EncryptAsync(byte[] plainBytes)
@@ -125,12 +120,12 @@ namespace UbiqSecurity
             var cipherHeader = new CipherHeader
             {
                 Version = 0,
-                Flags = CipherHeader.FLAGS_AAD_ENABLED,
+                Flags = CipherHeader.FlagsAadEnabled,
                 AlgorithmId = algorithmInfo.Id,
                 InitVectorLength = (byte)initVector.Length,
                 EncryptedDataKeyLength = (short)_encryptionKey.EncryptedDataKeyBytes.Length,
                 InitVectorBytes = initVector,
-                EncryptedDataKeyBytes = _encryptionKey.EncryptedDataKeyBytes
+                EncryptedDataKeyBytes = _encryptionKey.EncryptedDataKeyBytes,
             };
 
             // note: include cipher header bytes in AES result!
@@ -173,12 +168,17 @@ namespace UbiqSecurity
             return finalBytes;
         }
 
-        [Obsolete("Static EncryptAsync method is deprecated, please use equivalent instance method")]
-        public static async Task<byte[]> EncryptAsync(IUbiqCredentials ubiqCredentials, byte[] plainBytes)
+        protected virtual void Dispose(bool disposing)
         {
-            using (var ubiqEncrypt = new UbiqEncrypt(ubiqCredentials, 1))
+            if (disposing)
             {
-                return await ubiqEncrypt.EncryptAsync(plainBytes);
+                _billingEvents?.Dispose();
+
+                if (_ubiqWebService != null)
+                {
+                    _ubiqWebService.Dispose();
+                    _ubiqWebService = null;
+                }
             }
         }
     }
