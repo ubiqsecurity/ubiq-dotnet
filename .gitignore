@@ -8,3 +8,4 @@ packages
 */*.csproj.user
 .vs/
 artifacts
+TestResults/

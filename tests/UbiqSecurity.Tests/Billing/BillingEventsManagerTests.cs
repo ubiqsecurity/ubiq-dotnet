@@ -1,14 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
-using UbiqSecurity.Billing;
 using UbiqSecurity.Config;
-using UbiqSecurity.Internals;
+using UbiqSecurity.Internals.Billing;
 using UbiqSecurity.Internals.WebService;
-using UbiqSecurity.Model;
+using UbiqSecurity.Internals.WebService.Models;
 
 namespace UbiqSecurity.Tests.Billing
 {

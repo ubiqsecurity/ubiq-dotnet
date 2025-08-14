@@ -24,8 +24,6 @@ namespace UbiqSecurity.Internals.WebService
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            //return await base.SendAsync(request, cancellationToken);
-
             if (!request.Headers.Contains(HttpRequestHeader.Date.ToString()))
             {
                 request.Headers.Add(HttpRequestHeader.Date.ToString(), DateTime.UtcNow.ToString("r"));
@@ -33,7 +31,7 @@ namespace UbiqSecurity.Internals.WebService
 
             if (!request.Headers.Contains(HttpRequestHeader.Host.ToString()))
             {
-                request.Headers.Add(HttpRequestHeader.Host.ToString(),request.RequestUri.Host);
+                request.Headers.Add(HttpRequestHeader.Host.ToString(), request.RequestUri.Host);
             }
 
             // tricky: StringContent does not set Content-Length, so do that explicitly
@@ -43,6 +41,7 @@ namespace UbiqSecurity.Internals.WebService
             {
                 request.Headers.Remove("Digest");
             }
+
             request.Headers.Add("Digest", digestValue);
 
             if (request.Content != null)
@@ -55,10 +54,11 @@ namespace UbiqSecurity.Internals.WebService
             {
                 request.Headers.Remove("Signature");
             }
+
             var signature = BuildSignature(request, _credentials);
             request.Headers.Add("Signature", signature);
 
-            return  await base.SendAsync(request, cancellationToken);
+            return await base.SendAsync(request, cancellationToken);
         }
 
         private static string UnixTimeAsString()
@@ -75,7 +75,6 @@ namespace UbiqSecurity.Internals.WebService
 
             using (var contentStream = new MemoryStream())
             {
-
                 httpContent?.CopyToAsync(contentStream).Wait();
                 contentStream.Position = 0;     // rewind
 
@@ -104,11 +103,13 @@ namespace UbiqSecurity.Internals.WebService
             {
                 WriteHashableBytes(hashStream, "(created)", unixTimeString);
                 WriteHashableBytes(hashStream, "(request-target)", requestTarget);
+
                 if (httpRequestMessage.Content != null)
                 {
                     WriteHashableBytes(hashStream, "Content-Length", httpRequestMessage.Content.Headers.GetValues("Content-Length").First());
                     WriteHashableBytes(hashStream, "Content-Type", httpRequestMessage.Content.Headers.GetValues("Content-Type").First());
                 }
+
                 WriteHashableBytes(hashStream, "Date", httpRequestMessage.Headers.GetValues("Date").First());
                 WriteHashableBytes(hashStream, "Digest", httpRequestMessage.Headers.GetValues("Digest").First());
                 WriteHashableBytes(hashStream, "Host", httpRequestMessage.Headers.Host);
@@ -152,6 +153,5 @@ namespace UbiqSecurity.Internals.WebService
             // write bytes to caller-provided Stream
             stream.Write(hashableBytes, 0, hashableBytes.Length);
         }
-
     }
 }
