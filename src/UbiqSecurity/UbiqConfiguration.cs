@@ -4,7 +4,7 @@ using UbiqSecurity.Config;
 namespace UbiqSecurity
 {
     public class UbiqConfiguration
-	{
+    {
         [JsonProperty("idp")]
         public IdpConfig Idp { get; set; }
 
@@ -13,5 +13,5 @@ namespace UbiqSecurity
 
         [JsonProperty("key_caching")]
         public KeyCachingConfig KeyCaching { get; set; } = new KeyCachingConfig();
-	}
+    }
 }

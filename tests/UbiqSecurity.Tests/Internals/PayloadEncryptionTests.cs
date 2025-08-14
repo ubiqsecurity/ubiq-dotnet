@@ -2,7 +2,6 @@ using System.Text;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.OpenSsl;
 using UbiqSecurity.Internals;
-using UbiqSecurity.Model;
 
 namespace UbiqSecurity.Tests.Internals
 {

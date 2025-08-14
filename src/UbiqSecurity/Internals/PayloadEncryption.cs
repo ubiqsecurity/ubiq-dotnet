@@ -17,25 +17,13 @@ using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Utilities.IO.Pem;
-using UbiqSecurity.Model;
 
 namespace UbiqSecurity.Internals
 {
-    internal class PayloadEncryption
+    internal partial class PayloadEncryption
     {
         private const int ApiKeyLength = 18;
         private const int CryptoAccessKeyLength = 33;
-
-        public struct PayloadCertInfo
-        {
-            public string CsrPem { get; set; }
-
-            public string EncryptedPrivateKey { get; set; }
-
-            public string ApiCert { get; set; }
-
-            public DateTime? ApiCertExpiration { get; set; }
-        }
 
         public static string GenerateRandomCryptoAccessKey()
         {

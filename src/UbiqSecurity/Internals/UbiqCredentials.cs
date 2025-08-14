@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Org.BouncyCastle.X509;
-using UbiqSecurity.Idp;
+using UbiqSecurity.Internals.Idp;
 using static UbiqSecurity.Internals.PayloadEncryption;
 
 namespace UbiqSecurity.Internals
@@ -11,9 +11,9 @@ namespace UbiqSecurity.Internals
     internal class UbiqCredentials : IUbiqCredentials
     {
         // Environment variable names
-        private const string UBIQ_ACCESS_KEY_ID = nameof(UBIQ_ACCESS_KEY_ID);
-        private const string UBIQ_SECRET_SIGNING_KEY = nameof(UBIQ_SECRET_SIGNING_KEY);
-        private const string UBIQ_SECRET_CRYPTO_ACCESS_KEY = nameof(UBIQ_SECRET_CRYPTO_ACCESS_KEY);
+        private const string UbiqAccessKeyIdEnvironmentVariable = "UBIQ_ACCESS_KEY_ID";
+        private const string UbiqSigningKeyEnvironmentVariable = "UBIQ_SECRET_SIGNING_KEY";
+        private const string UbiqCryptoEnvironmentVariable = "UBIQ_SECRET_CRYPTO_ACCESS_KEY";
 
         private bool _initialized;
         private PayloadCertInfo _payloadCertInfo;
@@ -27,20 +27,23 @@ namespace UbiqSecurity.Internals
         {
             if (string.IsNullOrEmpty(accessKeyId))
             {
-                accessKeyId = Environment.GetEnvironmentVariable(UBIQ_ACCESS_KEY_ID);
+                accessKeyId = Environment.GetEnvironmentVariable(UbiqAccessKeyIdEnvironmentVariable);
             }
+
             AccessKeyId = accessKeyId;
 
             if (string.IsNullOrEmpty(secretSigningKey))
             {
-                secretSigningKey = Environment.GetEnvironmentVariable(UBIQ_SECRET_SIGNING_KEY);
+                secretSigningKey = Environment.GetEnvironmentVariable(UbiqSigningKeyEnvironmentVariable);
             }
+
             SecretSigningKey = secretSigningKey;
 
             if (string.IsNullOrEmpty(secretCryptoAccessKey))
             {
-                secretCryptoAccessKey = Environment.GetEnvironmentVariable(UBIQ_SECRET_CRYPTO_ACCESS_KEY);
+                secretCryptoAccessKey = Environment.GetEnvironmentVariable(UbiqCryptoEnvironmentVariable);
             }
+
             SecretCryptoAccessKey = secretCryptoAccessKey;
 
             Host = host;
@@ -138,7 +141,7 @@ namespace UbiqSecurity.Internals
             // generate csr + encrypted private key
             _payloadCertInfo = PayloadEncryption.GenerateCsr(SecretCryptoAccessKey);
 
-            // get auth token from IDP and exchange token+csr for apikey+payloadcert 
+            // get auth token from IDP and exchange token+csr for apikey+payloadcert
             await DoSsoAsync(ubiqConfiguration);
 
             _initialized = true;

@@ -1,5 +1,5 @@
 using Newtonsoft.Json;
-using UbiqSecurity.Model;
+using UbiqSecurity.Internals.WebService.Models;
 using UbiqSecurity.Tests.Fixtures;
 using UbiqSecurity.Tests.Helpers;
 
@@ -51,7 +51,7 @@ namespace UbiqSecurity.Tests
 
 			var ex = await Assert.ThrowsAsync<ArgumentException>(async () => await sut.EncryptAsync(datasetName, plainText));
 
-			Assert.Contains("Input length does not match FFS parameters.", ex.Message);
+			Assert.Contains("Input length is less than the dataset's minimum input length.", ex.Message);
 		}
 
 		[Fact]
@@ -64,7 +64,7 @@ namespace UbiqSecurity.Tests
 
 			var ex = await Assert.ThrowsAsync<ArgumentException>(async () => await sut.EncryptAsync(datasetName, plainText));
 
-			Assert.Contains("Input length does not match FFS parameters.", ex.Message);
+			Assert.Contains("Input length is greater than the dataset's maximum input length.", ex.Message);
 		}
 
 		[Fact]
