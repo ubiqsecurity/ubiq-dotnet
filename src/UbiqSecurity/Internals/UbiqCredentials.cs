@@ -10,10 +10,14 @@ namespace UbiqSecurity.Internals
 {
     internal class UbiqCredentials : IUbiqCredentials
     {
+        public const string DefaultHost = "api.ubiqsecurity.com";
+        public const string DefaultProfile = "default";
+
         // Environment variable names
-        private const string UbiqAccessKeyIdEnvironmentVariable = "UBIQ_ACCESS_KEY_ID";
-        private const string UbiqSigningKeyEnvironmentVariable = "UBIQ_SECRET_SIGNING_KEY";
-        private const string UbiqCryptoEnvironmentVariable = "UBIQ_SECRET_CRYPTO_ACCESS_KEY";
+        public const string AccessKeyIdEnvironmentVariable = "UBIQ_ACCESS_KEY_ID";
+        public const string SigningKeyEnvironmentVariable = "UBIQ_SECRET_SIGNING_KEY";
+        public const string CryptoEnvironmentVariable = "UBIQ_SECRET_CRYPTO_ACCESS_KEY";
+        public const string HostEnvironmentVariable = "UBIQ_SERVER";
 
         private bool _initialized;
         private PayloadCertInfo _payloadCertInfo;
@@ -23,66 +27,42 @@ namespace UbiqSecurity.Internals
         {
         }
 
+        [Obsolete("Use CryptographyBuilder instead")]
         internal UbiqCredentials(string accessKeyId, string secretSigningKey, string secretCryptoAccessKey, string host)
         {
             if (string.IsNullOrEmpty(accessKeyId))
             {
-                accessKeyId = Environment.GetEnvironmentVariable(UbiqAccessKeyIdEnvironmentVariable);
+                accessKeyId = Environment.GetEnvironmentVariable(AccessKeyIdEnvironmentVariable);
             }
 
             AccessKeyId = accessKeyId;
 
             if (string.IsNullOrEmpty(secretSigningKey))
             {
-                secretSigningKey = Environment.GetEnvironmentVariable(UbiqSigningKeyEnvironmentVariable);
+                secretSigningKey = Environment.GetEnvironmentVariable(SigningKeyEnvironmentVariable);
             }
 
             SecretSigningKey = secretSigningKey;
 
             if (string.IsNullOrEmpty(secretCryptoAccessKey))
             {
-                secretCryptoAccessKey = Environment.GetEnvironmentVariable(UbiqCryptoEnvironmentVariable);
+                secretCryptoAccessKey = Environment.GetEnvironmentVariable(CryptoEnvironmentVariable);
             }
 
             SecretCryptoAccessKey = secretCryptoAccessKey;
 
             Host = host;
-            ValidateCredentials();
+            Validate();
         }
 
+        [Obsolete("Use CryptographyBuilder instead")]
         internal UbiqCredentials(string pathname, string profile, string host)
         {
-            const string DEFAULT_SECTION = "default";
-            const string SERVER_KEY = "server";
-            const string ACCESS_KEY_ID = "access_key_id";
-            const string SECRET_SIGNING_KEY = "secret_signing_key";
-            const string SECRET_CRYPTO_ACCESS_KEY = "secret_crypto_access_key";
-            const string IDP_USERNAME_KEY = "idp_username";
-            const string IDP_PASSWORD_KEY = "idp_password";
+            LoadFromFile(pathname, profile);
 
-            if (string.IsNullOrEmpty(pathname))
-            {
-                // credentials file not specified, so look for ~/.ubiq/credentials
-                string homeDirectory = (Environment.OSVersion.Platform == PlatformID.Unix ||
-                        Environment.OSVersion.Platform == PlatformID.MacOSX)
-                    ? Environment.GetEnvironmentVariable("HOME")
-                    : Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
+            Host = Host ?? host;
 
-                if (Directory.Exists(homeDirectory))
-                {
-                    pathname = Path.Combine(homeDirectory, ".ubiq", "credentials");
-                }
-            }
-
-            var configParser = new ConfigParser(pathname);
-            AccessKeyId = configParser.GetValue(profile, ACCESS_KEY_ID) ?? configParser.GetValue(DEFAULT_SECTION, ACCESS_KEY_ID);
-            SecretSigningKey = configParser.GetValue(profile, SECRET_SIGNING_KEY) ?? configParser.GetValue(DEFAULT_SECTION, SECRET_SIGNING_KEY);
-            SecretCryptoAccessKey = configParser.GetValue(profile, SECRET_CRYPTO_ACCESS_KEY) ?? configParser.GetValue(DEFAULT_SECTION, SECRET_CRYPTO_ACCESS_KEY);
-            Host = configParser.GetValue(profile, SERVER_KEY) ?? configParser.GetValue(DEFAULT_SECTION, SERVER_KEY) ?? host;
-            IdpUsername = configParser.GetValue(profile, IDP_USERNAME_KEY) ?? configParser.GetValue(DEFAULT_SECTION, IDP_USERNAME_KEY);
-            IdpPassword = configParser.GetValue(profile, IDP_PASSWORD_KEY) ?? configParser.GetValue(DEFAULT_SECTION, IDP_PASSWORD_KEY);
-
-            ValidateCredentials();
+            Validate();
         }
 
         public string Host { get; set; }
@@ -97,7 +77,7 @@ namespace UbiqSecurity.Internals
 
         public string IdpPassword { get; set; }
 
-        public bool IsIdp => !string.IsNullOrEmpty(IdpUsername) && !string.IsNullOrEmpty(IdpPassword);
+        public bool IsIdp => !string.IsNullOrEmpty(IdpUsername);
 
         public string IdpPayloadCert => _payloadCertInfo.ApiCert;
 
@@ -120,6 +100,60 @@ namespace UbiqSecurity.Internals
             {
                 await DoSsoAsync(ubiqConfiguration);
             }
+        }
+
+        public void Validate()
+        {
+            if (string.IsNullOrEmpty(Host))
+            {
+                throw new InvalidOperationException($"Credentials data is incomplete (Host)");
+            }
+
+            if (IsIdp)
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(AccessKeyId) || string.IsNullOrEmpty(SecretSigningKey) || string.IsNullOrEmpty(SecretCryptoAccessKey))
+            {
+                throw new InvalidOperationException($"Credentials data is incomplete");
+            }
+        }
+
+        internal static string GetDefaultFileLocation(string file = "credentials")
+        {
+            // credentials file not specified, so look for ~/.ubiq/credentials
+            string homeDirectory = (Environment.OSVersion.Platform == PlatformID.Unix ||
+                    Environment.OSVersion.Platform == PlatformID.MacOSX)
+                ? Environment.GetEnvironmentVariable("HOME")
+                : Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
+
+            if (!Directory.Exists(homeDirectory))
+            {
+                return null;
+            }
+
+            var pathname = Path.Combine(homeDirectory, ".ubiq", file);
+
+            return pathname;
+        }
+
+        internal static UbiqCredentials CreateFromFile(string path, string profile = DefaultProfile, string host = DefaultHost)
+        {
+            var credentials = new UbiqCredentials();
+            credentials.LoadFromFile(path, profile, host);
+            return credentials;
+        }
+
+        internal static UbiqCredentials CreateFromEnvironmentVariables()
+        {
+            return new UbiqCredentials()
+            {
+                AccessKeyId = Environment.GetEnvironmentVariable(AccessKeyIdEnvironmentVariable),
+                SecretSigningKey = Environment.GetEnvironmentVariable(SigningKeyEnvironmentVariable),
+                SecretCryptoAccessKey = Environment.GetEnvironmentVariable(CryptoEnvironmentVariable),
+                Host = Environment.GetEnvironmentVariable(HostEnvironmentVariable),
+            };
         }
 
         internal async Task InitAsync(UbiqConfiguration ubiqConfiguration)
@@ -191,22 +225,33 @@ namespace UbiqSecurity.Internals
             }
         }
 
-        internal void ValidateCredentials()
+        internal void LoadFromFile(string pathname, string profile = DefaultProfile, string host = DefaultHost)
         {
-            if (string.IsNullOrEmpty(Host))
+            const string DEFAULT_SECTION = "default";
+            const string SERVER_KEY = "server";
+            const string ACCESS_KEY_ID = "access_key_id";
+            const string SECRET_SIGNING_KEY = "secret_signing_key";
+            const string SECRET_CRYPTO_ACCESS_KEY = "secret_crypto_access_key";
+            const string IDP_USERNAME_KEY = "idp_username";
+            const string IDP_PASSWORD_KEY = "idp_password";
+
+            if (string.IsNullOrEmpty(pathname))
             {
-                throw new InvalidOperationException($"Credentials data is incomplete (Host)");
+                pathname = GetDefaultFileLocation();
             }
 
-            if (IsIdp)
+            if (string.IsNullOrWhiteSpace(pathname))
             {
                 return;
             }
 
-            if (string.IsNullOrEmpty(AccessKeyId) || string.IsNullOrEmpty(SecretSigningKey) || string.IsNullOrEmpty(SecretCryptoAccessKey))
-            {
-                throw new InvalidOperationException($"Credentials data is incomplete");
-            }
+            var configParser = new ConfigParser(pathname);
+            AccessKeyId = configParser.GetValue(profile, ACCESS_KEY_ID) ?? configParser.GetValue(DEFAULT_SECTION, ACCESS_KEY_ID);
+            SecretSigningKey = configParser.GetValue(profile, SECRET_SIGNING_KEY) ?? configParser.GetValue(DEFAULT_SECTION, SECRET_SIGNING_KEY);
+            SecretCryptoAccessKey = configParser.GetValue(profile, SECRET_CRYPTO_ACCESS_KEY) ?? configParser.GetValue(DEFAULT_SECTION, SECRET_CRYPTO_ACCESS_KEY);
+            Host = configParser.GetValue(profile, SERVER_KEY) ?? configParser.GetValue(DEFAULT_SECTION, SERVER_KEY) ?? host;
+            IdpUsername = configParser.GetValue(profile, IDP_USERNAME_KEY) ?? configParser.GetValue(DEFAULT_SECTION, IDP_USERNAME_KEY);
+            IdpPassword = configParser.GetValue(profile, IDP_PASSWORD_KEY) ?? configParser.GetValue(DEFAULT_SECTION, IDP_PASSWORD_KEY);
         }
     }
 }

@@ -3,3 +3,9 @@ UbiqSecurity.Config.IdpConfig.SelfSignIdentity.set -> void
 UbiqSecurity.Config.IdpConfig.SelfSignKey.get -> string
 UbiqSecurity.Config.IdpConfig.SelfSignKey.set -> void
 UbiqSecurity.Config.IdpProvider.SelfSigned = 2 -> UbiqSecurity.Config.IdpProvider
+UbiqSecurity.CryptographyBuilder.WithConfigFromDefaultFileLocation() -> UbiqSecurity.CryptographyBuilder
+UbiqSecurity.CryptographyBuilder.WithConfigFromFile(string jsonPath) -> UbiqSecurity.CryptographyBuilder
+UbiqSecurity.CryptographyBuilder.WithCredentialsFromDefaultFileLocation(string profile = "default") -> UbiqSecurity.CryptographyBuilder
+UbiqSecurity.CryptographyBuilder.WithCredentialsFromEnvironmentVariables() -> UbiqSecurity.CryptographyBuilder
+UbiqSecurity.CryptographyBuilder.WithCredentialsFromFile(string pathToCredentialsFile, string profile = "default") -> UbiqSecurity.CryptographyBuilder
+UbiqSecurity.IUbiqCredentials.Validate() -> void

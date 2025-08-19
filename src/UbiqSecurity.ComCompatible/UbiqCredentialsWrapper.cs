@@ -30,5 +30,9 @@ namespace UbiqSecurity.ComCompatible
         {
             throw new System.NotImplementedException();
         }
+
+        public void Validate()
+        {
+        }
     }
 }

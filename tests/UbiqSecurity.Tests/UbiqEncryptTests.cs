@@ -1,11 +1,13 @@
-﻿namespace UbiqSecurity.Tests
+﻿using UbiqSecurity.Internals;
+
+namespace UbiqSecurity.Tests
 {
 	public class UbiqEncryptTests
 	{
 		[Fact]
 		public async Task EncryptAsync_ValidInput_ReturnsEncryptedBytes()
 		{
-			var credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, "ubiq-dotnet");
+			var credentials = UbiqCredentials.CreateFromFile(string.Empty, "ubiq-dotnet");
 
 			byte[] originalBytes = await File.ReadAllBytesAsync("UbiqSecurity.Tests.dll");
 

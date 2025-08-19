@@ -1,17 +1,15 @@
-using UbiqSecurity.Internals;
-
 namespace UbiqSecurity.Tests.Fixtures
 {
     public class UbiqOktaStructuredEncryptDecryptFixture : IDisposable
     {
         public UbiqOktaStructuredEncryptDecryptFixture()
         {
-            UbiqCredentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, "okta-idp");
+            UbiqCredentials = UbiqSecurity.Internals.UbiqCredentials.CreateFromFile(string.Empty, "okta-idp");
 
             UbiqStructuredEncryptDecrypt = CryptographyBuilder
                                                 .Create()
                                                 .WithCredentials(UbiqCredentials)
-                                                .WithConfig("./okta.json")
+                                                .WithConfigFromFile("./okta.json")
                                                 .BuildStructured();
         }
 

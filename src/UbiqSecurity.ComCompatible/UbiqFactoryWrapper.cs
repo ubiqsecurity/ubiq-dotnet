@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using UbiqSecurity.Internals;
 
 namespace UbiqSecurity.ComCompatible
 {
@@ -42,7 +43,8 @@ namespace UbiqSecurity.ComCompatible
         /// <returns></returns>
         public UbiqCredentialsWrapper ReadCredentialsFromFile(string pathname, string profile)
         {
-            var creds = UbiqFactory.ReadCredentialsFromFile(pathname, profile);
+            var creds = UbiqCredentials.CreateFromFile(pathname, profile);
+            creds.Validate();
 
             return new UbiqCredentialsWrapper
             {
@@ -54,21 +56,45 @@ namespace UbiqSecurity.ComCompatible
 
         public UbiqEncryptWrapper CreateEncrypt(UbiqCredentialsWrapper ubiqCredentials, int usesRequested)
         {
-            var creds = UbiqFactory.CreateCredentials(ubiqCredentials.AccessKeyId, ubiqCredentials.SecretSigningKey, ubiqCredentials.SecretCryptoAccessKey);
+            var creds = new UbiqCredentials()
+            {
+                AccessKeyId = ubiqCredentials.AccessKeyId,
+                SecretCryptoAccessKey = ubiqCredentials.SecretCryptoAccessKey,
+                SecretSigningKey = ubiqCredentials.SecretSigningKey,
+                Host = ubiqCredentials.Host,
+                IdpPassword = ubiqCredentials.IdpPassword,
+                IdpUsername = ubiqCredentials.IdpUsername,
+            };
 
             return new UbiqEncryptWrapper(creds, usesRequested, new UbiqConfiguration());
         }
 
         public UbiqDecryptWrapper CreateDecrypt(UbiqCredentialsWrapper ubiqCredentials)
         {
-            var creds = UbiqFactory.CreateCredentials(ubiqCredentials.AccessKeyId, ubiqCredentials.SecretSigningKey, ubiqCredentials.SecretCryptoAccessKey);
+            var creds = new UbiqCredentials()
+            {
+                AccessKeyId = ubiqCredentials.AccessKeyId,
+                SecretCryptoAccessKey = ubiqCredentials.SecretCryptoAccessKey,
+                SecretSigningKey = ubiqCredentials.SecretSigningKey,
+                Host = ubiqCredentials.Host,
+                IdpPassword = ubiqCredentials.IdpPassword,
+                IdpUsername = ubiqCredentials.IdpUsername,
+            };
 
             return new UbiqDecryptWrapper(creds, new UbiqConfiguration());
         }
 
         public UbiqFpeEncryptDecryptWrapper CreateFpeEncryptDecrypt(UbiqCredentialsWrapper ubiqCredentials)
         {
-            var creds = UbiqFactory.CreateCredentials(ubiqCredentials.AccessKeyId, ubiqCredentials.SecretSigningKey, ubiqCredentials.SecretCryptoAccessKey);
+            var creds = new UbiqCredentials()
+            {
+                AccessKeyId = ubiqCredentials.AccessKeyId,
+                SecretCryptoAccessKey = ubiqCredentials.SecretCryptoAccessKey,
+                SecretSigningKey = ubiqCredentials.SecretSigningKey,
+                Host = ubiqCredentials.Host,
+                IdpPassword = ubiqCredentials.IdpPassword,
+                IdpUsername = ubiqCredentials.IdpUsername,
+            };
 
             return new UbiqFpeEncryptDecryptWrapper(creds, new UbiqConfiguration());
         }

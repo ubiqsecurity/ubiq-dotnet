@@ -4,7 +4,7 @@ namespace UbiqSecurity.Tests.Fixtures
     {
         public UbiqStructuredEncryptDecryptFixture()
         {
-            UbiqCredentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, Environment.GetEnvironmentVariable("JsonTestProfile") ?? "default");
+            UbiqCredentials = UbiqSecurity.Internals.UbiqCredentials.CreateFromFile(string.Empty, Environment.GetEnvironmentVariable("JsonTestProfile") ?? "default");
             UbiqStructuredEncryptDecrypt = CryptographyBuilder.Create().WithCredentials(UbiqCredentials).BuildStructured();
         }
 

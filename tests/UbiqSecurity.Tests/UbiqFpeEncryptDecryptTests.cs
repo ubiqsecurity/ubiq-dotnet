@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using UbiqSecurity.Internals;
 using UbiqSecurity.Internals.WebService.Models;
 using UbiqSecurity.Tests.Fixtures;
 using UbiqSecurity.Tests.Helpers;
@@ -108,7 +109,7 @@ namespace UbiqSecurity.Tests
 		public void GetCopyOfUsage_NoBillingEventInQueue_ReturnsEmptyUsageArray()
 		{
 			// purposefully not re-using the shared test fixture as we want to count billing usage w/o interference from other tests
-			var sut = new UbiqFPEEncryptDecrypt(UbiqFactory.ReadCredentialsFromFile(string.Empty));
+			var sut = new UbiqFPEEncryptDecrypt(UbiqCredentials.CreateFromFile(string.Empty));
 
 			var result = sut.GetCopyOfUsage();
 			var request = JsonConvert.DeserializeObject<TrackingEventsRequest>(result);
@@ -120,7 +121,7 @@ namespace UbiqSecurity.Tests
 		public async Task GetCopyOfUsage_MultipleEncryptDecrypts_ReturnsPopulatedUsageArray()
 		{
 			// purposefully not re-using the shared test fixture as we want to count billing usage w/o interference from other tests
-			var sut = new UbiqFPEEncryptDecrypt(UbiqFactory.ReadCredentialsFromFile(string.Empty));
+			var sut = new UbiqFPEEncryptDecrypt(UbiqCredentials.CreateFromFile(string.Empty));
 
 			var cipherText = await sut.EncryptAsync("ALPHANUM_SSN", ";0123456-789ABCDEF|");
 			var plainText = await sut.DecryptAsync("ALPHANUM_SSN", cipherText);
