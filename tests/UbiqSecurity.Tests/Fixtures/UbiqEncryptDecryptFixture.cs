@@ -4,7 +4,7 @@ namespace UbiqSecurity.Tests.Fixtures
 	{
 		public UbiqEncryptDecryptFixture()
 		{
-			UbiqCredentials = UbiqFactory.ReadCredentialsFromFile(string.Empty);
+			UbiqCredentials = UbiqSecurity.Internals.UbiqCredentials.CreateFromFile(string.Empty);
             UbiqEncrypt = new UbiqEncrypt(UbiqCredentials, 1);
             UbiqDecrypt = new UbiqDecrypt(UbiqCredentials);
         }
