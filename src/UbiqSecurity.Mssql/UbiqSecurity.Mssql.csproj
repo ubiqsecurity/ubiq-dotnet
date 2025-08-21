@@ -42,6 +42,11 @@
     <Compile Include="UbiqSql.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">
     <Exec Command="certutil -hashfile $(TargetPath) SHA512 | findstr /v &quot;hash&quot; &gt; $(TargetDir)\sha512.txt" />
