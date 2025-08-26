@@ -117,13 +117,18 @@ namespace UbiqSecurity
 
         public UbiqEncrypt BuildUnstructuredEncrypt()
         {
+            return BuildUnstructuredEncrypt(1);
+        }
+
+        public UbiqEncrypt BuildUnstructuredEncrypt(int uses)
+        {
             _credentials = _credentials ?? UbiqCredentials.CreateFromFile(string.Empty);
             _credentials.Validate();
 
             var webService = new UbiqWebService(_credentials, _configuration);
             var billingEventsManager = new BillingEventsManager(_configuration, webService);
 
-            return new UbiqEncrypt(_credentials, 1, webService, billingEventsManager);
+            return new UbiqEncrypt(_credentials, uses, webService, billingEventsManager);
         }
 
         public UbiqDecrypt BuildUnstructuredDecrypt()
