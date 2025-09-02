@@ -1,3 +1,5 @@
+UbiqSecurity.Config.EventReportingConfig.Enabled.get -> bool
+UbiqSecurity.Config.EventReportingConfig.Enabled.set -> void
 UbiqSecurity.Config.IdpConfig.SelfSignIdentity.get -> string
 UbiqSecurity.Config.IdpConfig.SelfSignIdentity.set -> void
 UbiqSecurity.Config.IdpConfig.SelfSignKey.get -> string
