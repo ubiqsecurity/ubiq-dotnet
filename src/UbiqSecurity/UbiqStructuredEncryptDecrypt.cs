@@ -107,7 +107,7 @@ namespace UbiqSecurity
                 UserSuppliedTweak = null,
             };
 
-            var pipeline = new DecryptionPipeline(dataset);
+            var pipeline = new NullDecryptionPipeline(dataset);
 
             var result = await pipeline.InvokeAsync(operationContext);
 
