@@ -26,6 +26,34 @@ namespace UbiqSecurity.Mssql
         }
 
         [SqlFunction(DataAccess = DataAccessKind.Read, SystemDataAccess = SystemDataAccessKind.Read)]
+        public static string Encrypt_Nop(string datasetName, string plainText)
+        {
+            if (string.IsNullOrEmpty(plainText))
+            {
+                return plainText;
+            }
+
+            var ubiqFpeEncryptDecrypt = GetEncryptDecrypt();
+
+            return plainText;
+        }
+
+        [SqlFunction(DataAccess = DataAccessKind.Read, SystemDataAccess = SystemDataAccessKind.Read)]
+        public static string Encrypt_NoPipeline(string datasetName, string plainText)
+        {
+            if (string.IsNullOrEmpty(plainText))
+            {
+                return plainText;
+            }
+
+            var ubiqFpeEncryptDecrypt = GetEncryptDecrypt();
+
+            var task = Task.Run(async () => await ubiqFpeEncryptDecrypt.NullEncryptAsync(datasetName, plainText));
+
+            return task.Result;
+        }
+
+        [SqlFunction(DataAccess = DataAccessKind.Read, SystemDataAccess = SystemDataAccessKind.Read)]
         public static string Decrypt(string datasetName, string cipherText)
         {
             if (string.IsNullOrEmpty(cipherText))
@@ -36,6 +64,34 @@ namespace UbiqSecurity.Mssql
             var ubiqFpeEncryptDecrypt = GetEncryptDecrypt();
             
             var task = Task.Run(async () => await ubiqFpeEncryptDecrypt.DecryptAsync(datasetName, cipherText));
+
+            return task.Result;
+        }
+
+        [SqlFunction(DataAccess = DataAccessKind.Read, SystemDataAccess = SystemDataAccessKind.Read)]
+        public static string Decrypt_Nop(string datasetName, string cipherText)
+        {
+            if (string.IsNullOrEmpty(cipherText))
+            {
+                return cipherText;
+            }
+
+            var ubiqFpeEncryptDecrypt = GetEncryptDecrypt();
+
+            return cipherText;
+        }
+
+        [SqlFunction(DataAccess = DataAccessKind.Read, SystemDataAccess = SystemDataAccessKind.Read)]
+        public static string Decrypt_NoPipeline(string datasetName, string cipherText)
+        {
+            if (string.IsNullOrEmpty(cipherText))
+            {
+                return cipherText;
+            }
+
+            var ubiqFpeEncryptDecrypt = GetEncryptDecrypt();
+
+            var task = Task.Run(async () => await ubiqFpeEncryptDecrypt.NullDecryptAsync(datasetName, cipherText));
 
             return task.Result;
         }

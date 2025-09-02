@@ -92,6 +92,56 @@ namespace UbiqSecurity
             return await DecryptPipelineAsync(dataset, _ffxCache, cipherText, tweak);
         }
 
+        public async Task<string> NullDecryptAsync(string datasetName, string cipherText)
+        {
+            var dataset = await _datasetCache.GetAsync(datasetName);
+
+            var operationContext = new OperationContext()
+            {
+                CurrentValue = cipherText,
+                Dataset = dataset,
+                IsEncrypt = false,
+                FfxCache = _ffxCache,
+                KeyNumber = null,
+                OriginalValue = cipherText,
+                UserSuppliedTweak = null,
+            };
+
+            var pipeline = new DecryptionPipeline(dataset);
+
+            var result = await pipeline.InvokeAsync(operationContext);
+
+            // create the billing record
+            await _billingEvents.AddBillingEventAsync(_ubiqCredentials.AccessKeyId, dataset.Name, string.Empty, BillingAction.Decrypt, DatasetType.Structured, operationContext.KeyNumber.Value, 1);
+
+            return result;
+        }
+
+        public async Task<string> NullEncryptAsync(string datasetName, string plainText)
+        {
+            var dataset = await _datasetCache.GetAsync(datasetName);
+
+            var operationContext = new OperationContext()
+            {
+                CurrentValue = plainText,
+                Dataset = dataset,
+                IsEncrypt = true,
+                FfxCache = _ffxCache,
+                KeyNumber = null,
+                OriginalValue = plainText,
+                UserSuppliedTweak = null,
+            };
+
+            var pipeline = new NullEncryptionPipeline(dataset);
+
+            var result = await pipeline.InvokeAsync(operationContext);
+
+            // create the billing record
+            await _billingEvents.AddBillingEventAsync(_ubiqCredentials.AccessKeyId, dataset.Name, string.Empty, BillingAction.Encrypt, DatasetType.Structured, operationContext.KeyNumber ?? 0, 1);
+
+            return result;
+        }
+
         public async Task<byte[]> EncryptAsync(string datasetName, byte[] plainBytes)
         {
             return await EncryptAsync(datasetName, plainBytes, null);
