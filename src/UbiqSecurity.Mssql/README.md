@@ -31,7 +31,7 @@ Pre-requisites: dotnet framework 4.8
 {
   "idp": {
     "provider": "ubiq",
-    "ubiq_customer_id": ", // Set to the GUID part of the Ubiq SCIM URL that you copied during the IDP Integration Setup above
+    "ubiq_customer_id": "", // Set to the GUID part of the Ubiq SCIM URL that you copied during the IDP Integration Setup above
     "self_sign_key": "" // Set to the value of the Private Key from the IDP Integration Setup above
   }
 }
@@ -42,10 +42,17 @@ Pre-requisites: dotnet framework 4.8
 ```sql
     EXEC sp_configure 'show advanced options', 1;
     EXEC sp_configure 'clr enabled', 1;
+    RECONFIGURE;
+
+    GO;
 
     ALTER DATABASE your_database_name SET TRUSTWORTHY ON;
+
+    GO;
     
     CREATE ASSEMBLY ubiq FROM 'C:\Ubiq\UbiqSecurity.Mssql.dll' WITH PERMISSION_SET = UNSAFE;
+
+    GO;
  
     CREATE FUNCTION encrypt
     (
@@ -55,6 +62,8 @@ Pre-requisites: dotnet framework 4.8
     RETURNS nvarchar(100)
     AS
     EXTERNAL NAME ubiq.[UbiqSecurity.Mssql.UbiqSql].Encrypt;
+
+    GO;
 
     CREATE FUNCTION decrypt
     (

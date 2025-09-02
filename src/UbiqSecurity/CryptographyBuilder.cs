@@ -106,7 +106,11 @@ namespace UbiqSecurity
             _credentials.Validate();
 
             var webService = new UbiqWebService(_credentials, _configuration);
-            var billingEventsManager = new BillingEventsManager(_configuration, webService);
+
+            var billingEventsManager = _configuration.EventReporting.Enabled ?
+                                            (IBillingEventsManager)new BillingEventsManager(_configuration, webService) :
+                                            (IBillingEventsManager)new NullBillingEventsManager();
+
             var ffxCache = new FfxCache(webService, _configuration, _credentials);
             var datasetCache = new DatasetCache(webService, _configuration);
 
@@ -126,7 +130,9 @@ namespace UbiqSecurity
             _credentials.Validate();
 
             var webService = new UbiqWebService(_credentials, _configuration);
-            var billingEventsManager = new BillingEventsManager(_configuration, webService);
+            var billingEventsManager = _configuration.EventReporting.Enabled ?
+                                            (IBillingEventsManager)new BillingEventsManager(_configuration, webService) :
+                                            (IBillingEventsManager)new NullBillingEventsManager();
 
             return new UbiqEncrypt(_credentials, uses, webService, billingEventsManager);
         }
@@ -137,7 +143,10 @@ namespace UbiqSecurity
             _credentials.Validate();
 
             var webService = new UbiqWebService(_credentials, _configuration);
-            var billingEventsManager = new BillingEventsManager(_configuration, webService);
+            var billingEventsManager = _configuration.EventReporting.Enabled ?
+                                            (IBillingEventsManager)new BillingEventsManager(_configuration, webService) :
+                                            (IBillingEventsManager)new NullBillingEventsManager();
+
             var unstructuredCache = new UnstructuredKeyCache(webService, _configuration, _credentials);
 
             return new UbiqDecrypt(_credentials, webService, billingEventsManager, unstructuredCache);

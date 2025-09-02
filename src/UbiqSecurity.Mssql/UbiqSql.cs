@@ -13,6 +13,11 @@ namespace UbiqSecurity.Mssql
         [SqlFunction(DataAccess = DataAccessKind.Read, SystemDataAccess = SystemDataAccessKind.Read)]
         public static string Encrypt(string datasetName, string plainText)
         {
+            if (string.IsNullOrEmpty(plainText))
+            {
+                return plainText;
+            }
+
             var ubiqFpeEncryptDecrypt = GetEncryptDecrypt();
 
             var task = Task.Run(async () => await ubiqFpeEncryptDecrypt.EncryptAsync(datasetName, plainText));
@@ -23,6 +28,11 @@ namespace UbiqSecurity.Mssql
         [SqlFunction(DataAccess = DataAccessKind.Read, SystemDataAccess = SystemDataAccessKind.Read)]
         public static string Decrypt(string datasetName, string cipherText)
         {
+            if (string.IsNullOrEmpty(cipherText))
+            {
+                return cipherText;
+            }
+
             var ubiqFpeEncryptDecrypt = GetEncryptDecrypt();
             
             var task = Task.Run(async () => await ubiqFpeEncryptDecrypt.DecryptAsync(datasetName, cipherText));
@@ -80,6 +90,7 @@ namespace UbiqSecurity.Mssql
                                                 .WithConfigFromFile(Path.Combine(currentDirectory, "config.json"))
                                                 .WithConfig(x =>
                                                 {
+                                                    // x.EventReporting.Enabled = false;
                                                     x.Idp.SelfSignIdentity = userName;
                                                 })
                                                 .BuildStructured();

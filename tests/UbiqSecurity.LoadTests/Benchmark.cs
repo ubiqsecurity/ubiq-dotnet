@@ -7,14 +7,13 @@ namespace UbiqSecurity.LoadTests
     {
         private readonly Stopwatch _stopwatch = new();
         private readonly UbiqStructuredEncryptDecrypt _fpeEncryptDecrypt = null;
+        private readonly HashSet<string> _warmDatasets = new();
 
-        private bool _isWarm = false;
         private Timings _timings = null;
 
         public Benchmark(UbiqStructuredEncryptDecrypt fpeEncryptDecrypt)
         {
             _fpeEncryptDecrypt = fpeEncryptDecrypt;
-
         }
 
         public async Task<Timings> RunAsync(IEnumerable<string> jsonDataPaths)
@@ -40,7 +39,7 @@ namespace UbiqSecurity.LoadTests
                         {
                             testData = serializer.Deserialize<LoadTestData>(jsonReader);
 
-                            if (!_isWarm)
+                            if (!_warmDatasets.Contains(testData.Dataset))
                             {
                                 await WarmupIterationAsync(testData);
                             }
@@ -122,7 +121,7 @@ namespace UbiqSecurity.LoadTests
                 Console.WriteLine($"Error plainText {testData.CipherText} expected");
             }
 
-            _isWarm = true;
+            _warmDatasets.Add(testData.Dataset);
         }
 
         public void Dispose()
