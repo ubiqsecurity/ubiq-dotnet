@@ -9,3 +9,6 @@ packages
 .vs/
 artifacts
 TestResults/
+BenchmarkDotNet.Artifacts/
+tests/UbiqSecurity.Profile/
+tests/UbiqSecurity.Benchmark/

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using UbiqSecurity.Internals.Structured.Pipeline.Operations;
 using UbiqSecurity.Internals.WebService.Models;
@@ -10,6 +9,7 @@ namespace UbiqSecurity.Internals.Structured.Pipeline
     {
         private static readonly IEnumerable<IOperation> BaseOperations = new List<IOperation>()
         {
+            new PadInputOperation(),
             new EncryptOperation(),
             new ConvertRadixOperation(),
             new EncodeKeyNumberOperation(),

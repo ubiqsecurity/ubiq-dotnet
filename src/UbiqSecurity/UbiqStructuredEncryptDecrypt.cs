@@ -13,7 +13,7 @@ using UbiqSecurity.Internals.WebService.Models;
 
 namespace UbiqSecurity
 {
-    public class UbiqStructuredEncryptDecrypt : IDisposable
+    public partial class UbiqStructuredEncryptDecrypt : IDisposable
     {
         private readonly IUbiqCredentials _ubiqCredentials;
 
