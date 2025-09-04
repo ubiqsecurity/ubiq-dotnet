@@ -26,17 +26,18 @@ namespace UbiqSecurity.Internals.Structured.Helpers
             }
 
             char[] chars = value.ToCharArray();
-            int m = chars.Length - 1;
+            bool isNegative = chars[0] == '-';
+            int m = chars.Length - (isNegative ? 2 : 1);
             int x;
             long result = 0;
 
-            for (int i = 0; i < chars.Length; i++)
+            for (int i = isNegative ? 1 : 0; i < chars.Length; i++)
             {
                 x = Alphabet.IndexOf(chars[i]);
                 result += x * (long)Math.Pow(fromBase, m--);
             }
 
-            return result;
+            return isNegative ? -result : result;
         }
 
         public static string ToString(long value, int toBase)

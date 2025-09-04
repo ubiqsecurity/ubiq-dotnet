@@ -1,6 +1,10 @@
 UbiqSecurity.UbiqStructuredEncryptDecrypt.DecryptAsync(string datasetName, System.DateTime cipherDateTime) -> System.Threading.Tasks.Task<System.DateTime>
 UbiqSecurity.UbiqStructuredEncryptDecrypt.DecryptAsync(string datasetName, System.DateTime cipherDateTime, byte[] tweak) -> System.Threading.Tasks.Task<System.DateTime>
+UbiqSecurity.UbiqStructuredEncryptDecrypt.EncryptAsync(string datasetName, long plainInteger) -> System.Threading.Tasks.Task<long>
+UbiqSecurity.UbiqStructuredEncryptDecrypt.EncryptAsync(string datasetName, long plainInteger, byte[] tweak) -> System.Threading.Tasks.Task<long>
 UbiqSecurity.UbiqStructuredEncryptDecrypt.EncryptAsync(string datasetName, System.DateTime plainDateTime) -> System.Threading.Tasks.Task<System.DateTime>
 UbiqSecurity.UbiqStructuredEncryptDecrypt.EncryptAsync(string datasetName, System.DateTime plainDateTime, byte[] tweak) -> System.Threading.Tasks.Task<System.DateTime>
+UbiqSecurity.UbiqStructuredEncryptDecrypt.EncryptForSearchAsync(string datasetName, long plainInteger) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<long>>
+UbiqSecurity.UbiqStructuredEncryptDecrypt.EncryptForSearchAsync(string datasetName, long plainInteger, byte[] tweak) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<long>>
 UbiqSecurity.UbiqStructuredEncryptDecrypt.EncryptForSearchAsync(string datasetName, System.DateTime plainDateTime) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<System.DateTime>>
 UbiqSecurity.UbiqStructuredEncryptDecrypt.EncryptForSearchAsync(string datasetName, System.DateTime plainDateTime, byte[] tweak) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<System.DateTime>>
