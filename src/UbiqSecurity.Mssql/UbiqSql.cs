@@ -25,6 +25,21 @@ namespace UbiqSecurity.Mssql
             return task.Result;
         }
 
+        [SqlFunction(DataAccess = DataAccessKind.None, SystemDataAccess = SystemDataAccessKind.None, IsDeterministic = true, IsPrecise = true)]
+        public static string EncryptDeterministic(string datasetName, string plainText)
+        {
+            if (string.IsNullOrEmpty(plainText))
+            {
+                return plainText;
+            }
+
+            var ubiqFpeEncryptDecrypt = GetEncryptDecryptDeterministic();
+
+            var task = Task.Run(async () => await ubiqFpeEncryptDecrypt.EncryptAsync(datasetName, plainText));
+
+            return task.Result;
+        }
+
         [SqlFunction(DataAccess = DataAccessKind.Read, SystemDataAccess = SystemDataAccessKind.Read)]
         public static string Encrypt_Nop(string datasetName, string plainText)
         {
@@ -135,6 +150,37 @@ namespace UbiqSecurity.Mssql
             }
 
             var currentDirectory = GetImportDirectory();
+
+            var encryptDecrypt = CryptographyBuilder
+                                                .Create()
+                                                .WithCredentialsFromFile(Path.Combine(currentDirectory, "credentials"))
+                                                .WithCredentials(x =>
+                                                {
+                                                    x.IdpUsername = userName;
+                                                })
+                                                .WithConfigFromFile(Path.Combine(currentDirectory, "config.json"))
+                                                .WithConfig(x =>
+                                                {
+                                                    // x.EventReporting.Enabled = false;
+                                                    x.Idp.SelfSignIdentity = userName;
+                                                })
+                                                .BuildStructured();
+
+            EncryptDecryptObjects.TryAdd(userName, encryptDecrypt);
+
+            return encryptDecrypt;
+        }
+
+        private static UbiqStructuredEncryptDecrypt GetEncryptDecryptDeterministic()
+        {
+            var userName = "ors_malaahe";
+
+            if (EncryptDecryptObjects.ContainsKey(userName) && EncryptDecryptObjects.TryGetValue(userName, out var result))
+            {
+                return result;
+            }
+
+            var currentDirectory = "C:\\Ubiq\\release 250807\\";
 
             var encryptDecrypt = CryptographyBuilder
                                                 .Create()

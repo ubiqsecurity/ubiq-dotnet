@@ -33,10 +33,6 @@
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="UbiqSecurity, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\UbiqSecurity\bin\Release\net481\UbiqSecurity.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="UbiqSql.cs" />
@@ -46,6 +42,12 @@
     <None Include="README.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UbiqSecurity\UbiqSecurity.csproj">
+      <Project>{1caaeebb-9bb4-4549-b05b-83e0d0f7e9fd}</Project>
+      <Name>UbiqSecurity</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">

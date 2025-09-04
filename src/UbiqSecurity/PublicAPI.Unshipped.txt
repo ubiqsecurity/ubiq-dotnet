@@ -12,7 +12,5 @@ UbiqSecurity.CryptographyBuilder.WithCredentialsFromDefaultFileLocation(string p
 UbiqSecurity.CryptographyBuilder.WithCredentialsFromEnvironmentVariables() -> UbiqSecurity.CryptographyBuilder
 UbiqSecurity.CryptographyBuilder.WithCredentialsFromFile(string pathToCredentialsFile, string profile = "default") -> UbiqSecurity.CryptographyBuilder
 UbiqSecurity.IUbiqCredentials.Validate() -> void
-UbiqSecurity.UbiqStructuredEncryptDecrypt.EncryptAsync(string datasetName, System.DateTime plainDateTime) -> System.Threading.Tasks.Task<System.DateTime>
-UbiqSecurity.UbiqStructuredEncryptDecrypt.EncryptAsync(string datasetName, System.DateTime plainDateTime, byte[] tweak) -> System.Threading.Tasks.Task<System.DateTime>
 UbiqSecurity.UbiqStructuredEncryptDecrypt.NullDecryptAsync(string datasetName, string cipherText) -> System.Threading.Tasks.Task<string>
 UbiqSecurity.UbiqStructuredEncryptDecrypt.NullEncryptAsync(string datasetName, string plainText) -> System.Threading.Tasks.Task<string>
