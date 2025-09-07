@@ -1,3 +1,5 @@
+UbiqSecurity.UbiqStructuredEncryptDecrypt.DecryptAsync(string datasetName, int cipherInteger) -> System.Threading.Tasks.Task<int>
+UbiqSecurity.UbiqStructuredEncryptDecrypt.DecryptAsync(string datasetName, int cipherInteger, byte[] tweak) -> System.Threading.Tasks.Task<int>
 UbiqSecurity.UbiqStructuredEncryptDecrypt.DecryptAsync(string datasetName, long cipherInteger) -> System.Threading.Tasks.Task<long>
 UbiqSecurity.UbiqStructuredEncryptDecrypt.DecryptAsync(string datasetName, long cipherInteger, byte[] tweak) -> System.Threading.Tasks.Task<long>
 UbiqSecurity.UbiqStructuredEncryptDecrypt.DecryptAsync(string datasetName, System.DateTime cipherDateTime) -> System.Threading.Tasks.Task<System.DateTime>

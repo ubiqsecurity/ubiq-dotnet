@@ -8,23 +8,28 @@ namespace UbiqSecurity
 {
     public partial class UbiqStructuredEncryptDecrypt
     {
-        public async Task<long> DecryptAsync(string datasetName, long cipherInteger)
+        public async Task<int> DecryptAsync(string datasetName, int cipherInteger)
         {
             return await DecryptAsync(datasetName, cipherInteger, null);
         }
 
-        public async Task<long> DecryptAsync(string datasetName, long cipherInteger, byte[] tweak)
+        public async Task<int> DecryptAsync(string datasetName, int cipherInteger, byte[] tweak)
         {
             var dataset = await _datasetCache.GetAsync(datasetName);
 
             return await DecryptIntegerPipelineAsync(dataset, cipherInteger, tweak);
         }
 
-        private async Task<long> DecryptIntegerPipelineAsync(FfsRecord dataset, long cipherInteger, byte[] tweak)
+        private async Task<int> DecryptIntegerPipelineAsync(FfsRecord dataset, int cipherInteger, byte[] tweak)
         {
             if (dataset.DataType != "integer")
             {
                 throw new InvalidOperationException($"Dataset '{dataset.Name}' is not a 'integer' DataType");
+            }
+
+            if (dataset.DataSize != 32)
+            {
+                throw new InvalidOperationException($"Dataset '{dataset.Name}' does not have a 32-bit DataSize");
             }
 
             bool isNegative = cipherInteger < 0;
@@ -44,7 +49,7 @@ namespace UbiqSecurity
             // ciphertext is base 14, but plaintext will be base 10
             var plainText = await DecryptPipelineAsync(dataset, _ffxCache, cipherText, tweak);
 
-            var plainInteger = long.Parse(plainText, CultureInfo.InvariantCulture);
+            var plainInteger = int.Parse(plainText, CultureInfo.InvariantCulture);
 
             return plainInteger;
         }

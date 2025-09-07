@@ -71,7 +71,7 @@ namespace UbiqSecurity
             }
 
             // convert to string and pad to 8 characters after the negative sign
-            var plainText = plainInteger.ToString("D8", CultureInfo.InvariantCulture);
+            var plainText = plainInteger.ToString("D16", CultureInfo.InvariantCulture);
 
             // encrypted output will contain base14 characters (0-9a-d)
             var cipherText = await EncryptPipelineAsync(dataset, _ffxCache, plainText, tweak);
