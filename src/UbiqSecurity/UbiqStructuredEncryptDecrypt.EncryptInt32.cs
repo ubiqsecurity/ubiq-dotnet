@@ -13,34 +13,30 @@ namespace UbiqSecurity
         private const long MaxInt32Input = 99999999;
         private const long MinInt32Input = -99999999;
 
-        // +/- 16 digits
-        private const long MaxInt64Input = 9999999999999999;
-        private const long MinInt64Input = -9999999999999999;
-
-        public async Task<long> EncryptAsync(string datasetName, long plainInteger)
+        public async Task<int> EncryptAsync(string datasetName, int plainInteger)
         {
             return await EncryptAsync(datasetName, plainInteger, null);
         }
 
-        public async Task<long> EncryptAsync(string datasetName, long plainInteger, byte[] tweak)
+        public async Task<int> EncryptAsync(string datasetName, int plainInteger, byte[] tweak)
         {
             var dataset = await _datasetCache.GetAsync(datasetName);
 
             return await EncryptIntegerPipelineAsync(dataset, plainInteger, tweak);
         }
 
-        public async Task<IEnumerable<long>> EncryptForSearchAsync(string datasetName, long plainInteger)
+        public async Task<IEnumerable<int>> EncryptForSearchAsync(string datasetName, int plainInteger)
         {
             return await EncryptForSearchAsync(datasetName, plainInteger, null);
         }
 
-        public async Task<IEnumerable<long>> EncryptForSearchAsync(string datasetName, long plainInteger, byte[] tweak)
+        public async Task<IEnumerable<int>> EncryptForSearchAsync(string datasetName, int plainInteger, byte[] tweak)
         {
             await LoadAllKeysAsync(datasetName);
 
             var dataset = await _datasetCache.GetAsync(datasetName);
             var currentFfx = await _ffxCache.GetAsync(dataset, null);
-            var results = new List<long>();
+            var results = new List<int>();
 
             for (int keyNumber = 0; keyNumber <= currentFfx.KeyNumber; keyNumber++)
             {
@@ -52,12 +48,16 @@ namespace UbiqSecurity
             return results;
         }
 
-        private async Task<long> EncryptIntegerPipelineAsync(FfsRecord dataset, long plainInteger, byte[] tweak)
+        private async Task<int> EncryptIntegerPipelineAsync(FfsRecord dataset, int plainInteger, byte[] tweak)
         {
-            // TODO: int32 + data_size
             if (dataset.DataType != "integer")
             {
                 throw new InvalidOperationException($"Dataset '{dataset.Name}' is not a 'integer' DataType");
+            }
+
+            if (dataset.DataSize != 32)
+            {
+                throw new InvalidOperationException($"Dataset '{dataset.Name}' does not have a 32-bit DataSize");
             }
 
             if (plainInteger > MaxInt32Input)
@@ -79,7 +79,7 @@ namespace UbiqSecurity
             // convert base14 string to base10 int
             var cipherInteger = IntegerHelper.Parse(cipherText, 14);
 
-            return cipherInteger;
+            return (int)cipherInteger;
         }
     }
 }

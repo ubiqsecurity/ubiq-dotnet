@@ -1,6 +1,6 @@
 namespace UbiqSecurity.Tests
 {
-    public class UbiqStructuredEncryptDecryptIntegerTests
+    public class UbiqStructuredEncryptDecryptInt32Tests
     {
         [Theory]
         [InlineData(151223)]
