@@ -30,9 +30,19 @@ namespace UbiqSecurity
             // convert datetime to number of seconds from the unix epoch (1/1/1970)
             var cipherSecondsToEpoch = new DateTimeOffset(cipherDateTime).ToUnixTimeSeconds();
 
-            // convert from base 10 to base 12 and pad to 10 digits
-            var cipherText = IntegerHelper.ToString(cipherSecondsToEpoch, 12);
+            bool isNegative = cipherSecondsToEpoch < 0;
+
+            // convert from base 10 to base 12
+            var cipherText = IntegerHelper.ToString(Math.Abs(cipherSecondsToEpoch), 12);
+
+            // left pad to 10 characters
             cipherText = cipherText.PadLeft(10, '0');
+
+            // re-add negative sign, if needed
+            if (isNegative)
+            {
+                cipherText = "-" + cipherText;
+            }
 
             // ciphertext is base 12, but plaintext will be base 10
             var plainText = await DecryptPipelineAsync(dataset, _ffxCache, cipherText, tweak);
