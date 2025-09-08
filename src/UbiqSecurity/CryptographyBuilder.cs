@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Newtonsoft.Json;
 using UbiqSecurity.Internals;
 using UbiqSecurity.Internals.Billing;
@@ -15,7 +16,6 @@ namespace UbiqSecurity
         public CryptographyBuilder()
         {
             _configuration = new UbiqConfiguration();
-            _credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty);
         }
 
         public static CryptographyBuilder Create()
@@ -30,16 +30,37 @@ namespace UbiqSecurity
             return this;
         }
 
+        [Obsolete("Use WithCredentialsFromFile() instead")]
         public CryptographyBuilder WithCredentials(string pathToCredentialsFile, string profile = "default")
         {
-            _credentials = UbiqFactory.ReadCredentialsFromFile(pathToCredentialsFile, profile);
+            return WithCredentialsFromFile(pathToCredentialsFile, profile);
+        }
+
+        public CryptographyBuilder WithCredentialsFromEnvironmentVariables()
+        {
+            _credentials = UbiqCredentials.CreateFromEnvironmentVariables();
+
+            return this;
+        }
+
+        public CryptographyBuilder WithCredentialsFromDefaultFileLocation(string profile = "default")
+        {
+            return WithCredentialsFromFile(null, profile);
+        }
+
+        public CryptographyBuilder WithCredentialsFromFile(string pathToCredentialsFile, string profile = "default")
+        {
+            _credentials = UbiqCredentials.CreateFromFile(pathToCredentialsFile, profile);
 
             return this;
         }
 
         public CryptographyBuilder WithCredentials(Action<IUbiqCredentials> credentialsAction)
         {
+            _credentials = _credentials ?? new UbiqCredentials();
+
             credentialsAction(_credentials);
+
             return this;
         }
 
@@ -55,9 +76,22 @@ namespace UbiqSecurity
             return this;
         }
 
+        [Obsolete("Use WithConfigFromFile(string jsonPath) instead")]
         public CryptographyBuilder WithConfig(string jsonPath)
         {
-            var json = System.IO.File.ReadAllText(jsonPath);
+            return WithConfigFromFile(jsonPath);
+        }
+
+        public CryptographyBuilder WithConfigFromDefaultFileLocation()
+        {
+            var filePath = UbiqCredentials.GetDefaultFileLocation("config.json");
+
+            return WithConfigFromFile(filePath);
+        }
+
+        public CryptographyBuilder WithConfigFromFile(string jsonPath)
+        {
+            var json = File.ReadAllText(jsonPath);
 
             var configuration = JsonConvert.DeserializeObject<UbiqConfiguration>(json);
 
@@ -68,8 +102,15 @@ namespace UbiqSecurity
 
         public UbiqStructuredEncryptDecrypt BuildStructured()
         {
+            _credentials = _credentials ?? UbiqCredentials.CreateFromFile(string.Empty);
+            _credentials.Validate();
+
             var webService = new UbiqWebService(_credentials, _configuration);
-            var billingEventsManager = new BillingEventsManager(_configuration, webService);
+
+            var billingEventsManager = _configuration.EventReporting.Enabled ?
+                                            (IBillingEventsManager)new BillingEventsManager(_configuration, webService) :
+                                            (IBillingEventsManager)new NullBillingEventsManager();
+
             var ffxCache = new FfxCache(webService, _configuration, _credentials);
             var datasetCache = new DatasetCache(webService, _configuration);
 
@@ -80,16 +121,32 @@ namespace UbiqSecurity
 
         public UbiqEncrypt BuildUnstructuredEncrypt()
         {
-            var webService = new UbiqWebService(_credentials, _configuration);
-            var billingEventsManager = new BillingEventsManager(_configuration, webService);
+            return BuildUnstructuredEncrypt(1);
+        }
 
-            return new UbiqEncrypt(_credentials, 1, webService, billingEventsManager);
+        public UbiqEncrypt BuildUnstructuredEncrypt(int uses)
+        {
+            _credentials = _credentials ?? UbiqCredentials.CreateFromFile(string.Empty);
+            _credentials.Validate();
+
+            var webService = new UbiqWebService(_credentials, _configuration);
+            var billingEventsManager = _configuration.EventReporting.Enabled ?
+                                            (IBillingEventsManager)new BillingEventsManager(_configuration, webService) :
+                                            (IBillingEventsManager)new NullBillingEventsManager();
+
+            return new UbiqEncrypt(_credentials, uses, webService, billingEventsManager);
         }
 
         public UbiqDecrypt BuildUnstructuredDecrypt()
         {
+            _credentials = _credentials ?? UbiqCredentials.CreateFromFile(string.Empty);
+            _credentials.Validate();
+
             var webService = new UbiqWebService(_credentials, _configuration);
-            var billingEventsManager = new BillingEventsManager(_configuration, webService);
+            var billingEventsManager = _configuration.EventReporting.Enabled ?
+                                            (IBillingEventsManager)new BillingEventsManager(_configuration, webService) :
+                                            (IBillingEventsManager)new NullBillingEventsManager();
+
             var unstructuredCache = new UnstructuredKeyCache(webService, _configuration, _credentials);
 
             return new UbiqDecrypt(_credentials, webService, billingEventsManager, unstructuredCache);

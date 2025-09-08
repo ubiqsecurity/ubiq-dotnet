@@ -21,5 +21,7 @@ namespace UbiqSecurity
         string IdpPayloadCert { get; }
 
         Task CheckInitAndExpirationAsync(UbiqConfiguration ubiqConfiguration);
+
+        void Validate();
     }
 }

@@ -1,7 +1,9 @@
+using System;
 using UbiqSecurity.Internals;
 
 namespace UbiqSecurity
 {
+    [Obsolete("Use CryptographyBuilder instead")]
     public static class UbiqFactory
     {
         private const string DefaultHost = "api.ubiqsecurity.com";

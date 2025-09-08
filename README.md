@@ -42,13 +42,13 @@ From within the cloned local git repository folder, use Visual Studio to open th
 ubiq-dotnet.sln
 ```
 
-### Compiling from command line
+#### Compiling from command line
 
 ```cmd
     dotnet build -c Release
 ```
 
-### Compiling using Visual Studio Environment
+#### Compiling using Visual Studio Environment
 
 - Visual Studio 2022 or newer
 - In the Visual Studio Installer, make sure the following items are checked in the *Workloads* category:
@@ -60,12 +60,6 @@ Within the Solution Explorer pane, right-click the UbiqSecurity project, then se
 From the Build menu, execute *Rebuild Solution* to compile all projects.
 
 ## Usage
-
-The library needs to be configured with your [account credentials][manage-keys] which is
-available in your [Ubiq Dashboard][dashboard].
-The [credentials][use-credentials] can be set using environment variables, loaded from an explicitly
-specified file, or loaded from a file in your Windows
-user account directory [c:/users/*yourlogin*/.ubiq/credentials].
 
 ### Sample applications
 
@@ -81,47 +75,128 @@ Then, add the following to the top of your C# source file:
 using UbiqSecurity;
 ```
 
-### Read credentials from a specific file and use a specific profile
+### Build an Encrypt/Decrypt object
+
+You can use the CryptographyBuilder to configure and build the ubiq objects that will be used to perform encrypt/decrpt operations.
 
 ```cs
-var credentials = UbiqFactory.ReadCredentialsFromFile("some-credential-file", "some-profile");
+using var structuredEncryptDecrypt = CryptographyBuilder.Create().BuildStructured();
+
+// or
+
+using var unstructuredEncrypt = CryptographyBuilder.Create().BuildUnstructuredEncrypt()
+
+// or 
+
+using var unstructuredDecrypt = CryptographyBuilder.Create().BuildUnstructuredDecrypt()
+
 ```
 
-### Read credentials from c:/users/*yourlogin*/.ubiq/credentials and use the default profile
+### Credentials
+
+The library needs to be configured with your [account credentials][manage-keys] which is
+available in your [Ubiq Dashboard][dashboard].
+The [credentials][use-credentials] can be set using environment variables, loaded from an explicitly
+specified file, or loaded from a file in your Windows user account 
+directory [c:/users/*yourlogin*/.ubiq/credentials].
+
+If you do not explicitly specify credentials when using the CryptographyBuilder, an attempt will be
+made to load credentials from the default file location (`c:/users/*yourlogin*/.ubiq/credentials`) 
+using the default profile name (`default`)
+
+#### Read credentials from the default file location with a non-default profile name
 
 ```cs
-var credentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, null);
+using var structuredEncryptDecrypt = CryptographyBuilder
+                                        .Create()
+                                        .WithCredentialsFromDefaultFileLocation("some-profile")
+                                        .BuildStructured();
 ```
 
-### Use the following environment variables to set the credential values
-
-UBIQ_ACCESS_KEY_ID
-UBIQ_SECRET_SIGNING_KEY
-UBIQ_SECRET_CRYPTO_ACCESS_KEY
+#### Read credentials from a file
 
 ```cs
-var credentials = UbiqFactory.CreateCredentials()
+using var structuredEncryptDecrypt = CryptographyBuilder
+                                        .Create()
+                                        .WithCredentialsFromFile("path-to-credential-file", "some-profile")
+                                        .BuildStructured();
 ```
 
-### Explicitly set the credentials
+#### Read credentials from environment variables
+
+Set the following environment variables:
+* UBIQ_ACCESS_KEY_ID
+* UBIQ_SECRET_SIGNING_KEY
+* UBIQ_SECRET_CRYPTO_ACCESS_KEY
 
 ```cs
-var credentials = UbiqFactory.CreateCredentials(accessKeyId: "...", secretSigningKey: "...", secretCryptoAccessKey: "...");
+using var structuredEncryptDecrypt = CryptographyBuilder
+                                        .Create()
+                                        .WithCredentialsFromEnvironmentVariables()
+                                        .BuildStructured();
+```
+
+#### Explicitly set the credentials
+
+```cs
+using var structuredEncryptDecrypt = CryptographyBuilder
+                                        .Create()
+                                        .WithCredentials(creds => 
+                                        {
+                                            creds.AccessKeyId = "...";
+                                            creds.SecretSigningKey = "...";
+                                            creds.SecretCryptoAccessKey = "...";
+                                        })
+                                        .BuildStructured();
+```
+
+
+### Configuration
+
+If a configuration is not explicitly set, default values will used.
+
+For all configuration options, see [Configuration File Format](#configuration-file-format)
+
+#### Load configuration from JSON file
+
+```cs
+using var structuredEncryptDecrypt = CryptographyBuilder
+                                        .Create()
+                                        .WithConfigFromFile("path-to-config-json-file")
+                                        .BuildStructured();
 ```
 
 ### IDP integration
-Ubiq currently supports both Okta and Entra IDP integration.  Instead of using the credentials provided when creating the API Key, the username (email) and password will be used to authenticate with the IDP and provide access to the Ubiq platform.
 
-### Use the following environment variables to set the credential values
-IDP_USERNAME  
-IDP_PASSWORD  
+Ubiq currently supports both Okta and Entra IDP integration. Instead of using the credentials provided when
+creating the API Key, the username (email) and password will be used to authenticate with the IDP and provide
+access to the Ubiq platform.
+
+#### Load IDP Credentials via Environment Variables
+
+Use the following environment variables to set the credential values
+
+* IDP_USERNAME
+* IDP_PASSWORD
+
 ```cs
-var credentials = UbiqFactory.CreateCredentials();
+using var structuredEncryptDecrypt = CryptographyBuilder
+                                        .Create()
+                                        .WithCredentialsFromEnvironmentVariables()
+                                        .BuildStructured();
 ```
 
-### Explicitly set the credentials
+#### Explicitly set IDP Credentials
+
 ```cs
-var credentials = UbiqFactory.CreateIdpCredentials(idpUsername, idpPassword);
+using var structuredEncryptDecrypt = CryptographyBuilder
+                                        .Create()
+                                        .WithCredentials(creds => 
+                                        {
+                                            creds.IdpUsername = idpUsername;
+                                            creds.IdpPassword = idpPassword;
+                                        })
+                                        .BuildStructured();
 ```
 
 ### Runtime exceptions
@@ -144,28 +219,40 @@ More information can be found about C# `SynchronizationContext` can be found
 
 Pass credentials and plaintext bytes into the unstructured encryption function.  The encrypted data
 bytes will be returned.
-**Note:** This is a non-blocking function, so be sure to use the appropriate process controls to make sure the results are available when desired.  See the the following [Microsoft documentation][dotnet-async] for additional information.
+
+**Note:** This is a non-blocking function, so be sure to use the appropriate process controls to make 
+sure the results are available when desired.  See the the following [Microsoft documentation][dotnet-async] 
+for additional information.
 
 ```cs
 using UbiqSecurity;
 
-UbiqCredentials credentials = ...;
+using var unstructuredEncrypt = CryptographyBuilder
+                                    .Create()
+                                    .BuildUnstructuredEncrypt();
+
 byte[] plainBytes = ...;
-byte[] encryptedBytes = await UbiqEncrypt.EncryptAsync(credentials, plainBytes);
+byte[] encryptedBytes = await unstructuredEncrypt.EncryptAsync(plainBytes);
 ```
 
 ### Unstructured decryption of a simple block of data
 
 Pass credentials and encrypted data into the unstructured decryption function.  The plaintext data
 bytes will be returned.
-**Note:** This is a non-blocking function, so be sure to use the appropriate process controls to make sure the results are available when desired.  See the the following [Microsoft documentation][dotnet-async] for additional information.
+
+**Note:** This is a non-blocking function, so be sure to use the appropriate process controls to make
+sure the results are available when desired.  See the the following [Microsoft documentation][dotnet-async]
+for additional information.
 
 ```cs
 using UbiqSecurity;
 
-UbiqCredentials credentials = ...;
+using var unstructuredDecrypt = CryptographyBuilder
+                                    .Create()
+                                    .BuildUnstructuredDecrypt();
+
 byte[] encryptedBytes = ...;
-byte[] plainBytes = await UbiqDecrypt.DecryptAsync(credentials, encryptedBytes);
+byte[] plainBytes = await unstructuredDecrypt.DecryptAsync(encryptedBytes);
 ```
 
 ### Unstructured encryption of a large data element where data is loaded in chunks
@@ -178,36 +265,34 @@ byte[] plainBytes = await UbiqDecrypt.DecryptAsync(credentials, encryptedBytes);
 Below is the working code from the test application in the reference source:
 
 ```cs
-async Task PiecewiseEncryptionAsync(string inFile, string outFile, IUbiqCredentials ubiqCredentials)
+using UbiqSecurity;
+
+using var ubiqEncrypt = CryptographyBuilder
+                                .Create()
+                                .BuildUnstructuredEncrypt();
+
+using var plainStream = new FileStream(inFile, FileMode.Open);
+
+using var cipherStream = new FileStream(outFile, FileMode.Create);
+
+// start the encryption
+var cipherBytes = await ubiqEncrypt.BeginAsync();
+cipherStream.Write(cipherBytes, 0, cipherBytes.Length);
+
+// process 128KB at a time
+var plainBytes = new byte[0x20000];
+
+// loop until the end of the input file is reached
+int bytesRead = 0;
+while ((bytesRead = plainStream.Read(plainBytes, 0, plainBytes.Length)) > 0)
 {
-    using (var plainStream = new FileStream(inFile, FileMode.Open))
-    {
-        using (var cipherStream = new FileStream(outFile, FileMode.Create))
-        {
-            using (var ubiqEncrypt = new UbiqEncrypt(ubiqCredentials, 1))
-            {
-                // start the encryption
-                var cipherBytes = await ubiqEncrypt.BeginAsync();
-                cipherStream.Write(cipherBytes, 0, cipherBytes.Length);
-
-                // process 128KB at a time
-                var plainBytes = new byte[0x20000];
-
-                // loop until the end of the input file is reached
-                int bytesRead = 0;
-                while ((bytesRead = plainStream.Read(plainBytes, 0, plainBytes.Length)) > 0)
-                {
-                    cipherBytes = ubiqEncrypt.Update(plainBytes, 0, bytesRead);
-                    cipherStream.Write(cipherBytes, 0, cipherBytes.Length);
-                }
-
-                // finish the encryption
-                cipherBytes = ubiqEncrypt.End();
-                cipherStream.Write(cipherBytes, 0, cipherBytes.Length);
-            }
-        }
-    }
+    cipherBytes = ubiqEncrypt.Update(plainBytes, 0, bytesRead);
+    cipherStream.Write(cipherBytes, 0, cipherBytes.Length);
 }
+
+// finish the encryption
+cipherBytes = ubiqEncrypt.End();
+cipherStream.Write(cipherBytes, 0, cipherBytes.Length);
 ```
 
 ### Encrypt several objects using the same data encryption key (fewer calls to the server)
@@ -227,46 +312,44 @@ reasons, you should limit n to be less than 2^32 (4,294,967,296) for each unique
 3. Call the encryption instance close method
 
 ```cs
-      UbiqCredentials ubiqCredentials = UbiqFactory.readCredentialsFromFile("path/to/file", "default");
+    using UbiqSecurity;
 
-      ... 
-      UbiqEncrypt ubiqEncrypt = new UbiqEncrypt(ubiqCredentials, 1);
+    using var ubiqEncrypt = CryptographyBuilder
+                                    .Create()
+                                    .BuildUnstructuredEncrypt(1);
 
-      List<Byte> cipherBytes = new ArrayList<Byte>();
-      // object1 is a full unencrypted object
-      byte[] tmp = ubiqEncrypt.begin();
-      cipherBytes.addAll(Bytes.asList(tmp))
-      tmp = ubiqEncrypt.update(object1, 0, object1.length);
-      cipherBytes.addAll(Bytes.asList(tmp))
-      tmp = ubiqEncrypt.end();
-      cipherBytes.addAll(Bytes.asList(tmp))
-      // Do something with the encrypted data: cipherBytes
+    List<Byte> cipherBytes = new List<Byte>();
+    // object1 is a full unencrypted object
+    byte[] tmp = await ubiqEncrypt.BeginAsync();
+    cipherBytes.AddRange(tmp);
+    tmp = ubiqEncrypt.Update(object1, 0, object1.length);
+    cipherBytes.AddRange(tmp);
+    tmp = ubiqEncrypt.End();
+    cipherBytes.AddRange(tmp);
+    // Do something with the encrypted data: cipherBytes
 
-      // In this case, object2 is broken into two pieces, object2_part1 and object2_part2
-      cipherBytes = new ArrayList<Byte>();
-      tmp = ubiqEncrypt.begin();
-      cipherBytes.addAll(Bytes.asList(tmp))
-      tmp = ubiqEncrypt.update(object2_part1, 0, object2_part1.length);
-      cipherBytes.addAll(Bytes.asList(tmp))
-      tmp = ubiqEncrypt.update(object2_part2, 0, object2_part2.length);
-      cipherBytes.addAll(Bytes.asList(tmp))
-      tmp = ubiqEncrypt.end();
-      cipherBytes.addAll(Bytes.asList(tmp))
-      // Do something with the encrypted data: cipherBytes
+    // In this case, object2 is broken into two pieces, object2_part1 and object2_part2
+    cipherBytes = new List<Byte>();
+    tmp = await ubiqEncrypt.BeginAsync();
+    cipherBytes.AddRange(Bytes.asList(tmp))
+    tmp = ubiqEncrypt.update(object2_part1, 0, object2_part1.length);
+    cipherBytes.AddRange(Bytes.asList(tmp))
+    tmp = ubiqEncrypt.Update(object2_part2, 0, object2_part2.length);
+    cipherBytes.AddRange(tmp);
+    tmp = ubiqEncrypt.End();
+    cipherBytes.AddRange(tmp);
+    // Do something with the encrypted data: cipherBytes
 
-      ...
-      // In this case, objectb is broken into two pieces, object2_part1 and object2_part2
-      cipherBytes = new ArrayList<Byte>();
-      // objectn is a full unencrypted object
-      tmp = ubiqEncrypt.begin();
-      cipherBytes.addAll(Bytes.asList(tmp))
-      tmp = ubiqEncrypt.update(objectn, 0, objectn.length);
-      cipherBytes.addAll(Bytes.asList(tmp))
-      tmp = ubiqEncrypt.end();
-      cipherBytes.addAll(Bytes.asList(tmp))
-      // Do something with the encrypted data: cipherBytes
-
-      ubiqEncrypt.close()
+    // In this case, objectb is broken into two pieces, object2_part1 and object2_part2
+    cipherBytes = new List<Byte>();
+    // objectn is a full unencrypted object
+    tmp = await ubiqEncrypt.BeginAsync();
+    cipherBytes.AddRange(tmp);
+    tmp = ubiqEncrypt.Update(objectn, 0, objectn.length);
+    cipherBytes.AddRange(tmp);
+    tmp = ubiqEncrypt.End();
+    cipherBytes.AddRange(tmp);
+    // Do something with the encrypted data: cipherBytes
 }
 ```
 
@@ -280,36 +363,32 @@ reasons, you should limit n to be less than 2^32 (4,294,967,296) for each unique
 Below is the working code from the test application in the reference source:
 
 ```cs
-async Task PiecewiseDecryptionAsync(string inFile, string outFile, IUbiqCredentials ubiqCredentials)
-{
-    using (var cipherStream = new FileStream(inFile, FileMode.Open))
+    using var ubiqDecrypt = CryptographyBuilder
+                                    .Create()
+                                    .BuildUnstructuredDecrypt();
+
+    using var cipherStream = new FileStream(inFile, FileMode.Open);
+
+    using var plainStream = new FileStream(outFile, FileMode.Create);
+
+    // start the decryption
+    var plainBytes = ubiqDecrypt.Begin();
+    plainStream.Write(plainBytes, 0, plainBytes.Length);
+
+    // process 128KB at a time
+    var cipherBytes = new byte[0x20000];
+
+    // loop until the end of the input file is reached
+    int bytesRead = 0;
+    while ((bytesRead = cipherStream.Read(cipherBytes, 0, cipherBytes.Length)) > 0)
     {
-        using (var plainStream = new FileStream(outFile, FileMode.Create))
-        {
-            using (var ubiqDecrypt = new UbiqDecrypt(ubiqCredentials))
-            {
-                // start the decryption
-                var plainBytes = ubiqDecrypt.Begin();
-                plainStream.Write(plainBytes, 0, plainBytes.Length);
-
-                // process 128KB at a time
-                var cipherBytes = new byte[0x20000];
-
-                // loop until the end of the input file is reached
-                int bytesRead = 0;
-                while ((bytesRead = cipherStream.Read(cipherBytes, 0, cipherBytes.Length)) > 0)
-                {
-                    plainBytes = await ubiqDecrypt.UpdateAsync(cipherBytes, 0, bytesRead);
-                    plainStream.Write(plainBytes, 0, plainBytes.Length);
-                }
-
-                // finish the decryption
-                plainBytes = ubiqDecrypt.End();
-                plainStream.Write(plainBytes, 0, plainBytes.Length);
-            }
-        }
+        plainBytes = await ubiqDecrypt.UpdateAsync(cipherBytes, 0, bytesRead);
+        plainStream.Write(plainBytes, 0, plainBytes.Length);
     }
-}
+
+    // finish the decryption
+    plainBytes = ubiqDecrypt.End();
+    plainStream.Write(plainBytes, 0, plainBytes.Length);
 ```
 
 ## Ubiq Structured Encryption
@@ -329,19 +408,13 @@ EncryptAsync and DecryptAsync calls, for example when you are bulk processing ma
 encrypt / decrypt operations in a session.
 
 ```cs
-async Task EncryptionAsync(String FfsName, String plainText, IUbiqCredentials ubiqCredentials)
-{
-    // default tweak in case the FFS model allows for external tweak insertion          
-    byte[] tweakFF1 = {};
+    using var ubiqEncryptDecrypt = CryptographyBuilder
+                                                .Create()
+                                                .BuildStructured();
 
-    using (var ubiqEncryptDecrypt = new UbiqStructuredEncryptDecrypt(ubiqCredentials))
-    {
-        var cipherText = await ubiqEncryptDecrypt.EncryptAsync(FfsName, plainText, tweakFF1);
-        Console.WriteLine($"ENCRYPTED cipherText= {cipherText}\n");
-    }
+    var cipherText = await ubiqEncryptDecrypt.EncryptAsync(FfsName, plainText);
 
-    return;
-}
+    Console.WriteLine($"ENCRYPTED cipherText= {cipherText}\n");
 ```
 
 ### Decrypt a social security text field
@@ -354,19 +427,13 @@ EncryptAsync and DecryptAsync calls, for example when you are bulk processing ma
 encrypt / decrypt operations in a session.
 
 ```cs
-async Task DecryptionAsync(String FfsName, String cipherText, IUbiqCredentials ubiqCredentials)
-{
-
-    byte[] tweakFF1 = {};
-
-    using (var ubiqEncryptDecrypt = new UbiqStructuredEncryptDecrypt(ubiqCredentials))
-    {
-        var plainText = await ubiqEncryptDecrypt.DecryptAsync(FfsName, cipherText, tweakFF1);
-        Console.WriteLine($"DECRYPTED plainText= {plainText}\n");
-    }
-
-    return;
-}
+    using var ubiqEncryptDecrypt = CryptographyBuilder
+                                                .Create()
+                                                .BuildStructured();
+    
+    var plainText = await ubiqEncryptDecrypt.DecryptAsync(FfsName, cipherText);
+    
+    Console.WriteLine($"DECRYPTED plainText= {plainText}\n");
 ```
 
 ### Custom Metadata for Usage Reporting
@@ -378,24 +445,34 @@ The **AddReportingUserDefinedMetadata** function accepts a string in JSON format
 Examples are shown below.
 
 ```cs
-    using var ubiq = new UbiqStructuredEncryptDecrypt(ubiqCredentials);
+    using var ubiqEncryptDecrypt = CryptographyBuilder
+                                                .Create()
+                                                .BuildStructured();
+
     ubiqEncryptDecrypt.AddReportingUserDefinedMetadata("{\"some_meaningful_flag\" : true }");
 }
 ```
 
 ```cs
-    using var ubiqEncrypt = new UbiqEncrypt(ubiqCredentials, 1);
+    using var ubiqEncrypt = CryptographyBuilder
+                                    .Create()
+                                    .BuildUnstructuredEncrypt(1);
+
     ubiqEncrypt.AddReportingUserDefinedMetadata("{\"some_key\" : \"some_value\" }");
 ```
 
 ### Searching for a value in a database that is encrypted
 
-For example say we want to search for an employee by SSN, but that field was encrypted in the database. The encryption key may have rotated since the employee SSN was originally encrypted, so we can use the EncryptForSearchAsync() method to get an array of all possible encrypted values.
+For example say we want to search for an employee by SSN, but that field was encrypted in the database. The encryption
+key may have rotated since the employee SSN was originally encrypted, so we can use the EncryptForSearchAsync() method 
+to get an array of all possible encrypted values.
 
 ```cs
-using var ubiq = new UbiqStructuredEncryptDecrypt(ubiqCredentials);
+using var ubiqEncryptDecrypt = CryptographyBuilder
+                                                .Create()
+                                                .BuildStructured();
 
-var encryptedSsns = await ubiq.EncryptForSearchAsync("SSN_Dataset", unencryptedSsn)
+var encryptedSsns = await ubiqEncryptDecrypt.EncryptForSearchAsync("SSN_Dataset", unencryptedSsn)
 
 var user = _dbContext
                 .Employees
@@ -403,7 +480,7 @@ var user = _dbContext
                 .FirstOrDefault();
 ```
 
-## Configuration file
+## Configuration File Format
 
 A sample configuration file is shown below.  The configuration is in JSON format.  The <b>event_reporting</b> section contains values to control how often the usage is reported.  
 
@@ -436,7 +513,7 @@ A sample configuration file is shown below.  The configuration is in JSON format
   - <b>encrypt</b> indicates if keys should be stored encrypted. If keys are encrypted, they will be harder to access via memory, but require them to be decrypted with each use. (default: false)
 
    #### IDP specific parameters
-   - <b>provider</b> indicates the IDP provider, either <b>okta</b> or <b>entra</b>
+   - **provider** indicates the IDP provider, either **okta**, **entra**, or **ubiq**
    - <b>ubiq_customer_id</b> The UUID for this customer.  Will be provided by Ubiq.
    - <b>idp_token_endpoint_url</b> The endpoint needed to authenticate the user credentials, provided by Okta or Entra
    - <b>idp_tenant_id</b> contains the tenant value provided by Okta or Entra

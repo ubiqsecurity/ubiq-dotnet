@@ -71,6 +71,9 @@ namespace UbiqSecurity.Config
             }
         }
 
+        [JsonProperty("enabled")]
+        public bool Enabled { get; set; } = true;
+
         public ChronoUnit ChronoTimestampGranularity { get; private set; } = ChronoUnit.Nanoseconds;
     }
 }
