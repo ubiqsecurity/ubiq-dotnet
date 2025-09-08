@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.3.0 - 2025-07-09
+* Add Self-Signed IDP Support
+
 ## 2.2.0 - 2025-06-09
 * Add Partial Encryption Prefix/Suffix support
 * Added support for IDP integration using Okta and Entra

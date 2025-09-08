@@ -1,1 +1,1 @@
-@echo offpowershell -noprofile -executionPolicy RemoteSigned -file mark-shipped.ps1
+powershell -noprofile -executionPolicy RemoteSigned -file .\mark-shipped.ps1

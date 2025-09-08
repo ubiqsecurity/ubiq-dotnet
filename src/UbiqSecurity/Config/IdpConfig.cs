@@ -10,6 +10,9 @@ namespace UbiqSecurity.Config
 
         [EnumMember(Value = "okta")]
         Okta,
+
+        [EnumMember(Value = "ubiq")]
+        SelfSigned,
     }
 
     public class IdpConfig
@@ -32,5 +35,11 @@ namespace UbiqSecurity.Config
 
         [JsonProperty("ubiq_customer_id")]
         public string UbiqCustomerId { get; set; }
+
+        [JsonProperty("self_sign_key")]
+        public string SelfSignKey { get; set; }
+
+        [JsonProperty("self_sign_identity")]
+        public string SelfSignIdentity { get; set; }
     }
 }
