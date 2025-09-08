@@ -1,3 +1,6 @@
+using System.Collections.Concurrent;
+using System.Data.SqlClient;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.SqlServer.Server;
 
@@ -5,46 +8,96 @@ namespace UbiqSecurity.Mssql
 {
     public class UbiqSql
     {
-        private static IUbiqCredentials _ubiqCredentials = null;
-        private static UbiqFPEEncryptDecrypt _ubiqFpeEncryptDecrypt = null;
-        private static readonly object _lock = new object();
+        private static readonly ConcurrentDictionary<string, UbiqStructuredEncryptDecrypt> EncryptDecryptObjects = new ConcurrentDictionary<string, UbiqStructuredEncryptDecrypt>();
 
-        [SqlProcedure]
-        public static void Init(string apiKey, string secretSigningKey, string cryptoAccessKey)
-        {
-            lock(_lock)
-            {
-                _ubiqFpeEncryptDecrypt?.Dispose();
-
-                _ubiqCredentials = UbiqFactory.CreateCredentials(apiKey, secretSigningKey, cryptoAccessKey);
-                _ubiqFpeEncryptDecrypt = new UbiqFPEEncryptDecrypt(_ubiqCredentials);
-            }
-        }
-
-        [SqlFunction]
+        [SqlFunction(DataAccess = DataAccessKind.Read, SystemDataAccess = SystemDataAccessKind.Read)]
         public static string Encrypt(string datasetName, string plainText)
         {
-            if (_ubiqFpeEncryptDecrypt == null)
+            if (string.IsNullOrEmpty(plainText))
             {
-                throw new System.Exception("Ubiq encrption not initialized, call init() first");
+                return plainText;
             }
 
-            var task = Task.Run(async () => await _ubiqFpeEncryptDecrypt.EncryptAsync(datasetName, plainText));
+            var ubiqFpeEncryptDecrypt = GetEncryptDecrypt();
+
+            var task = Task.Run(async () => await ubiqFpeEncryptDecrypt.EncryptAsync(datasetName, plainText));
 
             return task.Result;
         }
 
-        [SqlFunction]
+        [SqlFunction(DataAccess = DataAccessKind.Read, SystemDataAccess = SystemDataAccessKind.Read)]
         public static string Decrypt(string datasetName, string cipherText)
         {
-            if (_ubiqFpeEncryptDecrypt == null)
+            if (string.IsNullOrEmpty(cipherText))
             {
-                throw new System.Exception("Ubiq decrption not initialized, call init() first");
+                return cipherText;
             }
 
-            var task = Task.Run(async () => await _ubiqFpeEncryptDecrypt.DecryptAsync(datasetName, cipherText));
+            var ubiqFpeEncryptDecrypt = GetEncryptDecrypt();
+            
+            var task = Task.Run(async () => await ubiqFpeEncryptDecrypt.DecryptAsync(datasetName, cipherText));
 
             return task.Result;
+        }
+
+        // find the directory that the ubiqsecurity.dll was import from
+        private static string GetImportDirectory()
+        {
+            string dllImportPath = null;
+
+            using (var conn = new SqlConnection("context connection=true"))
+            {
+                conn.Open();
+
+                SqlCommand cmd = new SqlCommand("SELECT TOP 1 name FROM sys.assembly_files WHERE name like '%ubiqsecurity.dll'", conn);
+
+                dllImportPath = (string)cmd.ExecuteScalar();
+            }
+
+            return dllImportPath.Replace("ubiqsecurity.dll", "");
+        }
+
+        private static string GetTestIdentity()
+        {
+            using (var conn = new SqlConnection("context connection=true"))
+            {
+                conn.Open();
+
+                SqlCommand cmd = new SqlCommand("SELECT SUSER_SNAME()", conn);
+
+                return (string)cmd.ExecuteScalar();
+            }
+        }
+
+        private static UbiqStructuredEncryptDecrypt GetEncryptDecrypt()
+        {
+            var userName = GetTestIdentity();
+
+            if (EncryptDecryptObjects.ContainsKey(userName) && EncryptDecryptObjects.TryGetValue(userName, out var result))
+            {
+                return result;
+            }
+
+            var currentDirectory = GetImportDirectory();
+
+            var encryptDecrypt = CryptographyBuilder
+                                                .Create()
+                                                .WithCredentialsFromFile(Path.Combine(currentDirectory, "credentials"))
+                                                .WithCredentials(x =>
+                                                {
+                                                    x.IdpUsername = userName;
+                                                })
+                                                .WithConfigFromFile(Path.Combine(currentDirectory, "config.json"))
+                                                .WithConfig(x =>
+                                                {
+                                                    // x.EventReporting.Enabled = false;
+                                                    x.Idp.SelfSignIdentity = userName;
+                                                })
+                                                .BuildStructured();
+
+            EncryptDecryptObjects.TryAdd(userName, encryptDecrypt);
+
+            return encryptDecrypt;
         }
     }
 }

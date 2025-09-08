@@ -13,6 +13,8 @@ namespace UbiqSecurity.Internals.Idp
                     return new EntraIdOAuthWebService(ubiqCredentials);
                 case IdpProvider.Okta:
                     return new OktaOAuthWebService(ubiqCredentials);
+                case IdpProvider.SelfSigned:
+                    return new SelfSignedOAuthWebService();
                 default:
                     throw new NotImplementedException($"IdpProvider '{idpProvider}' not implemented");
             }

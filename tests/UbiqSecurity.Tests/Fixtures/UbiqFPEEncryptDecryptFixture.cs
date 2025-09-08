@@ -14,7 +14,7 @@ namespace UbiqSecurity.Tests.Fixtures
 
         private void InitNormalApiKey()
         {
-            UbiqCredentials = UbiqFactory.ReadCredentialsFromFile(string.Empty, Environment.GetEnvironmentVariable("JsonTestProfile") ?? "default");
+            UbiqCredentials = UbiqSecurity.Internals.UbiqCredentials.CreateFromFile(string.Empty, Environment.GetEnvironmentVariable("JsonTestProfile") ?? "default");
             UbiqFPEEncryptDecrypt = new UbiqFPEEncryptDecrypt(UbiqCredentials);
         }
 
