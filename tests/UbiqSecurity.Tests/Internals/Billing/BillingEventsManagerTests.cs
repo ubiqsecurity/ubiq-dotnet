@@ -5,7 +5,7 @@ using UbiqSecurity.Internals.Billing;
 using UbiqSecurity.Internals.WebService;
 using UbiqSecurity.Internals.WebService.Models;
 
-namespace UbiqSecurity.Tests.Billing
+namespace UbiqSecurity.Tests.Internals.Billing
 {
     public class BillingEventsManagerTests
     {
