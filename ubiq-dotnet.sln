@@ -28,6 +28,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UbiqSecurity.ComCompatible"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UbiqSecurity.Mssql", "src\UbiqSecurity.Mssql\UbiqSecurity.Mssql.csproj", "{41429113-B08E-42F1-B6A3-ACC20144C5EC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{2E3C6139-1451-4EE6-9220-BCEE44A1D2F4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnstructuredFiles", "examples\UnstructuredFiles\UnstructuredFiles.csproj", "{C187018E-0922-4A81-A8AA-CE58B0580343}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StructuredStrings", "examples\StructuredStrings\StructuredStrings.csproj", "{D3B02FE0-CDAA-4C3D-8B59-E4239E48A41C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -54,6 +60,14 @@ Global
 		{41429113-B08E-42F1-B6A3-ACC20144C5EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{41429113-B08E-42F1-B6A3-ACC20144C5EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{41429113-B08E-42F1-B6A3-ACC20144C5EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C187018E-0922-4A81-A8AA-CE58B0580343}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C187018E-0922-4A81-A8AA-CE58B0580343}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C187018E-0922-4A81-A8AA-CE58B0580343}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C187018E-0922-4A81-A8AA-CE58B0580343}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3B02FE0-CDAA-4C3D-8B59-E4239E48A41C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3B02FE0-CDAA-4C3D-8B59-E4239E48A41C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3B02FE0-CDAA-4C3D-8B59-E4239E48A41C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3B02FE0-CDAA-4C3D-8B59-E4239E48A41C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -61,6 +75,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{0D007AEA-9A44-4F86-9AF8-1CCD9F660541} = {AC541295-C72B-403A-B30D-26547ED52593}
 		{B0E232B0-CCF1-4AEB-BF54-5859BD6C1097} = {AC541295-C72B-403A-B30D-26547ED52593}
+		{C187018E-0922-4A81-A8AA-CE58B0580343} = {2E3C6139-1451-4EE6-9220-BCEE44A1D2F4}
+		{D3B02FE0-CDAA-4C3D-8B59-E4239E48A41C} = {2E3C6139-1451-4EE6-9220-BCEE44A1D2F4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3717A7F-7186-4086-9780-9F719FC40D86}

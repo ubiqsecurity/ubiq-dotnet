@@ -1,0 +1,7 @@
+{
+  "idp": {
+    "provider": "ubiq",
+    "ubiq_customer_id": "", // Set to the GUID part of the Ubiq SCIM URL that you copied during the IDP Integration Setup above,
+    "self_sign_key": "" // Set to the value of the Private Key from the IDP Integration Setup above
+  }
+}
