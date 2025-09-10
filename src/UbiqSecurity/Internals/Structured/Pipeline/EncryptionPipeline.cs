@@ -9,8 +9,8 @@ namespace UbiqSecurity.Internals.Structured.Pipeline
     {
         private static readonly IEnumerable<IOperation> BaseOperations = new List<IOperation>()
         {
-            new PadInputOperation(),
             new EncodeInputOperation(),
+            new PadInputOperation(),
             new EncryptOperation(),
             new ConvertRadixOperation(),
             new EncodeKeyNumberOperation(),

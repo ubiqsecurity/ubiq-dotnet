@@ -72,9 +72,18 @@ namespace UbiqSecurity
             // convert datetime to number of seconds from the unix epoch (1/1/1970)
             var secondsToEpoch = new DateTimeOffset(utcPlainDateTime).ToUnixTimeSeconds();
 
+            // track if we are dealing w/ a negative sign, to ensure we re-add it after padding
+            bool isNegative = secondsToEpoch < 0;
+
             // pad input to 10 characters w/ leading zeroes
-            var plainText = secondsToEpoch.ToString(CultureInfo.InvariantCulture);
+            var plainText = Math.Abs(secondsToEpoch).ToString(CultureInfo.InvariantCulture);
             plainText = plainText.PadLeft(10, '0');
+
+            // re-add negative sign now that we are fully padded
+            if (isNegative)
+            {
+                plainText = $"-{plainText}";
+            }
 
             // encrypted output will contain base12 characters (0-9a-b)
             var cipherText = await EncryptPipelineAsync(dataset, _ffxCache, plainText, tweak);
