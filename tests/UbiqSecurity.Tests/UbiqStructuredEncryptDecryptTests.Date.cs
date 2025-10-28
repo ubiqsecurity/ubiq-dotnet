@@ -4,8 +4,8 @@ namespace UbiqSecurity.Tests
     {
         public static IEnumerable<object[]> TestData => new List<object[]>
         {
-            new object[] { DateTime.MinValue.Date, null }, // min value
-            new object[] { DateTime.MinValue.Date.AddDays(999999), null }, // max value
+            new object[] { new DateTime(0001, 1, 1, 0, 0, 0, DateTimeKind.Utc), null }, // min value
+            new object[] { new DateTime(2738, 11, 28, 0, 0, 0, DateTimeKind.Utc), null }, // max value
             new object[] { new DateTime(1653, 2, 10, 0, 0, 0, DateTimeKind.Utc), null },
         };
 

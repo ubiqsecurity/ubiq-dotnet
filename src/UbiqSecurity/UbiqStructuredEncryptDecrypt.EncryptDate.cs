@@ -58,14 +58,14 @@ namespace UbiqSecurity
 
             var utcPlainDate = plainDate.ToUniversalTime().Date;
 
-            if (utcPlainDate > dataset.DataTypeConfig.MaxInputDateValue)
+            if (utcPlainDate > dataset.DataTypeConfig.MaxInputDateValue.Date)
             {
-                throw new ArgumentOutOfRangeException(nameof(plainDate), $"plainDate must be <= {dataset.DataTypeConfig.MaxInputDateValue}");
+                throw new ArgumentOutOfRangeException(nameof(plainDate), $"plainDate must be <= {dataset.DataTypeConfig.MaxInputDateValue.Date}");
             }
 
-            if (utcPlainDate < dataset.DataTypeConfig.MinInputDateValue)
+            if (utcPlainDate < dataset.DataTypeConfig.MinInputDateValue.Date)
             {
-                throw new ArgumentOutOfRangeException(nameof(plainDate), $"plainDate must be >= {dataset.DataTypeConfig.MinInputDateValue}");
+                throw new ArgumentOutOfRangeException(nameof(plainDate), $"plainDate must be >= {dataset.DataTypeConfig.MinInputDateValue.Date}");
             }
 
             // convert date to number of days from our epoch, ususally 1/1/0001 but its configurable
