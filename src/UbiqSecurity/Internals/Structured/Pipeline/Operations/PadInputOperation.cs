@@ -9,18 +9,18 @@ namespace UbiqSecurity.Internals.Structured.Pipeline.Operations
         {
             var dataset = context.Dataset;
 
-            if (!dataset.InputPadLength.HasValue || string.IsNullOrEmpty(dataset.InputPadCharacter))
+            if (string.IsNullOrEmpty(dataset.InputPadCharacter) || dataset.InputCharacters.Length > 1)
             {
                 return Task.FromResult(context.CurrentValue);
             }
 
-            string val = context.CurrentValue.PadLeft(dataset.InputPadLength.Value, dataset.InputPadCharacter.First());
+            string val = context.CurrentValue.PadLeft(dataset.MinInputLength, dataset.InputPadCharacter.First());
 
-            // also pad passthrough mask
+            // also pad the passthrough mask
             // code smell that one operation has to know about another
             if (context.Data.ContainsKey("PassthroughTemplate"))
             {
-                context.Data["PassthroughTemplate"] = context.Data["PassthroughTemplate"].PadLeft(dataset.InputPadLength.Value, dataset.InputPadCharacter.First());
+                context.Data["PassthroughTemplate"] = context.Data["PassthroughTemplate"].PadLeft(dataset.MinInputLength, dataset.InputPadCharacter.First());
             }
 
             return Task.FromResult(val);

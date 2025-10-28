@@ -52,9 +52,6 @@ namespace UbiqSecurity.Internals.WebService.Models
         [JsonProperty("passthrough_rules")]
         public IEnumerable<PassthroughRuleDto> PassthroughRules { get; set; }
 
-        [JsonProperty("input_pad_length")]
-        public int? InputPadLength { get; set; }
-
         [JsonProperty("input_pad_character")]
         public string InputPadCharacter { get; set; }
 
@@ -64,8 +61,8 @@ namespace UbiqSecurity.Internals.WebService.Models
         [JsonProperty("data_type")]
         public string DataType { get; set; }
 
-        [JsonProperty("data_size")]
-        public int? DataSize { get; set; }
+        [JsonProperty("data_type_config")]
+        public DataTypeConfig DataTypeConfig { get; set; }
 
         [JsonIgnore]
         public int PassthroughPrefixLength => int.Parse(PassthroughRules.Where(x => x.RuleType == PassthroughRuleType.Prefix).FirstOrDefault()?.Value ?? "0", NumberStyles.Integer, CultureInfo.InvariantCulture);

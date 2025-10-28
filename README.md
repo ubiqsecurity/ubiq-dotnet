@@ -412,7 +412,7 @@ encrypt / decrypt operations in a session.
                                                 .Create()
                                                 .BuildStructured();
 
-    var cipherText = await ubiqEncryptDecrypt.EncryptAsync(FfsName, plainText);
+    var cipherText = await ubiqEncryptDecrypt.EncryptAsync(datasetName, plainText);
 
     Console.WriteLine($"ENCRYPTED cipherText= {cipherText}\n");
 ```
@@ -431,9 +431,31 @@ encrypt / decrypt operations in a session.
                                                 .Create()
                                                 .BuildStructured();
     
-    var plainText = await ubiqEncryptDecrypt.DecryptAsync(FfsName, cipherText);
+    var plainText = await ubiqEncryptDecrypt.DecryptAsync(datasetName, cipherText);
     
     Console.WriteLine($"DECRYPTED plainText= {plainText}\n");
+```
+
+### Encrypting an integer
+
+ To use the integer specific .EncryptAsync() overload methods, the dataset used must have been created with a data type of Integer.
+
+ Datasets created as 32-bit integer types will use the `int` methods, while the datasets created as 64-bit integers should use the `long` methods.
+
+```cs
+    using var ubiqEncryptDecrypt = CryptographyBuilder
+                                                .Create()
+                                                .BuildStructured();
+
+    // 32-bit integer encryption
+    int plainInteger = 1234;
+    int cipherInteger = await ubiqEncryptDecrypt.EncryptAsync(integerDatasetName, plainInteger);
+    Console.WriteLine($"ENCRYPTED cipherInteger= {cipherInteger}\n");
+
+    // 64-bit integer encryption
+    long plainLong = 1234;
+    long cipherLong = await ubiqEncryptDecrypt.EncryptAsync(longDatasetName, plainLong);
+    Console.WriteLine($"ENCRYPTED cipherLong= {cipherLong}\n");
 ```
 
 ### Custom Metadata for Usage Reporting

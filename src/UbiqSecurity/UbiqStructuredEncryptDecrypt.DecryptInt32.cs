@@ -6,6 +6,7 @@ using UbiqSecurity.Internals.WebService.Models;
 
 namespace UbiqSecurity
 {
+    // Int32 strongly typed Decrypt methods
     public partial class UbiqStructuredEncryptDecrypt
     {
         public async Task<int> DecryptAsync(string datasetName, int cipherInteger)
@@ -27,7 +28,12 @@ namespace UbiqSecurity
                 throw new InvalidOperationException($"Dataset '{dataset.Name}' is not a 'integer' DataType");
             }
 
-            if (dataset.DataSize != 32)
+            if (dataset.DataTypeConfig == null)
+            {
+                throw new InvalidOperationException($"Dataset '{dataset.Name}' is missing data_type_config");
+            }
+
+            if (dataset.DataTypeConfig.Size != 32)
             {
                 throw new InvalidOperationException($"Dataset '{dataset.Name}' does not have a 32-bit DataSize");
             }
@@ -35,10 +41,10 @@ namespace UbiqSecurity
             bool isNegative = cipherInteger < 0;
 
             // convert from base 10 to base 14
-            var cipherText = IntegerHelper.ToString(Math.Abs(cipherInteger), 14);
+            var cipherText = IntegerHelper.ToString(Math.Abs(cipherInteger), dataset.OutputCharacters.Length);
 
-            // left pad to 8 characters
-            cipherText = cipherText.PadLeft(8, '0');
+            // left pad to min_length
+            cipherText = cipherText.PadLeft(dataset.MinInputLength, '0');
 
             // re-add negative sign, if needed
             if (isNegative)

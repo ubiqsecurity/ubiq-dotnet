@@ -9,12 +9,6 @@ namespace UbiqSecurity
 {
     public partial class UbiqStructuredEncryptDecrypt
     {
-        // 9,999,999,999 seconds from epoch
-        private static readonly DateTime MaxDateTime = new DateTime(2286, 11, 20, 17, 46, 39, DateTimeKind.Utc);
-
-        // -9,999,999,999 seconds from epoch
-        private static readonly DateTime MinDateTime = new DateTime(1653, 2, 10, 6, 13, 21, DateTimeKind.Utc);
-
         public async Task<DateTime> EncryptAsync(string datasetName, DateTime plainDateTime)
         {
             return await EncryptAsync(datasetName, plainDateTime, null);
@@ -57,27 +51,32 @@ namespace UbiqSecurity
                 throw new InvalidOperationException($"Dataset '{dataset.Name}' is not a 'datetime' DataType");
             }
 
+            if (dataset.DataTypeConfig == null)
+            {
+                throw new InvalidOperationException($"Dataset '{dataset.Name}' is missing data_type_config");
+            }
+
             var utcPlainDateTime = plainDateTime.ToUniversalTime();
 
-            if (utcPlainDateTime > MaxDateTime)
+            if (utcPlainDateTime > dataset.DataTypeConfig.MaxInputDateValue)
             {
-                throw new ArgumentOutOfRangeException(nameof(plainDateTime), $"DateTime must be before {MaxDateTime}");
+                throw new ArgumentOutOfRangeException(nameof(plainDateTime), $"plainDateTime must be <= {dataset.DataTypeConfig.MaxInputDateValue}, {plainDateTime}");
             }
 
-            if (utcPlainDateTime < MinDateTime)
+            if (utcPlainDateTime < dataset.DataTypeConfig.MinInputDateValue)
             {
-                throw new ArgumentOutOfRangeException(nameof(plainDateTime), $"DateTime must be after {MinDateTime}");
+                throw new ArgumentOutOfRangeException(nameof(plainDateTime), $"plainDateTime must be >= {dataset.DataTypeConfig.MinInputDateValue}");
             }
 
-            // convert datetime to number of seconds from the unix epoch (1/1/1970)
-            var secondsToEpoch = new DateTimeOffset(utcPlainDateTime).ToUnixTimeSeconds();
+            // convert datetime to number of seconds from our epoch, ususually 1/1/1970 but its configurable
+            var secondsToEpoch = (long)(utcPlainDateTime - dataset.DataTypeConfig.Epoch).TotalSeconds;
 
             // track if we are dealing w/ a negative sign, to ensure we re-add it after padding
             bool isNegative = secondsToEpoch < 0;
 
-            // pad input to 10 characters w/ leading zeroes
+            // pad input to min_input_length w/ leading zeroes
             var plainText = Math.Abs(secondsToEpoch).ToString(CultureInfo.InvariantCulture);
-            plainText = plainText.PadLeft(10, '0');
+            plainText = plainText.PadLeft(dataset.MinInputLength, '0');
 
             // re-add negative sign now that we are fully padded
             if (isNegative)
@@ -85,16 +84,16 @@ namespace UbiqSecurity
                 plainText = $"-{plainText}";
             }
 
-            // encrypted output will contain base12 characters (0-9a-b)
+            // encrypted output will contain baseX (usually base12, 0-9a-b) characters
             var cipherText = await EncryptPipelineAsync(dataset, _ffxCache, plainText, tweak);
 
-            // convert base12 string to base10 int
-            var encryptedSecondsToEpoch = IntegerHelper.Parse(cipherText, 12);
+            // convert baseX string to base10 int
+            var encryptedSecondsToEpoch = IntegerHelper.Parse(cipherText, dataset.OutputCharacters.Length);
 
-            // convert encrypted seconds back to a date time
-            var encryptedDateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(encryptedSecondsToEpoch);
+            // convert encrypted seconds back to a datetime by adding the seconds to our epoch
+            var encryptedDateTime = dataset.DataTypeConfig.Epoch.AddSeconds(encryptedSecondsToEpoch);
 
-            return encryptedDateTimeOffset.UtcDateTime;
+            return encryptedDateTime;
         }
     }
 }

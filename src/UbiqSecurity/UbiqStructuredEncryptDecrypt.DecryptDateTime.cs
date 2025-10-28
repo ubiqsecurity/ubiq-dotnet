@@ -27,16 +27,22 @@ namespace UbiqSecurity
                 throw new InvalidOperationException($"Dataset '{dataset.Name}' is not a 'datetime' DataType");
             }
 
-            // convert datetime to number of seconds from the unix epoch (1/1/1970)
-            var cipherSecondsToEpoch = new DateTimeOffset(cipherDateTime).ToUnixTimeSeconds();
+            if (dataset.DataTypeConfig == null)
+            {
+                throw new InvalidOperationException($"Dataset '{dataset.Name}' is missing data_type_config");
+            }
 
+            // convert datetime to number of seconds from the epoch, usually 1/1/1970 but is configurable
+            var cipherSecondsToEpoch = (long)(cipherDateTime - dataset.DataTypeConfig.Epoch).TotalSeconds;
+
+            // preserve negative sign for later, after padding
             bool isNegative = cipherSecondsToEpoch < 0;
 
-            // convert from base 10 to base 12
-            var cipherText = IntegerHelper.ToString(Math.Abs(cipherSecondsToEpoch), 12);
+            // convert from base 10 to baseX
+            var cipherText = IntegerHelper.ToString(Math.Abs(cipherSecondsToEpoch), dataset.OutputCharacters.Length);
 
-            // left pad to 10 characters
-            cipherText = cipherText.PadLeft(10, '0');
+            // left pad to input_min_length
+            cipherText = cipherText.PadLeft(dataset.MinInputLength, '0');
 
             // re-add negative sign, if needed
             if (isNegative)
@@ -44,16 +50,16 @@ namespace UbiqSecurity
                 cipherText = "-" + cipherText;
             }
 
-            // ciphertext is base 12, but plaintext will be base 10
+            // ciphertext is baseX, but plaintext will be base 10
             var plainText = await DecryptPipelineAsync(dataset, _ffxCache, cipherText, tweak);
 
             // convert base10 string to int
             var plainSecondsToEpoch = long.Parse(plainText, CultureInfo.InvariantCulture);
 
             // convert decrypted seconds back to a date time
-            var plainDateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(plainSecondsToEpoch);
+            var plainDateTime = dataset.DataTypeConfig.Epoch.AddSeconds(plainSecondsToEpoch);
 
-            return plainDateTimeOffset.UtcDateTime;
+            return plainDateTime;
         }
     }
 }

@@ -9,7 +9,7 @@ namespace UbiqSecurity.Internals.Structured.Pipeline.Operations
         {
             var dataset = context.Dataset;
 
-            if (!dataset.InputPadLength.HasValue || string.IsNullOrEmpty(dataset.InputPadCharacter))
+            if (string.IsNullOrEmpty(dataset.InputPadCharacter) || dataset.InputPadCharacter.Length > 1)
             {
                 return Task.FromResult(context.CurrentValue);
             }

@@ -2,6 +2,9 @@ namespace UbiqSecurity.Tests
 {
     public class UbiqStructuredEncryptDecryptInt32Tests
     {
+        public const string Int32DatasetName = "INT32";
+        public const string ProfileName = "local-datetime"; // TODO: change profile name back before MERGE
+
         [Theory]
         [InlineData(151223)]
         [InlineData(0)]
@@ -12,12 +15,12 @@ namespace UbiqSecurity.Tests
         {
             var sut = CryptographyBuilder
                             .Create()
-                            .WithCredentialsFromDefaultFileLocation("local-datetime")
+                            .WithCredentialsFromDefaultFileLocation(ProfileName) 
                             .BuildStructured();
 
-            var cipherInteger = await sut.EncryptAsync("INTEGER", plainInteger);
+            var cipherInteger = await sut.EncryptAsync(Int32DatasetName, plainInteger);
 
-            var decryptedInteger = await sut.DecryptAsync("INTEGER", cipherInteger);
+            var decryptedInteger = await sut.DecryptAsync(Int32DatasetName, cipherInteger);
 
             Assert.Equal(plainInteger, decryptedInteger);
         }
@@ -29,10 +32,10 @@ namespace UbiqSecurity.Tests
         {
             var sut = CryptographyBuilder
                             .Create()
-                            .WithCredentialsFromDefaultFileLocation("local-datetime")
+                            .WithCredentialsFromDefaultFileLocation(ProfileName)
                             .BuildStructured();
 
-            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await sut.EncryptAsync("INTEGER", plainInteger));
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await sut.EncryptAsync(Int32DatasetName, plainInteger));
         }
     }
 }

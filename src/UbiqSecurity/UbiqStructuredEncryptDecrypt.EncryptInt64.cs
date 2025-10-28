@@ -7,12 +7,9 @@ using UbiqSecurity.Internals.WebService.Models;
 
 namespace UbiqSecurity
 {
+    // Int64 strongly typed Decrypt methods
     public partial class UbiqStructuredEncryptDecrypt
     {
-        // +/- 16 digits
-        private const long MaxInt64Input = 9999999999999999;
-        private const long MinInt64Input = -9999999999999999;
-
         public async Task<long> EncryptAsync(string datasetName, long plainInteger)
         {
             return await EncryptAsync(datasetName, plainInteger, null);
@@ -55,29 +52,34 @@ namespace UbiqSecurity
                 throw new InvalidOperationException($"Dataset '{dataset.Name}' is not a 'integer' DataType");
             }
 
-            if (dataset.DataSize != 64)
+            if (dataset.DataTypeConfig == null)
+            {
+                throw new InvalidOperationException($"Dataset '{dataset.Name}' is missing data_type_config");
+            }
+
+            if (dataset.DataTypeConfig.Size != 64)
             {
                 throw new InvalidOperationException($"Dataset '{dataset.Name}' does not have a 64-bit DataSize");
             }
 
-            if (plainInteger > MaxInt64Input)
+            if (plainInteger > dataset.DataTypeConfig.MaxInputIntValue)
             {
-                throw new ArgumentOutOfRangeException(nameof(plainInteger), $"Number must be < {MaxInt64Input}");
+                throw new ArgumentOutOfRangeException(nameof(plainInteger), $"Number must be <= {dataset.DataTypeConfig.MaxInputIntValue}");
             }
 
-            if (plainInteger < MinInt64Input)
+            if (plainInteger < dataset.DataTypeConfig.MinInputIntValue)
             {
-                throw new ArgumentOutOfRangeException(nameof(plainInteger), $"Number must be > {MinInt64Input}");
+                throw new ArgumentOutOfRangeException(nameof(plainInteger), $"Number must be >= {dataset.DataTypeConfig.MinInputIntValue}");
             }
 
-            // convert to string and pad to 8 characters after the negative sign
-            var plainText = plainInteger.ToString("D16", CultureInfo.InvariantCulture);
+            // convert to string and pad to min_input_length after the negative sign
+            var plainText = plainInteger.ToString($"D{dataset.MinInputLength}", CultureInfo.InvariantCulture);
 
             // encrypted output will contain base14 characters (0-9a-d)
             var cipherText = await EncryptPipelineAsync(dataset, _ffxCache, plainText, tweak);
 
             // convert base14 string to base10 int
-            var cipherInteger = IntegerHelper.Parse(cipherText, 14);
+            var cipherInteger = IntegerHelper.Parse(cipherText, dataset.OutputCharacters.Length);
 
             return cipherInteger;
         }

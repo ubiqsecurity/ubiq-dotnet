@@ -9,12 +9,6 @@ namespace UbiqSecurity
 {
     public partial class UbiqStructuredEncryptDecrypt
     {
-        // dotnet's minimum date is 1/1/0001 :(
-        private static readonly DateTime MinDate = DateTime.MinValue.Date;
-
-        // MinDate + 999,999 days = 11/28/2738
-        private static readonly DateTime MaxDate = MinDate.AddDays(999999);
-
         public async Task<DateTime> EncryptDateAsync(string datasetName, DateTime plainDateTime)
         {
             return await EncryptDateAsync(datasetName, plainDateTime, null);
@@ -57,33 +51,47 @@ namespace UbiqSecurity
                 throw new InvalidOperationException($"Dataset '{dataset.Name}' is not a 'date' DataType");
             }
 
+            if (dataset.DataTypeConfig == null)
+            {
+                throw new InvalidOperationException($"Dataset '{dataset.Name}' is missing data_type_config");
+            }
+
             var utcPlainDate = plainDate.ToUniversalTime().Date;
 
-            if (utcPlainDate > MaxDate)
+            if (utcPlainDate > dataset.DataTypeConfig.MaxInputDateValue)
             {
-                throw new ArgumentOutOfRangeException(nameof(plainDate), $"DateTime must be before {MaxDate}");
+                throw new ArgumentOutOfRangeException(nameof(plainDate), $"plainDate must be <= {dataset.DataTypeConfig.MaxInputDateValue}");
             }
 
-            if (utcPlainDate < MinDate)
+            if (utcPlainDate < dataset.DataTypeConfig.MinInputDateValue)
             {
-                throw new ArgumentOutOfRangeException(nameof(plainDate), $"DateTime must be after {MinDate}");
+                throw new ArgumentOutOfRangeException(nameof(plainDate), $"plainDate must be >= {dataset.DataTypeConfig.MinInputDateValue}");
             }
 
-            // convert date to number of days from our epoch (1/1/0001) aka DateTime.MinValue
-            var daysFromEpoch = (utcPlainDate - DateTime.MinValue.Date).Days;
+            // convert date to number of days from our epoch, ususally 1/1/0001 but its configurable
+            var daysFromEpoch = (utcPlainDate - dataset.DataTypeConfig.Epoch.Date).Days;
 
-            // pad input to 6 characters w/ leading zeroes
-            var plainText = daysFromEpoch.ToString(CultureInfo.InvariantCulture);
-            plainText = plainText.PadLeft(6, '0');
+            // track if we are dealing w/ a negative sign, to ensure we re-add it after padding
+            bool isNegative = daysFromEpoch < 0;
 
-            // encrypted output will contain base12 characters (0-9a-b)
+            // pad input to min_input_length w/ leading zeroes
+            var plainText = Math.Abs(daysFromEpoch).ToString(CultureInfo.InvariantCulture);
+            plainText = plainText.PadLeft(dataset.MinInputLength, '0');
+
+            // re-add negative sign now that we are fully padded
+            if (isNegative)
+            {
+                plainText = $"-{plainText}";
+            }
+
+            // encrypted output will contain baseX characters, usually base 12 (e.g. 0-9a-b)
             var cipherText = await EncryptPipelineAsync(dataset, _ffxCache, plainText, tweak);
 
-            // convert base12 string to base10 int
-            var encryptedDaysFromEpoch = IntegerHelper.Parse(cipherText, 12);
+            // convert baseX string to base10 int
+            var encryptedDaysFromEpoch = IntegerHelper.Parse(cipherText, dataset.OutputCharacters.Length);
 
-            // convert encrypted days back to a date time
-            var encryptedDate = DateTime.MinValue.Date.AddDays(encryptedDaysFromEpoch);
+            // convert encrypted days back to a date time by adding days to our epoch
+            var encryptedDate = dataset.DataTypeConfig.Epoch.Date.AddDays(encryptedDaysFromEpoch);
 
             return encryptedDate;
         }
