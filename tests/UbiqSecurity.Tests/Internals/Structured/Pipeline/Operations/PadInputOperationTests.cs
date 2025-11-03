@@ -27,31 +27,29 @@ namespace UbiqSecurity.Tests.Internals.Structured.Pipeline.Operations
             },
         };
 
-        //[Fact]
-        //public async Task InvokeAsync_NullInputPadCharacter_ReturnsCurrentValue()
-        //{
-        //    TestContext.Dataset.MinInputLength = 10;
-        //    TestContext.Dataset.InputPadCharacter = null;
+        [Fact]
+        public async Task InvokeAsync_NullInputPadCharacter_ReturnsCurrentValue()
+        {
+            TestContext.Dataset.MinInputLength = 10;
+            TestContext.Dataset.InputPadCharacter = null;
 
-        //    var sut = new PadInputOperation();
+            var sut = new PadInputOperation();
 
-        //    var result = await sut.InvokeAsync(TestContext);
+            var result = await sut.InvokeAsync(TestContext);
 
-        //    Assert.Equal("654zyx", result);
-        //}
+            Assert.Equal("654zyx", result);
+        }
 
-        //[Fact]
-        //public async Task InvokeAsync_PadLengthLessThanCurrentValueLength_ReturnsCurrentValue()
-        //{
-        //    TestContext.Dataset.MinInputLength = 5;
-        //    TestContext.Dataset.InputPadCharacter = "*";
+        [Fact]
+        public async Task InvokeAsync_InputPadCharacterLengthGreateThanOne_ThrowsArgumentOutOfRangeException()
+        {
+            TestContext.Dataset.MinInputLength = 10;
+            TestContext.Dataset.InputPadCharacter = "**";
 
-        //    var sut = new PadInputOperation();
+            var sut = new PadInputOperation();
 
-        //    var result = await sut.InvokeAsync(TestContext);
-
-        //    Assert.Equal("654zyx", result);
-        //}
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => sut.InvokeAsync(TestContext));
+        }
 
         [Fact]
         public async Task InvokeAsync_MinInputLengthGreaterThanCurrentValueLength_ReturnsPaddedString()
@@ -67,7 +65,7 @@ namespace UbiqSecurity.Tests.Internals.Structured.Pipeline.Operations
         }
 
         [Fact]
-        public async Task InvokeAsync_PadLengthGreaterThanCurrentValueLength_PadsPassthroughTemplate()
+        public async Task InvokeAsync_MinInputLengthGreaterThanCurrentValueLength_PadsPassthroughTemplate()
         {
             TestContext.Dataset.MinInputLength = 10;
             TestContext.Dataset.InputPadCharacter = "*";

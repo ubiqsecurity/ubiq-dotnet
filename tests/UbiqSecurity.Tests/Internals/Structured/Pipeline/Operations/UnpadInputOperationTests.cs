@@ -27,21 +27,32 @@ namespace UbiqSecurity.Tests.Internals.Structured.Pipeline.Operations
             },
         };
 
-        //[Fact]
-        //public async Task InvokeAsync_NullInputPadCharacter_ReturnsCurrentValue()
-        //{
-        //    TestContext.Dataset.MinInputLength = 10;
-        //    TestContext.Dataset.InputPadCharacter = null;
+        [Fact]
+        public async Task InvokeAsync_NullInputPadCharacter_ReturnsCurrentValue()
+        {
+            TestContext.Dataset.MinInputLength = 10;
+            TestContext.Dataset.InputPadCharacter = null;
 
-        //    var sut = new UnpadInputOperation();
+            var sut = new PadInputOperation();
 
-        //    var result = await sut.InvokeAsync(TestContext);
+            var result = await sut.InvokeAsync(TestContext);
 
-        //    Assert.Equal("****654zyx", result);
-        //}
+            Assert.Equal("****654zyx", result);
+        }
 
         [Fact]
-        public async Task InvokeAsync_PadLengthGreaterThanCurrentValueLength_ReturnsPaddedString()
+        public async Task InvokeAsync_InputPadCharacterLengthGreateThanOne_ThrowsArgumentOutOfRangeException()
+        {
+            TestContext.Dataset.MinInputLength = 10;
+            TestContext.Dataset.InputPadCharacter = "**";
+
+            var sut = new PadInputOperation();
+
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => sut.InvokeAsync(TestContext));
+        }
+
+        [Fact]
+        public async Task InvokeAsync_MinInputLengthGreaterThanCurrentValueLength_ReturnsUnpaddedString()
         {
             TestContext.Dataset.MinInputLength = 10;
             TestContext.Dataset.InputPadCharacter = "*";
@@ -54,7 +65,7 @@ namespace UbiqSecurity.Tests.Internals.Structured.Pipeline.Operations
         }
 
         [Fact]
-        public async Task InvokeAsync_PadLengthGreaterThanCurrentValueLength_PadsPassthroughTemplate()
+        public async Task InvokeAsync_MinInputLengthGreaterThanCurrentValueLength_UnpadsPassthroughTemplate()
         {
             TestContext.Dataset.MinInputLength = 10;
             TestContext.Dataset.InputPadCharacter = "*";
