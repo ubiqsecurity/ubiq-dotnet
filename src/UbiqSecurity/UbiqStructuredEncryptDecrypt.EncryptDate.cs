@@ -69,7 +69,7 @@ namespace UbiqSecurity
             }
 
             // convert date to number of days from our epoch, ususally 1/1/0001 but its configurable
-            var daysFromEpoch = (utcPlainDate - dataset.DataTypeConfig.Epoch.Date).Days;
+            var daysFromEpoch = (utcPlainDate - dataset.DataTypeConfig.Epoch.Date).TotalDays;
 
             // track if we are dealing w/ a negative sign, to ensure we re-add it after padding
             bool isNegative = daysFromEpoch < 0;

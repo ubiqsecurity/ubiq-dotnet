@@ -32,8 +32,8 @@ namespace UbiqSecurity
                 throw new InvalidOperationException($"Dataset '{dataset.Name}' is missing data_type_config");
             }
 
-            // convert datetime to number of days from our epoch (1/1/0001) aka DateTime.MinValue
-            var encryptedDaysFromEpoch = (encryptedDate - dataset.DataTypeConfig.Epoch.Date).Days;
+            // convert datetime to number of days from our epoch
+            long encryptedDaysFromEpoch = (long)(encryptedDate - dataset.DataTypeConfig.Epoch.Date).TotalDays;
 
             bool isNegative = encryptedDaysFromEpoch < 0;
 
