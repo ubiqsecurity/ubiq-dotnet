@@ -49,7 +49,7 @@ namespace UbiqSecurity
                 cipherText = "-" + cipherText;
             }
 
-            // ciphertext is base 12, but plaintext will be base 10
+            // ciphertext is baseX, but plaintext will be base 10
             var plainText = await DecryptPipelineAsync(dataset, _ffxCache, cipherText, tweak);
 
             // convert base10 string to int

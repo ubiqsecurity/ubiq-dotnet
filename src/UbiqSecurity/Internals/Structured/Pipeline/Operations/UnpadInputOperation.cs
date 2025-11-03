@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace UbiqSecurity.Internals.Structured.Pipeline.Operations
@@ -9,9 +10,14 @@ namespace UbiqSecurity.Internals.Structured.Pipeline.Operations
         {
             var dataset = context.Dataset;
 
-            if (string.IsNullOrEmpty(dataset.InputPadCharacter) || dataset.InputPadCharacter.Length > 1)
+            if (string.IsNullOrEmpty(dataset.InputPadCharacter))
             {
                 return Task.FromResult(context.CurrentValue);
+            }
+
+            if (dataset.InputPadCharacter.Length > 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(context), "context.Dataset.InputPadCharacter must be 1 character long");
             }
 
             string val = context.CurrentValue.TrimStart(dataset.InputPadCharacter.First());
