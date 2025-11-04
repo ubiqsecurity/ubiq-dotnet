@@ -61,16 +61,6 @@ namespace UbiqSecurity.Internals
             return str.ReplaceCharacter(ch, 0);
         }
 
-        internal static string TrimEnd(this string input, int characters)
-        {
-            return input.Substring(0, input.Length - characters);
-        }
-
-        internal static string TrimStart(this string input, int characters)
-        {
-            return input.Substring(characters);
-        }
-
         internal static string FormatToTemplate(this string input, string template, string passthroughCharacters)
         {
             char[] templateCharacters = template.ToCharArray();
