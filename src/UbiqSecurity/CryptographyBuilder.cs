@@ -12,6 +12,8 @@ namespace UbiqSecurity
     {
         private UbiqConfiguration _configuration;
         private IUbiqCredentials _credentials;
+        private IFfxCache _cache;
+        private IUbiqWebService _webService;
 
         public CryptographyBuilder()
         {
@@ -105,13 +107,13 @@ namespace UbiqSecurity
             _credentials = _credentials ?? UbiqCredentials.CreateFromFile(string.Empty);
             _credentials.Validate();
 
-            var webService = new UbiqWebService(_credentials, _configuration);
+            var webService = _webService ?? new UbiqWebService(_credentials, _configuration);
 
             var billingEventsManager = _configuration.EventReporting.Enabled ?
                                             (IBillingEventsManager)new BillingEventsManager(_configuration, webService) :
                                             (IBillingEventsManager)new NullBillingEventsManager();
 
-            var ffxCache = new FfxCache(webService, _configuration, _credentials);
+            var ffxCache = _cache ?? new FfxCache(webService, _configuration, _credentials);
             var datasetCache = new DatasetCache(webService, _configuration);
 
             AsyncHelper.RunSync(() => _credentials.CheckInitAndExpirationAsync(_configuration));
@@ -150,6 +152,20 @@ namespace UbiqSecurity
             var unstructuredCache = new UnstructuredKeyCache(webService, _configuration, _credentials);
 
             return new UbiqDecrypt(_credentials, webService, billingEventsManager, unstructuredCache);
+        }
+
+        internal CryptographyBuilder WithFfxCache(IFfxCache cache)
+        {
+            _cache = cache;
+
+            return this;
+        }
+
+        internal CryptographyBuilder WithWebService(IUbiqWebService webService)
+        {
+            _webService = webService;
+
+            return this;
         }
     }
 }

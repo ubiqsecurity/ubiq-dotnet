@@ -74,7 +74,7 @@ namespace UbiqSecurity.LoadTests
             _stopwatch.Reset();
             _stopwatch.Start();
 
-            var cipherText = await _fpeEncryptDecrypt.EncryptAsync(testData.Dataset, testData.PlainText);
+            var cipherText = await _fpeEncryptDecrypt.InferredEncryptAsync(testData.Dataset, testData.PlainText);
 
             _stopwatch.Stop();
             //Console.WriteLine($"{testData.Dataset}: {_stopwatch.Elapsed.TotalMilliseconds} ms");
@@ -89,7 +89,7 @@ namespace UbiqSecurity.LoadTests
             _stopwatch.Reset();
             _stopwatch.Start();
 
-            var plainText = await _fpeEncryptDecrypt.DecryptAsync(testData.Dataset, cipherText);
+            var plainText = await _fpeEncryptDecrypt.InferredDecryptAsync(testData.Dataset, cipherText);
 
             _stopwatch.Stop();
             _timings.DecryptionTimes.Add(_stopwatch.Elapsed.TotalMilliseconds);
@@ -105,7 +105,7 @@ namespace UbiqSecurity.LoadTests
         {
             Console.WriteLine("Warmup Iteration");
 
-            var cipherText = await _fpeEncryptDecrypt.EncryptAsync(testData.Dataset, testData.PlainText);
+            var cipherText = await _fpeEncryptDecrypt.InferredEncryptAsync(testData.Dataset, testData.PlainText);
 
             if (cipherText != testData.CipherText)
             {
@@ -113,7 +113,7 @@ namespace UbiqSecurity.LoadTests
                 Console.WriteLine($"Error cipherText {testData.CipherText} expected");
             }
 
-            var plainText = await _fpeEncryptDecrypt.DecryptAsync(testData.Dataset, cipherText);
+            var plainText = await _fpeEncryptDecrypt.InferredDecryptAsync(testData.Dataset, cipherText);
 
             if (plainText != testData.PlainText)
             {

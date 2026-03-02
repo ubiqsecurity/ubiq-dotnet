@@ -16,8 +16,7 @@ namespace UbiqSecurity.Tests.Helpers
         {
             // default to 100.json but allow automated tests to override that w/ an environment variable
             // if we default to something larger, the VS Test Explorer will take forever to enumerate all possible tests
-            // environment variable can be passed on commandline, for example: dotnet test -e JsonTestSize:"10k"
-            var folderPath = $@"TestData/{Environment.GetEnvironmentVariable("JsonTestEnv") ?? "prod"}/{Environment.GetEnvironmentVariable("JsonTestSize") ?? "100"}";
+            var folderPath = $@"TestData/{Environment.GetEnvironmentVariable("TEST_ENV") ?? "prod"}/{Environment.GetEnvironmentVariable("TEST_SIZE") ?? "100"}";
             _filePaths = Directory.EnumerateFiles(folderPath, "*.json");
         }
 

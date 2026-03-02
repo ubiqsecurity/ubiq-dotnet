@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.4.0 - 2026-02-06
+* Add data types support (int32, int64, date, datetime, tokens, generic string)
+
 ## 2.3.0 - 2025-07-09
 * Add Self-Signed IDP Support
 
