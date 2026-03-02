@@ -1,0 +1,502 @@
+[
+    {
+        "ciphertext": "-313074055076404318",
+        "plaintext": "-5452262449442413",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-317695119535227238",
+        "plaintext": "-6152470870924615",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-266953619",
+        "plaintext": "-52786488",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "311391907638696004",
+        "plaintext": "9304716587008703",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "295141489",
+        "plaintext": "59904751",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "313379954489969188",
+        "plaintext": "5492540470933406",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "217471716",
+        "plaintext": "2257051",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-221155877",
+        "plaintext": "-11267",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-237164811",
+        "plaintext": "-12216994",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "318562160891281971",
+        "plaintext": "4855429961818958",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-315904202258470790",
+        "plaintext": "-4779027670390214",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-318000211662237751",
+        "plaintext": "-2216588903255944",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "223507461",
+        "plaintext": "29749315",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "234914607",
+        "plaintext": "72338415",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-235816759",
+        "plaintext": "-35998884",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-278023734",
+        "plaintext": "-82971271",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "311847647520925344",
+        "plaintext": "616556107829585",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-318795247785260856",
+        "plaintext": "-4601949904869447",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-312523336656787430",
+        "plaintext": "-7550702240699557",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-313817664579708730",
+        "plaintext": "-8065245419765292",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "212208929",
+        "plaintext": "19493141",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "274530459",
+        "plaintext": "60856223",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-213963805",
+        "plaintext": "-42820775",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "276028391",
+        "plaintext": "9533196",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-311817483488440467",
+        "plaintext": "-2876463802080547",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-313051385251142796",
+        "plaintext": "-9705683061288226",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-242060879",
+        "plaintext": "-91864341",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "318003815487753431",
+        "plaintext": "9126955011401928",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-245437509",
+        "plaintext": "-29974002",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "317814175538891142",
+        "plaintext": "2521993682819909",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-318203783588995786",
+        "plaintext": "-7991078063561206",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-313335654686233113",
+        "plaintext": "-5453833535088956",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "318710314358148123",
+        "plaintext": "5771931802867080",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "261799825",
+        "plaintext": "25724092",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-311362216604169941",
+        "plaintext": "-9947708840373799",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "314878957082085338",
+        "plaintext": "5255913563810991",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-315258453895263740",
+        "plaintext": "-5978350264297389",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "264097132",
+        "plaintext": "87621823",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "218752580",
+        "plaintext": "19538716",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "317328952656042354",
+        "plaintext": "3505240977515",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-320927315060060028",
+        "plaintext": "-1754381928885314",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-318529847404441583",
+        "plaintext": "-6180827697362831",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "311769472309612416",
+        "plaintext": "9117758627751608",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "317079322443409403",
+        "plaintext": "1609485960585480",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-267430337",
+        "plaintext": "-15857601",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-227571864",
+        "plaintext": "-4366857",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "318398988496121410",
+        "plaintext": "7797349468948154",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "318489323016613620",
+        "plaintext": "7554551188872192",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-311544806607307480",
+        "plaintext": "-3626826904036053",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "307914213",
+        "plaintext": "42016741",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-265258352",
+        "plaintext": "-28026527",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "316557337372934290",
+        "plaintext": "296813613186181",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-312872011969250959",
+        "plaintext": "-1713367907097164",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "315147326734552428",
+        "plaintext": "9903723453831166",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-302777462",
+        "plaintext": "-36740569",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "318767390213069989",
+        "plaintext": "6803785331807928",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-238299514",
+        "plaintext": "-98066043",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "312852276137684565",
+        "plaintext": "8758237926355246",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "312373029357189823",
+        "plaintext": "8741917261675502",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-311207101593623307",
+        "plaintext": "-2501460988254576",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "259623682",
+        "plaintext": "19787009",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "317461931780241813",
+        "plaintext": "8909345808654230",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-319997432945837846",
+        "plaintext": "-3052430168270320",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-253502332",
+        "plaintext": "-62102636",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-310016890",
+        "plaintext": "-46371103",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "219772785",
+        "plaintext": "79181924",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-249385797",
+        "plaintext": "-85991961",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-317441041615732598",
+        "plaintext": "-9988467933529965",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-268196146",
+        "plaintext": "-22760513",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "260183221",
+        "plaintext": "85274053",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "313358953187712281",
+        "plaintext": "8352092882574242",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-314979825470813806",
+        "plaintext": "-6964850511770829",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-285608504",
+        "plaintext": "-70503683",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-273840340",
+        "plaintext": "-96452221",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "303921609",
+        "plaintext": "92726559",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-261467213",
+        "plaintext": "-50743987",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-319308670722654278",
+        "plaintext": "-8682347873427126",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-216638946",
+        "plaintext": "-36311378",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "312329767985849151",
+        "plaintext": "1298516055143020",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-319187600849780139",
+        "plaintext": "-3951462469907415",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "318972585965589751",
+        "plaintext": "7137743569027237",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-280627829",
+        "plaintext": "-71100361",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-311729058501226733",
+        "plaintext": "-1244186483590421",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "216107209",
+        "plaintext": "28754145",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "311604697446857815",
+        "plaintext": "6297208718404872",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "315582010895360842",
+        "plaintext": "6846432714987029",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-314636788703580834",
+        "plaintext": "-4944434658005416",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "293163628",
+        "plaintext": "36983957",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-313830730217025343",
+        "plaintext": "-6384388102568627",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "243463867",
+        "plaintext": "3090448",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-311195246766013108",
+        "plaintext": "-5799081916939563",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-314579311231308196",
+        "plaintext": "-3678893269585778",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-221564366",
+        "plaintext": "-77611214",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-312280041665758160",
+        "plaintext": "-7533909164154289",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-319416608094631450",
+        "plaintext": "-8483929179591393",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-317066707850763126",
+        "plaintext": "-3786948883546404",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-314715478198325269",
+        "plaintext": "-2924812351992357",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-320597448193521707",
+        "plaintext": "-3270664817807474",
+        "dataset": "integer64"
+    },
+    {
+        "ciphertext": "-273572696",
+        "plaintext": "-11861256",
+        "dataset": "integer32"
+    },
+    {
+        "ciphertext": "-313919913281048291",
+        "plaintext": "-7175372428891128",
+        "dataset": "integer64"
+    }
+]

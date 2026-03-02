@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ using UbiqSecurity.Internals.WebService.Models;
 
 namespace UbiqSecurity
 {
-    public class UbiqStructuredEncryptDecrypt : IDisposable
+    public partial class UbiqStructuredEncryptDecrypt : IDisposable
     {
         private readonly IUbiqCredentials _ubiqCredentials;
 
@@ -133,7 +134,7 @@ namespace UbiqSecurity
 
             for (int keyNumber = 0; keyNumber <= currentFfx.KeyNumber; keyNumber++)
             {
-                var cipherText = await EncryptPipelineAsync(dataset, _ffxCache, plainText, tweak);
+                var cipherText = await EncryptPipelineAsync(dataset, _ffxCache, plainText, tweak, keyNumber);
 
                 results.Add(cipherText);
             }
@@ -142,6 +143,76 @@ namespace UbiqSecurity
         }
 
         public string GetCopyOfUsage() => _billingEvents.GetSerializedEvents();
+
+        internal async Task<string> InferredEncryptAsync(string datasetName, string plainText, byte[] tweak = null)
+        {
+            var dataset = await _datasetCache.GetAsync(datasetName);
+
+            switch (dataset.DataType)
+            {
+                case "integer":
+                    long plainInt = long.Parse(plainText, CultureInfo.InvariantCulture);
+
+                    if (dataset.DataTypeConfig.Size == 32)
+                    {
+                        int cipherInt = await EncryptIntegerPipelineAsync(dataset, (int)plainInt, tweak);
+                        return cipherInt.ToString(CultureInfo.InvariantCulture);
+                    }
+
+                    if (dataset.DataTypeConfig.Size == 64)
+                    {
+                        long cipherInt64 = await EncryptIntegerPipelineAsync(dataset, plainInt, tweak);
+                        return cipherInt64.ToString(CultureInfo.InvariantCulture);
+                    }
+
+                    throw new ArgumentException("Invalid DataType Size");
+                case "date":
+                    var plainDate = DateTime.Parse(plainText, CultureInfo.InvariantCulture);
+                    var cipherDate = await EncryptDatePipelineAsync(dataset, plainDate.ToUniversalTime(), tweak);
+                    return cipherDate.ToString("yyyy-MM-ddTHH:mmZ", CultureInfo.InvariantCulture);
+                case "datetime":
+                    var plainDateTime = DateTime.Parse(plainText, CultureInfo.InvariantCulture);
+                    var cipherDateTime = await EncryptDateTimePipelineAsync(dataset, plainDateTime.ToUniversalTime(), tweak);
+                    return cipherDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
+                default:
+                    return await EncryptPipelineAsync(dataset, _ffxCache, plainText, tweak);
+            }
+        }
+
+        internal async Task<string> InferredDecryptAsync(string datasetName, string plainText, byte[] tweak = null)
+        {
+            var dataset = await _datasetCache.GetAsync(datasetName);
+
+            switch (dataset.DataType)
+            {
+                case "integer":
+                    long plainInt = long.Parse(plainText, CultureInfo.InvariantCulture);
+
+                    if (dataset.DataTypeConfig.Size == 32)
+                    {
+                        int cipherInt = await DecryptIntegerPipelineAsync(dataset, (int)plainInt, tweak);
+                        return cipherInt.ToString(CultureInfo.InvariantCulture);
+                    }
+
+                    if (dataset.DataTypeConfig.Size == 64)
+                    {
+                        long cipherInt64 = await DecryptIntegerPipelineAsync(dataset, plainInt, tweak);
+                        return cipherInt64.ToString(CultureInfo.InvariantCulture);
+                    }
+
+                    throw new ArgumentException("Invalid DataType Size");
+                case "date":
+                    var plainDate = DateTime.Parse(plainText, CultureInfo.InvariantCulture);
+                    var cipherDate = await DecryptDatePipelineAsync(dataset, plainDate.ToUniversalTime(), tweak);
+                    return cipherDate.ToString("yyyy-MM-ddTHH:mmZ", CultureInfo.InvariantCulture);
+                case "datetime":
+                    var plainDateTime = DateTime.Parse(plainText, CultureInfo.InvariantCulture);
+                    var cipherDateTime = await DecryptDateTimePipelineAsync(dataset, plainDateTime.ToUniversalTime(), tweak);
+                    return cipherDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
+                default:
+                    return await DecryptPipelineAsync(dataset, _ffxCache, plainText, tweak);
+            }
+        }
 
         protected virtual void Dispose(bool disposing)
         {
@@ -169,7 +240,7 @@ namespace UbiqSecurity
             }
         }
 
-        private async Task<string> EncryptPipelineAsync(FfsRecord dataset, IFfxCache ffxCache, string plainText, byte[] tweak)
+        private async Task<string> EncryptPipelineAsync(FfsRecord dataset, IFfxCache ffxCache, string plainText, byte[] tweak, int? keyNumber = null)
         {
             var operationContext = new OperationContext()
             {
@@ -177,7 +248,7 @@ namespace UbiqSecurity
                 Dataset = dataset,
                 IsEncrypt = true,
                 FfxCache = ffxCache,
-                KeyNumber = null,
+                KeyNumber = keyNumber,
                 OriginalValue = plainText,
                 UserSuppliedTweak = tweak,
             };

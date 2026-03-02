@@ -230,7 +230,12 @@ namespace UbiqSecurity.Internals.WebService
                 throw new InvalidOperationException(errorMessage);
             }
 
-            TResponse response = JsonConvert.DeserializeObject<TResponse>(responseString);
+            TResponse response = JsonConvert.DeserializeObject<TResponse>(
+                responseString,
+                new JsonSerializerSettings
+                {
+                    DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+                });
 
             return response;
         }

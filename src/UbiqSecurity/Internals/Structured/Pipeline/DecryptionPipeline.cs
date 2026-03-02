@@ -12,6 +12,8 @@ namespace UbiqSecurity.Internals.Structured.Pipeline
             new DecodeKeyNumberOperation(),
             new ConvertRadixOperation(),
             new DecryptOperation(),
+            new UnpadInputOperation(),
+            new DecodeInputOperation(),
         };
 
         public DecryptionPipeline(FfsRecord dataset)
