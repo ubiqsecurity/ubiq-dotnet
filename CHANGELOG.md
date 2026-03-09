@@ -1,6 +1,9 @@
 # Changelog
 
-## 2.4.0 - 2026-02-06
+## 2.4.1 - 2026-03-04
+* Bugfix: Generic strings would incorrectly allow input to contain input_pad_characters
+
+## 2.4.0 - 2026-03-03
 * Add data types support (int32, int64, date, datetime, tokens, generic string)
 
 ## 2.3.0 - 2025-07-09

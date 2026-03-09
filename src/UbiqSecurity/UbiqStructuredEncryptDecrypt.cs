@@ -167,12 +167,12 @@ namespace UbiqSecurity
 
                     throw new ArgumentException("Invalid DataType Size");
                 case "date":
-                    var plainDate = DateTime.Parse(plainText, CultureInfo.InvariantCulture);
-                    var cipherDate = await EncryptDatePipelineAsync(dataset, plainDate.ToUniversalTime(), tweak);
+                    var plainDate = DateTime.Parse(plainText, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+                    var cipherDate = await EncryptDatePipelineAsync(dataset, plainDate, tweak);
                     return cipherDate.ToString("yyyy-MM-ddTHH:mmZ", CultureInfo.InvariantCulture);
                 case "datetime":
-                    var plainDateTime = DateTime.Parse(plainText, CultureInfo.InvariantCulture);
-                    var cipherDateTime = await EncryptDateTimePipelineAsync(dataset, plainDateTime.ToUniversalTime(), tweak);
+                    var plainDateTime = DateTime.Parse(plainText, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+                    var cipherDateTime = await EncryptDateTimePipelineAsync(dataset, plainDateTime, tweak);
                     return cipherDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
                 default:
                     return await EncryptPipelineAsync(dataset, _ffxCache, plainText, tweak);

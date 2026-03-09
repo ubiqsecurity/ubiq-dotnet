@@ -1,5 +1,4 @@
 using Newtonsoft.Json;
-using UbiqSecurity.Internals;
 using UbiqSecurity.Internals.WebService.Models;
 using UbiqSecurity.Tests.Fixtures;
 using UbiqSecurity.Tests.Helpers;

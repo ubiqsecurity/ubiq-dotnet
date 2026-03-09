@@ -20,6 +20,11 @@ namespace UbiqSecurity.Internals.Structured.Pipeline.Operations
                 throw new ArgumentOutOfRangeException(nameof(context), "context.Dataset.InputPadCharacter must be 1 character long");
             }
 
+            if (context.CurrentValue.Contains(dataset.InputPadCharacter))
+            {
+                throw new ArgumentException(nameof(context.CurrentValue), $"Input may not contain input_pad_character '{dataset.InputPadCharacter}'");
+            }
+
             string val = context.CurrentValue.PadLeft(dataset.MinInputLength, dataset.InputPadCharacter.First());
 
             // also pad the passthrough mask

@@ -20,9 +20,9 @@
     <PackageIcon>icon.png</PackageIcon>
     <Copyright>Copyright 2020-2024 Ubiq Security, Inc.</Copyright>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Version>2.4.0</Version>
+    <Version>2.4.1</Version>
     <PackageReleaseNotes>
-      - Add data types support (int32, int64, date, datetime, tokens, generic string)
+      - Fix generic string padding character bug
     </PackageReleaseNotes>
     <NeutralLanguage>en-US</NeutralLanguage>
   </PropertyGroup>

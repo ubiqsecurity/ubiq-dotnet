@@ -1,0 +1,4 @@
+[submodule "tests/UbiqSecurity.TestData"]
+	path = tests/UbiqSecurity.TestData
+	url = https://gitlab.com/ubiqsecurity/ubiq-test-data.git
+	branch = dataset_types
